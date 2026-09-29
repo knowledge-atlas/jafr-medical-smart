@@ -1,0 +1,481 @@
+// ================================================================
+// مولّد التقرير الجفري المنظّم — إصدار Markdown-Archive v3.0
+// ================================================================
+
+import {
+  calculate,
+  normalizePlanetKey,
+  normalizeElementKey,
+} from './calculator';
+import { analyzeCompounds } from './compoundAnalyzer';
+import { generateSimpleWafq } from './wafqGenerator';
+import { cleanRootText, cleanGenericText, extractTitle } from './textCleaner';
+import { getRootFullText, getResonance, getResonanceBetween, getRemediesForRoot, getEncyclopediaRootSection } from '../data/encyclopedia';
+import { getFullRootText, hasFullRoot } from '../data/fullRoots';
+import { buildMedicalSection } from '../data/medicalLookup';
+import { SYSTEM_OVERVIEW, TAB_OVERVIEWS } from '../data/tabOverviews';
+
+import { ROOTS_FULL_TEXT } from '../data/roots';
+import { PLANETS_FULL_TEXT } from '../data/planets';
+import { SIGNS_FULL_TEXT } from '../data/signs';
+import { ELEMENTS_FULL_TEXT } from '../data/elements';
+import { HOUSES_FULL_TEXT } from '../data/houses';
+import { REMAINDERS_FULL_TEXT } from '../data/remainders';
+import { RESONANCE_FULL_TEXT } from '../data/resonance';
+import { REMEDIES_TYPES_FULL as FALLBACK_REMEDIES } from '../data/remedies';
+
+// ================================================================
+// أدوات
+// ================================================================
+
+const generateReportId = (name: string, date: Date): string => {
+  const normalized = name.replace(/\s+/g, '_').replace(/[^a-zA-Z\u0600-\u06FF_]/g, '').toUpperCase();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const ts = `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
+  return `JAFR-${normalized || 'ENTITY'}-${ts}`;
+};
+
+const formatDateISO = (date: Date): string => {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())} +03:00`;
+};
+
+const formatDateArabic = (date: Date): string => date.toLocaleString('ar-EG');
+
+const markdownTable = (headers: string[], rows: (string | number)[][]): string => {
+  const headerLine = `| ${headers.join(' | ')} |`;
+  const separator = `|${headers.map(() => ':---').join('|')}|`;
+  const bodyLines = rows.map(row => `| ${row.join(' | ')} |`).join('\n');
+  return `${headerLine}\n${separator}\n${bodyLines}`;
+};
+
+const bulletList = (items: string[]): string =>
+  items.filter(Boolean).map(item => `• ${item.trim()}`).join('\n');
+
+const introBlock = (tabKey: string): string => {
+  const tab = TAB_OVERVIEWS[tabKey];
+  if (!tab) return '';
+  return `> **${tab.title}**\n>\n> ${tab.shortIntro}\n>\n> ${tab.detailedIntro}\n`;
+};
+
+export type StructuredReport = {
+  id: string;
+  name: string;
+  root: number;
+  rootTitle: string;
+  markdown: string;
+  data: {
+    calculation: any;
+    internal: any;
+    external: any;
+    acquiredElement: string;
+  };
+};
+
+// ================================================================
+// الدالة الرئيسية
+// ================================================================
+
+export const buildStructuredReport = (
+  name: string,
+  symptoms: string[] = []
+): StructuredReport | { error: string } => {
+  const calc = calculate(name);
+  if ('error' in calc) {
+    return { error: calc.error || 'خطأ غير معروف' };
+  }
+
+  const now = new Date();
+  const reportId = generateReportId(name, now);
+  const dateArabic = formatDateArabic(now);
+  const dateISO = formatDateISO(now);
+  const root = calc.root;
+
+  let rootText: string;
+  if (hasFullRoot(root)) {
+    rootText = getFullRootText(root);
+  } else {
+    const rawRootText = getRootFullText(root) || ROOTS_FULL_TEXT[root] || '';
+    rootText = cleanRootText(rawRootText, root);
+  }
+  const rootTitle = extractTitle(rootText) || `الجذر ${root}`;
+
+  const internalPlanetKey = normalizePlanetKey(calc.internal.planet);
+  const internalElementKey = normalizeElementKey(calc.internal.element);
+  const externalPlanetKey = normalizePlanetKey(calc.external.planet);
+  const externalElementKey = normalizeElementKey(calc.external.element);
+  const acquiredElementKey = normalizeElementKey(calc.acquiredElement);
+
+  const elementLib: Record<string, string> = {
+    [internalElementKey]: cleanGenericText(ELEMENTS_FULL_TEXT[internalElementKey] || ''),
+    [externalElementKey]: cleanGenericText(ELEMENTS_FULL_TEXT[externalElementKey] || ''),
+    [acquiredElementKey]: cleanGenericText(ELEMENTS_FULL_TEXT[acquiredElementKey] || ''),
+  };
+  const planetLib: Record<string, string> = {
+    [internalPlanetKey]: cleanGenericText(PLANETS_FULL_TEXT[internalPlanetKey] || ''),
+    [externalPlanetKey]: cleanGenericText(PLANETS_FULL_TEXT[externalPlanetKey] || ''),
+  };
+  const signLib: Record<string, string> = {
+    [calc.internal.sign]: cleanGenericText(SIGNS_FULL_TEXT[calc.internal.sign] || ''),
+    [calc.external.sign]: cleanGenericText(SIGNS_FULL_TEXT[calc.external.sign] || ''),
+  };
+
+  const internalHouseText = cleanGenericText(HOUSES_FULL_TEXT[calc.internal.house] || '');
+  const externalHouseText = cleanGenericText(HOUSES_FULL_TEXT[calc.external.houseNumber] || '');
+  const r9Text = cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on9] || '');
+  const r7Text = cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on7] || '');
+  const r28Text = cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on28] || '');
+  const resonanceText = cleanGenericText(getResonanceBetween(root, root) || '' || RESONANCE_FULL_TEXT[`${root}_${root}`] || '');
+
+  let remedyText = '';
+  try {
+    const remedies = getRemediesForRoot(root);
+    if (remedies && remedies.remedy) {
+      remedyText = remedies.remedy;
+    } else if (Array.isArray(remedies) && remedies.length > 0) {
+      remedyText = `الجذور ${remedies.join('، ')}`;
+    } else {
+      remedyText = FALLBACK_REMEDIES['ترياق التثبيت'] || '';
+    }
+  } catch {
+    remedyText = FALLBACK_REMEDIES['ترياق التثبيت'] || '';
+  }
+
+  const compounds = analyzeCompounds(calc.letters);
+  const wafqGrid = generateSimpleWafq(calc.values);
+
+  const usedElements = new Set<string>();
+  const usedPlanets = new Set<string>();
+  const usedSigns = new Set<string>();
+  const firstUse = (set: Set<string>, key: string) => {
+    if (set.has(key)) return false;
+    set.add(key);
+    return true;
+  };
+
+  const md: string[] = [];
+
+  md.push('# التقرير الجفري القياسي');
+  md.push('');
+  md.push('> **نظام الجفر الطبي الذكي — ميزان المرآة الذكي**');
+  md.push('>');
+  md.push('> ' + SYSTEM_OVERVIEW.split('\n').join('\n> '));
+  md.push('');
+  md.push('---');
+  md.push('');
+
+  md.push('## بيانات السجل');
+  md.push('');
+  md.push(introBlock('record'));
+  md.push('');
+  md.push(markdownTable(['الحقل', 'القيمة'], [
+    ['المعرّف', reportId],
+    ['العنوان', 'نظام الجفر الطبي الذكي — ميزان المرآة الذكي'],
+    ['الاسم', name],
+    ['تاريخ التقرير الأصلي', dateArabic],
+    ['التاريخ المعياري', dateISO],
+    ['إصدار النظام', '3.0'],
+    ['اللغة', 'العربية'],
+  ]));
+  md.push('');
+  md.push('---');
+  md.push('');
+
+  md.push('## الملخص التنفيذي');
+  md.push('');
+  md.push(introBlock('summary'));
+  md.push('');
+  md.push('### الحسابات العددية');
+  md.push('');
+  md.push(markdownTable(['العنصر', 'القيمة'], [
+    ['الحروف', calc.letters.join('، ')],
+    ['القيم', calc.values.join('، ')],
+    ['العملية', calc.values.join(' + ')],
+    ['المجموع', calc.total],
+    ['الجذر الرقمي', calc.digitalRoot],
+    ['الباقي على 9', calc.remainders.on9],
+    ['الباقي على 7', calc.remainders.on7],
+    ['الباقي على 12', calc.remainders.on12],
+    ['الباقي على 28', calc.remainders.on28],
+  ]));
+  md.push('');
+  md.push('---');
+  md.push('');
+
+  md.push('## الجذر الحقيقي');
+  md.push('');
+  md.push(introBlock('trueRoot'));
+  md.push('');
+  md.push(rootText);
+  md.push('');
+  md.push('---');
+  md.push('');
+
+  md.push('## الطبقة الداخلية');
+  md.push('');
+  md.push(introBlock('internalLayer'));
+  md.push('');
+
+  md.push(`### الطبع الداخلي: ${calc.internal.element}`);
+  md.push('');
+  if (firstUse(usedElements, internalElementKey)) {
+    md.push(elementLib[internalElementKey]);
+    md.push('');
+  } else {
+    md.push(`*(نفس الطبع "${calc.internal.element}" معروض سابقاً)*`);
+    md.push('');
+  }
+
+  md.push(`### الكوكب الداخلي: ${calc.internal.planet}`);
+  md.push('');
+  if (firstUse(usedPlanets, internalPlanetKey)) {
+    md.push(planetLib[internalPlanetKey]);
+    md.push('');
+  } else {
+    md.push(`*(نفس الكوكب "${calc.internal.planet}" معروض سابقاً)*`);
+    md.push('');
+  }
+
+  md.push(`### البرج الداخلي: ${calc.internal.sign}`);
+  md.push('');
+  if (firstUse(usedSigns, calc.internal.sign)) {
+    md.push(signLib[calc.internal.sign]);
+    md.push('');
+  } else {
+    md.push(`*(نفس البرج "${calc.internal.sign}" معروض سابقاً)*`);
+    md.push('');
+  }
+
+  md.push(`### البيت الداخلي: البيت ${calc.internal.house} — ${calc.internal.houseName}`);
+  md.push('');
+  md.push(internalHouseText);
+  md.push('');
+  md.push('---');
+  md.push('');
+
+  md.push('## الطبقة الخارجية');
+  md.push('');
+  md.push(introBlock('externalLayer'));
+  md.push('');
+
+  md.push(`### الباقي على 12: ${calc.external.houseNumber}`);
+  md.push('');
+  md.push('المجال الخارجي للتفاعل مع العالم:');
+  md.push('');
+  md.push(externalHouseText);
+  md.push('');
+
+  md.push(`### البرج الخارجي: ${calc.external.sign}`);
+  md.push('');
+  if (firstUse(usedSigns, calc.external.sign)) {
+    md.push(signLib[calc.external.sign]);
+    md.push('');
+  } else {
+    md.push(`*(نفس البرج "${calc.external.sign}" معروض سابقاً)*`);
+    md.push('');
+  }
+
+  md.push(`### الكوكب الخارجي: ${calc.external.planet}`);
+  md.push('');
+  if (firstUse(usedPlanets, externalPlanetKey)) {
+    md.push(planetLib[externalPlanetKey]);
+    md.push('');
+  } else {
+    md.push(`*(نفس الكوكب "${calc.external.planet}" معروض سابقاً)*`);
+    md.push('');
+  }
+
+  md.push(`### طبع البرج الخارجي: ${calc.external.element}`);
+  md.push('');
+  if (firstUse(usedElements, externalElementKey)) {
+    md.push(elementLib[externalElementKey]);
+    md.push('');
+  } else {
+    md.push(`*(نفس الطبع "${calc.external.element}" معروض سابقاً)*`);
+    md.push('');
+  }
+  md.push('---');
+  md.push('');
+
+  md.push('## الطبع المكتسب من الحروف');
+  md.push('');
+  md.push(introBlock('acquiredElement'));
+  md.push('');
+  md.push(`### ${calc.acquiredElement}`);
+  md.push('');
+  if (firstUse(usedElements, acquiredElementKey)) {
+    md.push(elementLib[acquiredElementKey]);
+    md.push('');
+  } else {
+    md.push(`*(نفس الطبع "${calc.acquiredElement}" معروض سابقاً)*`);
+    md.push('');
+  }
+  md.push('---');
+  md.push('');
+
+  md.push('## البواقي التفصيلية');
+  md.push('');
+  md.push(introBlock('remainders'));
+  md.push('');
+
+  md.push(`### الباقي على 9: ${calc.remainders.on9}`);
+  md.push('');
+  md.push(r9Text);
+  md.push('');
+
+  md.push(`### الباقي على 7: ${calc.remainders.on7}`);
+  md.push('');
+  md.push(r7Text);
+  md.push('');
+
+  md.push(`### الباقي على 28: ${calc.remainders.on28}`);
+  md.push('');
+  md.push(r28Text);
+  md.push('');
+  md.push('---');
+  md.push('');
+
+  md.push(`## رنين الجذر مع نفسه: ${root} + ${root}`);
+  md.push('');
+  md.push(introBlock('resonance'));
+  md.push('');
+  md.push(resonanceText);
+  md.push('');
+  md.push('---');
+  md.push('');
+
+  md.push('## العلاقات والتفاعلات');
+  md.push('');
+  md.push(introBlock('relationships'));
+  md.push('');
+  md.push('### العلاقات المعلنة');
+  md.push('');
+  md.push(bulletList([
+    'مع الجذر 1: يمنحه توازناً.',
+    'مع الجذر 3: يشجعه على التعبير.',
+    'مع الجذر 6: ينتج احتواءً قوياً.',
+    'مع الجذر 8: يحتاج إلى ضبط حتى لا يتحول إلى تبعية.',
+    'التوافق المعلن: 4، 6، 9.',
+    'التعارض المعلن: 1، 5، 8.',
+  ]));
+  md.push('');
+  md.push('---');
+  md.push('');
+
+  md.push('## العلاقة بين الطبقات');
+  md.push('');
+  md.push(introBlock('layerRelations'));
+  md.push('');
+  md.push(markdownTable(['العلاقة', 'المعنى'], [
+    ['الجذر ↔ الكوكب', 'الجذر يحتاج إلى محرك'],
+    ['الكوكب ↔ البرج', 'المحرك يحتاج إلى أسلوب'],
+    ['البرج ↔ البيت', 'الأسلوب يحتاج إلى مجال'],
+    ['الطبع ↔ الحرف', 'المادة الحرفية تحدد المزاج'],
+    ['الانحياز ↔ الجذر', 'يميز النسخ المتشابهة'],
+    ['الظل ↔ الخلل', 'يحدد نقطة الانهيار'],
+    ['التعويض ↔ التوازن', 'يعيد النظام'],
+  ]));
+  md.push('');
+  md.push('---');
+  md.push('');
+
+  md.push('## الوفق البسيط — مربع Lo Shu');
+  md.push('');
+  md.push(introBlock('wafq'));
+  md.push('');
+  md.push('```');
+  md.push('┌─────────┬─────────┬─────────┐');
+  md.push(`│    ${wafqGrid[0][0]}    │    ${wafqGrid[0][1]}    │    ${wafqGrid[0][2]}    │  = 15`);
+  md.push('├─────────┼─────────┼─────────┤');
+  md.push(`│    ${wafqGrid[1][0]}    │    ${wafqGrid[1][1]}    │    ${wafqGrid[1][2]}    │  = 15`);
+  md.push('├─────────┼─────────┼─────────┤');
+  md.push(`│    ${wafqGrid[2][0]}    │    ${wafqGrid[2][1]}    │    ${wafqGrid[2][2]}    │  = 15`);
+  md.push('└─────────┴─────────┴─────────┘');
+  md.push('      15        15        15');
+  md.push('```');
+  md.push('');
+  md.push('---');
+  md.push('');
+
+  md.push('## التوصية العامة');
+  md.push('');
+  md.push(introBlock('recommendation'));
+  md.push('');
+  md.push(`**الترياق المقترح:** ${remedyText}`);
+  md.push('');
+  md.push('---');
+  md.push('');
+
+  md.push('## الحكم النهائي');
+  md.push('');
+  md.push(introBlock('finalJudgement'));
+  md.push('');
+  md.push('التركيب المقدم يجمع بين:');
+  md.push('');
+  md.push(bulletList([
+    `جذر داخلي ${calc.internal.sign} ذو طابع ${calc.internal.element}.`,
+    `محرك ${calc.internal.planet} يبحث عن الأمان والاحتواء.`,
+    `برج ${calc.internal.sign} يرتبط بالجذور والعائلة.`,
+    `واجهة خارجية ${calc.external.sign} / ${calc.external.planet} تميل إلى العمق والتحول.`,
+    `طبع مكتسب ${calc.acquiredElement} يدفع إلى المبادرة.`,
+  ]));
+  md.push('');
+  md.push('---');
+  md.push('');
+
+  // ═══════════════════════════════════════════════════════════
+  // ⭐ القسم الطبي
+  // ═══════════════════════════════════════════════════════════
+  try {
+    const medicalSection = buildMedicalSection(root, root);
+    if (medicalSection && medicalSection.length > 10) {
+      md.push(`## 🏥 الموسوعة الطبية الكاملة للجذر ${root}`);
+      md.push('');
+      md.push('```');
+      md.push(medicalSection);
+      md.push('```');
+      md.push('');
+      md.push('---');
+      md.push('');
+    }
+  } catch (e: any) {
+    console.warn('⚠️ فشل القسم الطبي:', e?.message);
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // ⭐ الموسوعة الكبيرة
+  // ═══════════════════════════════════════════════════════════
+  try {
+    const encyclopediaSection = getEncyclopediaRootSection(root);
+    if (encyclopediaSection && encyclopediaSection.length > 50) {
+      md.push(`## 📚 الموسوعة الكاملة — نصوص إضافية من المرجع الأصلي`);
+      md.push('');
+      md.push('```');
+      md.push(encyclopediaSection);
+      md.push('```');
+      md.push('');
+      md.push('---');
+      md.push('');
+    }
+  } catch (e: any) {
+    console.warn('⚠️ فشل قسم الموسوعة:', e?.message);
+  }
+
+  md.push('🔗 **نظام الجفر الطبي الذكي — الإصدار 3.0**');
+  md.push('');
+  md.push(`*تاريخ الإصدار: ${dateArabic}*`);
+
+  return {
+    id: reportId,
+    name,
+    root,
+    rootTitle,
+    markdown: md.join('\n'),
+    data: {
+      calculation: calc,
+      internal: calc.internal,
+      external: calc.external,
+      acquiredElement: calc.acquiredElement,
+    },
+  };
+};

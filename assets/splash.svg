@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a1628"/>
+      <stop offset="50%" stop-color="#1a3b5d"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+
+    <radialGradient id="glow" cx="50%" cy="40%" r="40%">
+      <stop offset="0%" stop-color="#d4af37" stop-opacity="0.12"/>
+      <stop offset="60%" stop-color="#d4af37" stop-opacity="0.03"/>
+      <stop offset="100%" stop-color="#d4af37" stop-opacity="0"/>
+    </radialGradient>
+
+    <pattern id="grid" width="150" height="150" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="150" y2="150" stroke="#d4af37" stroke-width="1" stroke-opacity="0.04"/>
+    </pattern>
+  </defs>
+
+  <!-- الخلفية المتدرجة -->
+  <rect width="1080" height="1920" fill="url(#bgGrad)"/>
+
+  <!-- شبكة هندسية خفيفة -->
+  <rect width="1080" height="1920" fill="url(#grid)"/>
+
+  <!-- توهج مركزي -->
+  <rect width="1080" height="1920" fill="url(#glow)"/>
+
+  <!-- ═══ الرمز المركزي: مرآة + ميزان + 9 نقاط ═══ -->
+  <g transform="translate(540, 700)">
+    <!-- دائرة المرآة الخارجية -->
+    <circle r="220" fill="none" stroke="#d4af37" stroke-width="6"/>
+    <circle r="187" fill="none" stroke="#d4af37" stroke-width="2"/>
+
+    <!-- الميزان -->
+    <!-- العمود الرأسي -->
+    <line x1="0" y1="-80" x2="0" y2="56" stroke="#d4af37" stroke-width="8" stroke-linecap="round"/>
+    <!-- القاعدة -->
+    <line x1="-32" y1="56" x2="32" y2="56" stroke="#d4af37" stroke-width="8" stroke-linecap="round"/>
+    <!-- الذراع الأفقي -->
+    <line x1="-56" y1="-24" x2="56" y2="-24" stroke="#d4af37" stroke-width="8" stroke-linecap="round"/>
+    <!-- الخيوط -->
+    <line x1="-56" y1="-24" x2="-56" y2="-8" stroke="#d4af37" stroke-width="4"/>
+    <line x1="56" y1="-24" x2="56" y2="-8" stroke="#d4af37" stroke-width="4"/>
+    <!-- الكفتان -->
+    <path d="M -76 -8 A 20 20 0 0 0 -36 -8" fill="none" stroke="#d4af37" stroke-width="6"/>
+    <path d="M 36 -8 A 20 20 0 0 0 76 -8" fill="none" stroke="#d4af37" stroke-width="6"/>
+
+    <!-- 9 نقاط (الجذور التسعة) -->
+    <circle r="9" fill="#d4af37"/>
+    <circle cx="180" cy="0" r="6" fill="#d4af37"/>
+    <circle cx="127" cy="127" r="6" fill="#d4af37"/>
+    <circle cx="0" cy="180" r="6" fill="#d4af37"/>
+    <circle cx="-127" cy="127" r="6" fill="#d4af37"/>
+    <circle cx="-180" cy="0" r="6" fill="#d4af37"/>
+    <circle cx="-127" cy="-127" r="6" fill="#d4af37"/>
+    <circle cx="0" cy="-180" r="6" fill="#d4af37"/>
+    <circle cx="127" cy="-127" r="6" fill="#d4af37"/>
+  </g>
+
+  <!-- خط فاصل علوي -->
+  <line x1="240" y1="1050" x2="840" y2="1050" stroke="#d4af37" stroke-width="2"/>
+
+  <!-- العنوان الرئيسي -->
+  <text x="540" y="1140" 
+        font-family="Cairo, Amiri, sans-serif" 
+        font-size="68" font-weight="bold"
+        fill="#d4af37" text-anchor="middle" direction="rtl">
+    نظام الجفر الطبي الذكي
+  </text>
+
+  <!-- خط فاصل سفلي -->
+  <line x1="240" y1="1180" x2="840" y2="1180" stroke="#d4af37" stroke-width="2"/>
+
+  <!-- العنوان الفرعي -->
+  <text x="540" y="1250" 
+        font-family="Cairo, Amiri, sans-serif" 
+        font-size="38" font-style="italic"
+        fill="#c0c0c0" text-anchor="middle" direction="rtl">
+    ميزان المرآة الذكي
+  </text>
+
+  <!-- الشعار التسويقي -->
+  <text x="540" y="1360" 
+        font-family="Cairo, Amiri, sans-serif" 
+        font-size="26" font-style="italic"
+        fill="#ecf0f1" fill-opacity="0.85"
+        text-anchor="middle" direction="rtl">
+    «حيث تنعكس روحك على ميزان دقيق»
+  </text>
+
+  <!-- خط رفيع قبل الإصدار -->
+  <line x1="440" y1="1760" x2="640" y2="1760" stroke="#7f8c8d" stroke-width="1"/>
+
+  <!-- الإصدار -->
+  <text x="540" y="1800" 
+        font-family="Cairo, Amiri, sans-serif" 
+        font-size="20"
+        fill="#7f8c8d" text-anchor="middle" direction="rtl">
+    الإصدار 2.0 — 2026
+  </text>
+</svg>

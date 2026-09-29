@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="iconBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#1a3b5d"/>
+      <stop offset="100%" stop-color="#0a1628"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#iconBg)" rx="180"/>
+
+  <!-- المرآة + الميزان + 9 نقاط -->
+  <g transform="translate(512, 512)">
+    <circle r="320" fill="none" stroke="#d4af37" stroke-width="16"/>
+    <circle r="272" fill="none" stroke="#d4af37" stroke-width="5"/>
+
+    <!-- الميزان -->
+    <line x1="0" y1="-120" x2="0" y2="84" stroke="#d4af37" stroke-width="20" stroke-linecap="round"/>
+    <line x1="-48" y1="84" x2="48" y2="84" stroke="#d4af37" stroke-width="20" stroke-linecap="round"/>
+    <line x1="-84" y1="-36" x2="84" y2="-36" stroke="#d4af37" stroke-width="20" stroke-linecap="round"/>
+    <line x1="-84" y1="-36" x2="-84" y2="-12" stroke="#d4af37" stroke-width="10"/>
+    <line x1="84" y1="-36" x2="84" y2="-12" stroke="#d4af37" stroke-width="10"/>
+    <path d="M -114 -12 A 30 30 0 0 0 -54 -12" fill="none" stroke="#d4af37" stroke-width="14"/>
+    <path d="M 54 -12 A 30 30 0 0 0 114 -12" fill="none" stroke="#d4af37" stroke-width="14"/>
+
+    <!-- 9 نقاط -->
+    <circle r="14" fill="#d4af37"/>
+    <circle cx="240" cy="0" r="10" fill="#d4af37"/>
+    <circle cx="170" cy="170" r="10" fill="#d4af37"/>
+    <circle cx="0" cy="240" r="10" fill="#d4af37"/>
+    <circle cx="-170" cy="170" r="10" fill="#d4af37"/>
+    <circle cx="-240" cy="0" r="10" fill="#d4af37"/>
+    <circle cx="-170" cy="-170" r="10" fill="#d4af37"/>
+    <circle cx="0" cy="-240" r="10" fill="#d4af37"/>
+    <circle cx="170" cy="-170" r="10" fill="#d4af37"/>
+  </g>
+</svg>

@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "الجفر الطبي الذكي",
+    "slug": "jafr-medical-smart",
+    "version": "3.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "jafrmedical",
+    "primaryColor": "#d4af37",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jafr.medical.smart.v3",
+      "buildNumber": "3"
+    },
+    "android": {
+      "package": "com.jafr.medical.smart.v3",
+      "versionCode": 3,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0a1628"
+      },
+      "permissions": []
+    },
+    "web": {
+      "favicon": "./assets/icon.png",
+      "name": "نظام الجفر الطبي الذكي"
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "resizeMode": "cover",
+          "backgroundColor": "#0a1628"
+        }
+      ],
+      "expo-sharing"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "2ec2fcee-238f-4cdc-8ae5-b6e24a2037d6"
+      }
+    }
+  }
+}

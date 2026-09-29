@@ -1,0 +1,195 @@
+===== package.json =====
+{
+  "name": "jafr-medical-smart",
+  "version": "2.0.0",
+  "main": "index.ts",
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-navigation/bottom-tabs": "^7.18.18",
+    "@react-navigation/native": "^7.3.18",
+    "@react-navigation/stack": "^7.10.24",
+    "expo": "~57.0.21",
+    "expo-clipboard": "~57.0.1",
+    "expo-dev-client": "~57.0.19",
+    "expo-file-system": "~57.0.6",
+    "expo-sharing": "~57.0.18",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-gesture-handler": "~2.32.0",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-web": "^0.21.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@types/react": "~19.2.2",
+    "babel-preset-expo": "~57.0.0",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "private": true,
+  "description": "نظام الجفر الطبي الذكي — ميزان المرآة الذكي"
+}
+
+===== tsconfig.json =====
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "commonjs",
+    "strict": true,
+    "jsx": "react-native",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "extends": "expo/tsconfig.base"
+}
+
+===== app.json =====
+{
+  "expo": {
+    "name": "نظام الجفر الطبي الذكي",
+    "slug": "jafr-medical-smart",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "jafrmedical",
+    "primaryColor": "#d4af37",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#0a1628"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jafr.medical.smart",
+      "buildNumber": "2"
+    },
+    "android": {
+      "package": "com.jafr.medical.smart",
+      "versionCode": 2,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0a1628"
+      },
+      "permissions": []
+    },
+    "web": {
+      "favicon": "./assets/icon.png",
+      "name": "نظام الجفر الطبي الذكي"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2ec2fcee-238f-4cdc-8ae5-b6e24a2037d6"
+      }
+    }
+  }
+}
+
+===== App.tsx =====
+import React, { useEffect, useState } from 'react';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { KnowledgeBase, importAll } from './src/kb';
+import HomeScreen from './src/screens/HomeScreen';
+import ReportScreen from './src/screens/ReportScreen';
+import HistoryScreen from './src/screens/HistoryScreen';
+import MedicalScreen from './src/screens/MedicalScreen';
+import SearchScreen from './src/screens/SearchScreen';
+import EntityDetailScreen from './src/screens/EntityDetailScreen';
+
+const Stack = createStackNavigator();
+
+export default function App() {
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState('جارٍ التهيئة...');
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        setStatus('جارٍ تهيئة قاعدة المعرفة...');
+        await KnowledgeBase.initialize();
+
+        // إذا كانت فارغة، استورد كل البيانات
+        const stats = KnowledgeBase.stats();
+        if (stats.totalEntities === 0) {
+          setStatus('جارٍ استيراد البيانات...');
+          await importAll();
+        }
+
+        setReady(true);
+      } catch (e: any) {
+        setError(e?.message || 'فشل التهيئة');
+      }
+    };
+    init();
+  }, []);
+
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.errorText}>❌ خطأ في التهيئة</Text>
+        <Text style={styles.errorDetail}>{error}</Text>
+      </View>
+    );
+  }
+
+  if (!ready) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#d4af37" />
+        <Text style={styles.loadingText}>{status}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator
+        initialRouteName="Home"
+        screenOptions={{
+          headerStyle: { backgroundColor: '#1a3b5d' },
+          headerTintColor: '#ffffff',
+          headerTitleStyle: { fontWeight: 'bold' },
+          headerTitleAlign: 'center',
+        }}
+      >
+        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'نظام الجفر الطبي الذكي' }} />
+        <Stack.Screen name="Report" component={ReportScreen} options={{ title: 'التقرير' }} />
+        <Stack.Screen name="History" component={HistoryScreen} options={{ title: 'السجل' }} />
+        <Stack.Screen name="Medical" component={MedicalScreen} options={{ title: 'الموسوعة الطبية' }} />
+        <Stack.Screen name="Search" component={SearchScreen} options={{ title: 'البحث في المعرفة' }} />
+        <Stack.Screen name="EntityDetail" component={EntityDetailScreen} options={{ title: 'تفاصيل الكيان' }} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0a1628', padding: 20 },
+  loadingText: { marginTop: 15, fontSize: 16, color: '#d4af37', fontWeight: 'bold' },
+  errorText: { fontSize: 20, color: '#e74c3c', marginBottom: 10, fontWeight: 'bold' },
+  errorDetail: { fontSize: 14, color: '#c0c0c0', textAlign: 'center' },
+});
+
+===== .easignore =====
