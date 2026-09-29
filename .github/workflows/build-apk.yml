@@ -1,4 +1,4 @@
-name: Build APK
+name: Full Build APK from Raw Text
 
 on:
   push:
@@ -24,68 +24,53 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Android SDK (fixed)
+      - name: Step 1 - Extract data from master.txt
+        run: |
+          echo "📖 استخراج البيانات من master.txt..."
+          ls -lh data-source/
+          node scripts/extract-from-master.js
+          echo "✅ تم إنشاء JSON في src/data/structured/"
+
+      - name: Verify extracted data
+        run: |
+          ls -la src/data/structured/
+          echo "عدد الملفات:"
+          ls src/data/structured/*.json | wc -l
+
+      - name: Setup Android SDK (manual, no 'tools' bug)
         run: |
           set -e
           SDK_ROOT=$ANDROID_SDK_ROOT
           if [ -z "$SDK_ROOT" ]; then SDK_ROOT=$ANDROID_HOME; fi
           if [ -z "$SDK_ROOT" ]; then SDK_ROOT=/usr/local/lib/android/sdk; fi
-
           echo "SDK_ROOT=$SDK_ROOT"
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-
-          # ابحث عن sdkmanager
-          SDKMGR=$(find "$SDK_ROOT" -name sdkmanager -type f 2>/dev/null | head -1)
-          if [ -z "$SDKMGR" ]; then
-            echo "sdkmanager not found, installing commandline-tools"
-            mkdir -p "$SDK_ROOT/cmdline-tools"
-            cd "$SDK_ROOT"
-            wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
-            unzip -q cmdline-tools.zip
-            mkdir -p cmdline-tools/latest
-            mv cmdline-tools/bin cmdline-tools/lib cmdline-tools/NOTICE.txt cmdline-tools/source.properties cmdline-tools/latest/ 2>/dev/null || true
-            rm -f cmdline-tools.zip
-            SDKMGR="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
-          fi
-
-          echo "Using sdkmanager: $SDKMGR"
-          chmod +x "$SDKMGR" 2>/dev/null || true
-
-          # قبول التراخيص
-          yes | "$SDKMGR" --licenses > /dev/null 2>&1 || true
-
-          # تثبيت مكونات مطلوبة (بدون 'tools' القديم)
-          yes | "$SDKMGR" --install "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;27.1.12297006" 2>&1 | tail -20 || true
-
-          # تصدير SDK_ROOT للخطوات التالية
           echo "SDK_ROOT=$SDK_ROOT" >> $GITHUB_ENV
+
+          SDKMGR=$(find "$SDK_ROOT" -name sdkmanager -type f 2>/dev/null | head -1)
+          echo "SDKMGR=$SDKMGR"
+
+          yes | "$SDKMGR" --licenses > /dev/null 2>&1 || true
+          yes | "$SDKMGR" --install "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;27.1.12297006" 2>&1 | tail -10 || true
+
           echo "$SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$SDK_ROOT/platform-tools" >> $GITHUB_PATH
-
-      - name: Verify environment
-        run: |
-          echo "=== Node ==="
-          node --version
-          echo "=== Java ==="
-          java -version
-          echo "=== SDK ==="
-          ls $SDK_ROOT 2>/dev/null || ls $ANDROID_SDK_ROOT
-          echo "=== NDK ==="
-          ls $SDK_ROOT/ndk 2>/dev/null || echo "NDK not yet installed"
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps --no-audit --no-fund
 
-      - name: Generate native code
-        run: npx expo prebuild -p android --clean 2>&1 | tee prebuild.log
+      - name: Step 2 - Generate native code
+        run: |
+          echo "🔧 توليد كود Android الأصلي..."
+          npx expo prebuild -p android --clean 2>&1 | tee prebuild.log
 
-      - name: Build APK
+      - name: Step 3 - Build APK
         working-directory: android
         env:
           ANDROID_HOME: ${{ env.SDK_ROOT }}
           ANDROID_SDK_ROOT: ${{ env.SDK_ROOT }}
-        run: ./gradlew assembleRelease --no-daemon 2>&1 | tee ../gradle-build.log
+        run: |
+          echo "🏗️ بناء APK..."
+          ./gradlew assembleRelease --no-daemon 2>&1 | tee ../gradle-build.log
 
       - name: Upload logs
         if: always()
@@ -96,6 +81,14 @@ jobs:
             prebuild.log
             gradle-build.log
           retention-days: 7
+
+      - name: Upload extracted JSON (for inspection)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: extracted-json
+          path: src/data/structured/*.json
+          retention-days: 30
 
       - name: Upload APK
         if: success()

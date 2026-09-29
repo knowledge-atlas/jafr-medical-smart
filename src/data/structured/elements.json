@@ -1,0 +1,50 @@
+[
+  {
+    "id": "نار",
+    "name": "نار",
+    "number": 1,
+    "text": "الطبع الناري",
+    "fullDescription": "الطبع الناري",
+    "sourceFile": "master.txt",
+    "found": true,
+    "semantic": {
+      "identity": "نار"
+    }
+  },
+  {
+    "id": "تراب",
+    "name": "تراب",
+    "number": 2,
+    "text": "الطبع الترابي",
+    "fullDescription": "الطبع الترابي",
+    "sourceFile": "master.txt",
+    "found": true,
+    "semantic": {
+      "identity": "تراب"
+    }
+  },
+  {
+    "id": "هواء",
+    "name": "هواء",
+    "number": 3,
+    "text": "الطبع الهوائي",
+    "fullDescription": "الطبع الهوائي",
+    "sourceFile": "master.txt",
+    "found": true,
+    "semantic": {
+      "identity": "هواء"
+    }
+  },
+  {
+    "id": "ماء",
+    "name": "ماء",
+    "number": 4,
+    "text": "الطبع المائي",
+    "fullDescription": "الطبع المائي",
+    "sourceFile": "master.txt",
+    "found": true,
+    "semantic": {
+      "identity": "ماء"
+    }
+  }
+]
