@@ -1,10 +1,22 @@
-import { AnalysisResult } from '../application/use-cases/AnalyzeNameUseCase';
+import { AnalysisResult, NameAnalysisLayers } from '../application/use-cases/AnalyzeNameUseCase';
 import { ContextMode } from './ContextAwarePrompter';
 
 function extractNumber(id?: string): number | null {
   if (!id) return null;
   const m = id.match(/(\d+)/);
   return m ? parseInt(m[1], 10) : null;
+}
+
+function humanizeLayer(id: string | undefined, kind: string): string {
+  const n = extractNumber(id);
+  const labels: Record<string, string> = {
+    root: 'الجذر',
+    planet: 'الكوكب',
+    sign: 'البرج',
+    house: 'البيت',
+  };
+  const label = labels[kind] ?? kind;
+  return n !== null ? `${label} ${n}` : (id ?? label);
 }
 
 const ELEMENT_METAPHOR: Record<string, string> = {
@@ -14,50 +26,41 @@ const ELEMENT_METAPHOR: Record<string, string> = {
   مائي: 'نهر عميق يقرأ ما وراء الظاهر',
 };
 
+const MODE_OPENING: Record<ContextMode, (name: string, metaphor: string) => string> = {
+  personal: (n, m) => `اسم "${n}" يحمل في طبعه ${m}.`,
+  marital: (n, m) => `عند قراءة "${n}" في سياق التوافق، يظهر ${m}.`,
+  professional: (n, m) => `في السياق المهني، يُظهر "${n}" ${m}.`,
+  commercial: (n, m) => `في السياق التجاري، يوحي "${n}" ب${m}.`,
+};
+
 export class NarrativeWeaver {
   weave(analysis: AnalysisResult, mode: ContextMode): string {
     if (analysis.status !== 'full' || !analysis.layers) {
       return analysis.report;
     }
 
-    const L = analysis.layers;
-    const rootNum = extractNumber(L.root);
-    const planetNum = extractNumber(L.planet);
-    const signNum = extractNumber(L.sign);
+    const L: NameAnalysisLayers = analysis.layers;
     const pct = (analysis.confidence.overall * 100).toFixed(0);
-
     const element = L.element ?? '';
     const metaphor = ELEMENT_METAPHOR[element] ?? 'نمط متميز';
 
-    const intro =
-      mode === 'personal'
-        ? `اسم "${analysis.name}" يحمل في طبعه ${metaphor}.`
-        : mode === 'marital'
-        ? `عند قراءة "${analysis.name}" في سياق التوافق، يظهر ${metaphor}.`
-        : mode === 'professional'
-        ? `في السياق المهني، يُظهر "${analysis.name}" ${metaphor}.`
-        : `في السياق التجاري، يوحي "${analysis.name}" ب${metaphor}.`;
+    const opening = MODE_OPENING[mode](analysis.name, metaphor);
 
-    const layersLine = [
-      rootNum !== null ? `الجذر ${rootNum}` : null,
-      planetNum !== null ? `الكوكب ${planetNum}` : null,
-      signNum !== null ? `البرج ${signNum}` : null,
-      element ? `الطبع ${element}` : null,
-    ]
-      .filter(Boolean)
-      .join('، ');
+    const layerBits: string[] = [];
+    if (L.root) layerBits.push(humanizeLayer(L.root, 'root'));
+    if (L.planet) layerBits.push(`الكوكب ${L.planet}`);
+    if (L.sign) layerBits.push(`البرج ${L.sign}`);
+    if (element) layerBits.push(`الطبع ${element}`);
 
-    const body = layersLine
-      ? `تتشكل هذه القراءة من تقاطع: ${layersLine}.`
+    const body = layerBits.length > 0
+      ? `تتشكل هذه القراءة من تقاطع: ${layerBits.join('، ')}.`
       : 'الطبقات المتاحة محدودة، لذا القراءة تقديرية.';
 
     const closing =
       'هذا تحليل نمطي لا حتمي، ويبقى الإنسان أكبر من أي نمط.';
 
     return [
-      `# تحليل ${analysis.name}`,
-      '',
-      intro,
+      opening,
       '',
       body,
       '',

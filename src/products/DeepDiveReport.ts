@@ -12,6 +12,10 @@ export interface DeepDiveOutput {
   wordCount: number;
 }
 
+export interface DeepDiveOptions {
+  richMarkdown?: string;
+}
+
 const SECTION_META: Array<{ id: string; title: string; icon: string; weight: number }> = [
   { id: 'executive', title: 'الملخص التنفيذي', icon: '📋', weight: 2 },
   { id: 'identity', title: 'الهوية الاسمية', icon: '🪪', weight: 1 },
@@ -20,10 +24,11 @@ const SECTION_META: Array<{ id: string; title: string; icon: string; weight: num
   { id: 'strengths', title: 'نقاط القوة', icon: '💪', weight: 2 },
   { id: 'challenges', title: 'التحديات', icon: '⚠️', weight: 2 },
   { id: 'shadow', title: 'الظل والجوانب الخفية', icon: '🌑', weight: 1 },
+  { id: 'record', title: 'بيانات السجل', icon: '📜', weight: 1 },
+  { id: 'encyclopedia', title: 'الموسوعة الكاملة — الطبقات والرنين والطب', icon: '📚', weight: 3 },
   { id: 'context', title: 'القراءة السياقية', icon: '🎯', weight: 2 },
   { id: 'recommendations', title: 'توصيات عملية', icon: '✅', weight: 2 },
   { id: 'smart', title: 'أهداف S.M.A.R.T', icon: '🎓', weight: 1 },
-  { id: 'encyclopedia', title: 'الموسوعة الكاملة — الطبقات والرنين والطب', icon: '📚', weight: 3 },
   { id: 'sources', title: 'المصادر والمراجع', icon: '📖', weight: 1 },
   { id: 'disclaimer', title: 'إخلاء مسؤولية', icon: '⚖️', weight: 1 },
   { id: 'feedback', title: 'التغذية الراجعة', icon: '💬', weight: 1 },
@@ -37,7 +42,7 @@ const MODE_LABEL: Record<ContextMode, string> = {
   commercial: 'تشخيص تجاري',
 };
 
-const PRODUCT_META = { productName: 'التقرير العميق', version: '1.1.0' };
+const PRODUCT_META = { productName: 'التقرير العميق', version: '1.2.0' };
 
 const LAYER_LABELS: Record<string, string> = {
   root: 'الجذر',
@@ -55,9 +60,15 @@ function humanizeLayer(id?: string, kind?: string): string {
   return m ? `${label} ${m[1]}` : s;
 }
 
-export interface DeepDiveOptions {
-  /** markdown الغني من buildStructuredReport (الموسوعة الكاملة) */
-  richMarkdown?: string;
+/**
+ * تُخفّض مستويات H في Markdown المُدمَج لتفادي كسر الشجرة البنيوية
+ * (H1 يصبح H3، H2 يصبح H4، إلخ)
+ */
+function normalizeMarkdownLevels(md: string, offset: number = 2): string {
+  return md.replace(/^(#{1,5})\s/gm, (_, hashes: string) => {
+    const newLevel = Math.min(6, hashes.length + offset);
+    return '#'.repeat(newLevel) + ' ';
+  });
 }
 
 export class DeepDiveReport {
@@ -97,19 +108,39 @@ export class DeepDiveReport {
     const L: NameAnalysisLayers = analysis.layers ?? {};
     const pct = (analysis.confidence.overall * 100).toFixed(0);
     const narrative = this.weaver.weave(analysis, mode);
+    const now = new Date();
+    const richNormalized = normalizeMarkdownLevels(richMarkdown, 2);
 
     const contentMap: Record<string, string> = {
       executive: narrative,
-      identity: `الاسم الأصلي: **${analysis.name}** — الوضع السياقي: ${MODE_LABEL[mode]}.`,
-      confidence: `**${pct}%** — تصنيف: ${analysis.confidence.level}.\n\n- جودة المدخل: ${(analysis.confidence.dimensions.inputQuality * 100).toFixed(0)}%\n- اكتمال البيانات: ${(analysis.confidence.dimensions.dataCompleteness * 100).toFixed(0)}%\n- اتساق الطبقات: ${(analysis.confidence.dimensions.layerConsistency * 100).toFixed(0)}%`,
-      resonance: this.resonanceRead(analysis),
+      identity: `- **الاسم:** ${analysis.name}\n- **الوضع السياقي:** ${MODE_LABEL[mode]}\n- **المُنتج:** v${PRODUCT_META.version}`,
+      confidence: [
+        `**النتيجة الإجمالية:** ${pct}% — تصنيف: **${analysis.confidence.level}**`,
+        '',
+        '**المحاور الثلاثة:**',
+        `- جودة المدخل: ${(analysis.confidence.dimensions.inputQuality * 100).toFixed(0)}%`,
+        `- اكتمال البيانات: ${(analysis.confidence.dimensions.dataCompleteness * 100).toFixed(0)}%`,
+        `- اتساق الطبقات: ${(analysis.confidence.dimensions.layerConsistency * 100).toFixed(0)}%`,
+      ].join('\n'),
+      resonance: this.resonanceRead(L, analysis),
       strengths: this.strengthsRead(L),
       challenges: this.challengesRead(L),
-      shadow: this.shadowRead(L),
+      shadow: this.shadowRead(L, analysis),
+      record: [
+        `- **الاسم:** ${analysis.name}`,
+        `- **الجذر:** ${humanizeLayer(L.root, 'root')}`,
+        `- **الكوكب:** ${L.planet ?? '—'}`,
+        `- **البرج:** ${L.sign ?? '—'}`,
+        `- **البيت:** ${humanizeLayer(L.house, 'house')}`,
+        `- **الطبع:** ${L.element ?? '—'}`,
+        `- **الوضع السياقي:** ${MODE_LABEL[mode]}`,
+        `- **التاريخ:** ${now.toLocaleString('ar-EG')}`,
+        `- **إصدار النظام:** ${PRODUCT_META.version}`,
+      ].join('\n'),
+      encyclopedia: richNormalized || 'لم يتم تحميل الموسوعة الكاملة لهذا الاسم.',
       context: this.contextRead(mode),
       recommendations: this.recommendationsRead(mode),
       smart: this.smartRead(mode),
-      encyclopedia: richMarkdown || 'لم يتم تحميل الموسوعة الكاملة لهذا الاسم.',
       sources: [
         '- `master.txt` — الموسوعة الأم (467 KB)',
         '- الجذور الكاملة (9 جذور)',
@@ -125,8 +156,8 @@ export class DeepDiveReport {
         `- المنتج: ${PRODUCT_META.productName} v${PRODUCT_META.version}`,
         `- الوضع: ${MODE_LABEL[mode]}`,
         `- الوضع دون اتصال: نعم`,
-        `- التاريخ: ${new Date().toLocaleString('ar-EG')}`,
-        `- عدد الكلمات: ${richMarkdown.split(/\s+/).filter(Boolean).length}`,
+        `- التاريخ: ${now.toLocaleString('ar-EG')}`,
+        `- عدد كلمات الموسوعة: ${richMarkdown.split(/\s+/).filter(Boolean).length}`,
       ].join('\n'),
     };
 
@@ -139,13 +170,30 @@ export class DeepDiveReport {
     }));
   }
 
-  private resonanceRead(a: AnalysisResult): string {
-    const L: NameAnalysisLayers = a.layers ?? {};
-    const parts: string[] = [];
-    if (L.root && L.planet) parts.push(`**${humanizeLayer(L.root, 'root')}** مع كوكب **${L.planet}** — يمنح الرنين بين الجوهر والحدس.`);
-    if (L.sign && L.element) parts.push(`**برج ${L.sign}** مع الطبع **${L.element}** — ينسّق الظاهر مع الباطن.`);
-    if (L.house && L.root) parts.push(`**${humanizeLayer(L.house, 'house')}** يحدد مسرح التطبيق العملي لهذا الجذر.`);
-    return parts.length > 0 ? parts.map((p) => `- ${p}`).join('\n') : 'لا توجد علاقات رنين واضحة.';
+  private resonanceRead(L: NameAnalysisLayers, a: AnalysisResult): string {
+    const items: string[] = [];
+
+    if (L.root && L.planet) {
+      items.push(`- **${humanizeLayer(L.root, 'root')} ↔ ${L.planet}**: يشكّلان معاً محور الجوهر — الجذر يمنح البنية، والكوكب يمنح المحرك العاطفي.`);
+    }
+    if (L.root && L.sign) {
+      items.push(`- **${humanizeLayer(L.root, 'root')} ↔ ${L.sign}**: تناغم بين النواة والأسلوب الخارجي.`);
+    }
+    if (L.sign && L.element) {
+      items.push(`- **${L.sign} ↔ ${L.element}**: يربط الظاهر بالطبع الأساسي — قد يكون اتفاقاً أو توتّراً.`);
+    }
+    if (L.house && L.root) {
+      items.push(`- **${humanizeLayer(L.house, 'house')} ↔ ${humanizeLayer(L.root, 'root')}**: يحدد مسرح التطبيق العملي للجذر.`);
+    }
+
+    const r = a.layers?.root;
+    if (r) {
+      items.push(`- **${humanizeLayer(r, 'root')} ↔ ذاته**: عند التضاعف، تتضخم قوته وظلّه معاً.`);
+    }
+
+    return items.length > 0
+      ? items.join('\n')
+      : 'لا توجد علاقات رنين واضحة.';
   }
 
   private strengthsRead(L: NameAnalysisLayers): string {
@@ -195,14 +243,27 @@ export class DeepDiveReport {
     return items.length > 0 ? items.map((x) => `- ${x}`).join('\n') : '- لا توجد تحديات مرصودة.';
   }
 
-  private shadowRead(L: NameAnalysisLayers): string {
-    const lines: string[] = [
-      'الجوانب الخفية تظهر عند **تناقض الطبقات** — حين يختلف الطبع المكتسب عن الطبع الداخلي، أو حين يشير الكوكب الداخلي إلى اتجاه يخالف البرج الطالع.',
-    ];
-    if (L.element && L.root) {
-      lines.push('');
-      lines.push(`في حالة "${L.element}" مع "${humanizeLayer(L.root, 'root')}"، الظل يظهر في صورة: **شد وجذب داخلي** بين رغبة الاستقرار ورغبة الانطلاق.`);
+  private shadowRead(L: NameAnalysisLayers, a: AnalysisResult): string {
+    const lines: string[] = [];
+    lines.push('**القاعدة:** الظل يظهر عند **تناقض الطبقات** — حين يخالف الطبع المكتسب الطبع الداخلي، أو حين يتضارب الكوكب المهيمن مع البرج الطالع.');
+    lines.push('');
+
+    const el = L.element;
+    if (el === 'ترابي') {
+      lines.push('**في حالتك (طبع ترابي):** الظل يظهر حين يتحول الاستقرار إلى **سجن**، والرصانة إلى **جمود**، والحفظ إلى **رفض للتغيير**.');
+    } else if (el === 'ناري') {
+      lines.push('**في حالتك (طبع ناري):** الظل يظهر حين يتحول الاندفاع إلى **تهور**، والحسم إلى **قسوة**، والمبادرة إلى **احتراق**.');
+    } else if (el === 'هوائي') {
+      lines.push('**في حالتك (طبع هوائي):** الظل يظهر حين يتحول التواصل إلى **سطحية**، والمرونة إلى **تذبذب**، والتفكير إلى **تشتت**.');
+    } else if (el === 'مائي') {
+      lines.push('**في حالتك (طبع مائي):** الظل يظهر حين يتحول التعاطف إلى **ذوبان**، والحساسية إلى **غرق**، والحدس إلى **وهم**.');
     }
+
+    if (L.root && a.confidence.overall < 0.7) {
+      lines.push('');
+      lines.push('**ملاحظة:** درجة الثقة أقل من 70%، فالظل هنا تقديري — يحتاج تحققاً من التجربة الشخصية.');
+    }
+
     return lines.join('\n');
   }
 
@@ -272,14 +333,12 @@ export class DeepDiveReport {
     lines.push('');
     lines.push(`> **السياق:** ${MODE_LABEL[mode]} · **الوضع:** دون اتصال · **المُنتج:** v${PRODUCT_META.version}`);
     lines.push('');
-    lines.push('---');
-    lines.push('');
     for (const s of sections) {
+      lines.push('---');
+      lines.push('');
       lines.push(`## ${s.icon} ${s.title}`);
       lines.push('');
       lines.push(s.content);
-      lines.push('');
-      lines.push('---');
       lines.push('');
     }
     return lines.join('\n');
