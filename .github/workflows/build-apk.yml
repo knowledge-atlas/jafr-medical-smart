@@ -1,5 +1,4 @@
-name: Full Build APK from Raw Text
-
+name: Build APK
 on:
   push:
     branches: [main]
@@ -8,92 +7,39 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '22'
-
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-
-      - name: Step 1 - Extract data from master.txt
+      - name: Setup SDK & NDK (manual)
         run: |
-          echo "📖 استخراج البيانات من master.txt..."
-          ls -lh data-source/
-          node scripts/extract-from-master.js
-          echo "✅ تم إنشاء JSON في src/data/structured/"
-
-      - name: Verify extracted data
-        run: |
-          ls -la src/data/structured/
-          echo "عدد الملفات:"
-          ls src/data/structured/*.json | wc -l
-
-      - name: Setup Android SDK (manual, no 'tools' bug)
-        run: |
-          set -e
-          SDK_ROOT=$ANDROID_SDK_ROOT
-          if [ -z "$SDK_ROOT" ]; then SDK_ROOT=$ANDROID_HOME; fi
-          if [ -z "$SDK_ROOT" ]; then SDK_ROOT=/usr/local/lib/android/sdk; fi
-          echo "SDK_ROOT=$SDK_ROOT"
-          echo "SDK_ROOT=$SDK_ROOT" >> $GITHUB_ENV
-
-          SDKMGR=$(find "$SDK_ROOT" -name sdkmanager -type f 2>/dev/null | head -1)
-          echo "SDKMGR=$SDKMGR"
-
-          yes | "$SDKMGR" --licenses > /dev/null 2>&1 || true
-          yes | "$SDKMGR" --install "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;27.1.12297006" 2>&1 | tail -10 || true
-
-          echo "$SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$SDK_ROOT/platform-tools" >> $GITHUB_PATH
-
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps --no-audit --no-fund
-
-      - name: Step 2 - Generate native code
-        run: |
-          echo "🔧 توليد كود Android الأصلي..."
-          npx expo prebuild -p android --clean 2>&1 | tee prebuild.log
-
-      - name: Step 3 - Build APK
+          SDK_ROOT=/usr/local/lib/android/sdk
+          SDKMGR=$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager
+          yes | $SDKMGR --licenses > /dev/null 2>&1 || true
+          yes | $SDKMGR --install "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;27.1.12297006" 2>&1 | tail -5
+          echo "ANDROID_HOME=$SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> $GITHUB_ENV
+      - name: Install deps
+        run: npm install --legacy-peer-deps
+      - name: Prebuild
+        run: npx expo prebuild -p android --clean
+      - name: Build APK
         working-directory: android
-        env:
-          ANDROID_HOME: ${{ env.SDK_ROOT }}
-          ANDROID_SDK_ROOT: ${{ env.SDK_ROOT }}
-        run: |
-          echo "🏗️ بناء APK..."
-          ./gradlew assembleRelease --no-daemon 2>&1 | tee ../gradle-build.log
-
-      - name: Upload logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-logs
-          path: |
-            prebuild.log
-            gradle-build.log
-          retention-days: 7
-
-      - name: Upload extracted JSON (for inspection)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: extracted-json
-          path: src/data/structured/*.json
-          retention-days: 30
-
-      - name: Upload APK
+        run: ./gradlew assembleRelease --no-daemon
+      - uses: actions/upload-artifact@v4
         if: success()
-        uses: actions/upload-artifact@v4
         with:
-          name: jafr-medical-smart-apk
+          name: jafr-apk
           path: android/app/build/outputs/apk/release/*.apk
-          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: logs
+          path: |
+            android/**/*.log
+          retention-days: 7
