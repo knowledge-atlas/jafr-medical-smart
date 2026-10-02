@@ -1,30 +1,49 @@
-// ================================================================
-// شاشة المساعد الذكي — واجهة المحادثة
-// ================================================================
-
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet,
   ActivityIndicator, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native';
-import { queryRouter, responseFormatter, llmBridge } from '../ai';
+import { queryRouter, responseFormatter, llmBridge, HybridEngine } from '../ai';
 import { AIResponse } from '../ai/types';
+import { createRealAnalyzeNameUseCase } from '../application/di';
+import { routeAssistantText } from './assistantRouter';
 
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   text: string;
   response?: AIResponse;
+  layer?: 'A' | 'B';
+  offline?: boolean;
+  warnings?: string[];
   timestamp: string;
 }
 
 const SUGGESTIONS = [
-  'ما هو الجذر 2؟',
   'حلل شخصية أحمد',
-  'ما هو ترياق ظل الجذر 3؟',
+  'ما هو الجفر؟',
   'قارن بين الجذر 1 و 2',
+  'حلل محمد',
   'ما هي أعراض خلل الجذر 5؟',
 ];
+
+const hybridEngine = new HybridEngine({
+  analyzer: createRealAnalyzeNameUseCase(),
+  llmCaller: {
+    generate: async (system, user) => {
+      const provider = await llmBridge.getProvider();
+      if (provider === 'none') {
+        return { answer: '', tokensUsed: 0 };
+      }
+      const result = await llmBridge.generate(
+        { question: user, entities: [], relations: [] } as any,
+        system,
+        'analytical'
+      );
+      return result ?? { answer: '', tokensUsed: 0 };
+    },
+  },
+});
 
 export default function AssistantScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -40,7 +59,9 @@ export default function AssistantScreen() {
   const checkLlmStatus = async () => {
     const provider = await llmBridge.getProvider();
     if (provider === 'none') {
-      setLlmStatus('🔒 الوضع المحلي (بدون إنترنت)');
+      setLlmStatus('🔒 وضع محلي (بدون إنترنت)');
+    } else if (provider === 'demo') {
+      setLlmStatus('🤖 وضع تجريبي');
     } else {
       setLlmStatus(`🌐 ${provider === 'gemini' ? 'Gemini' : 'OpenAI'} مفعّل`);
     }
@@ -60,22 +81,42 @@ export default function AssistantScreen() {
     setLoading(true);
 
     try {
-      const response = await queryRouter.route(text.trim());
-      const formatted = responseFormatter.format(response);
+      const route = routeAssistantText(text.trim());
 
-      const aiMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        text: formatted,
-        response,
-        timestamp: new Date().toISOString(),
-      };
-      setMessages(prev => [...prev, aiMsg]);
+      if (route.decision === 'hybrid' && route.name) {
+        const result = await hybridEngine.process({
+          question: text.trim(),
+          nameForAnalysis: route.name,
+          mode: route.mode,
+        });
+
+        const aiMsg: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          text: result.answer,
+          layer: result.layer,
+          offline: result.offline,
+          warnings: result.warnings,
+          timestamp: new Date().toISOString(),
+        };
+        setMessages(prev => [...prev, aiMsg]);
+      } else {
+        const response = await queryRouter.route(text.trim());
+        const formatted = responseFormatter.format(response);
+        const aiMsg: Message = {
+          id: (Date.now() + 2).toString(),
+          role: 'assistant',
+          text: formatted,
+          response,
+          timestamp: new Date().toISOString(),
+        };
+        setMessages(prev => [...prev, aiMsg]);
+      }
     } catch (e: any) {
       const errorMsg: Message = {
-        id: (Date.now() + 2).toString(),
+        id: (Date.now() + 3).toString(),
         role: 'assistant',
-        text: `❌ حدث خطأ: ${e.message}`,
+        text: `❌ حدث خطأ: ${e?.message ?? 'unknown'}`,
         timestamp: new Date().toISOString(),
       };
       setMessages(prev => [...prev, errorMsg]);
@@ -92,12 +133,22 @@ export default function AssistantScreen() {
     ]);
   };
 
+  const renderLayerBadge = (msg: Message) => {
+    if (!msg.layer) return null;
+    const label = msg.layer === 'B' ? '🌐 LLM' : '🔒 Offline';
+    const color = msg.layer === 'B' ? '#3498db' : '#95a5a6';
+    return (
+      <View style={[styles.badge, { borderColor: color }]}>
+        <Text style={[styles.badgeText, { color }]}>{label}</Text>
+      </View>
+    );
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      {/* شريط الحالة */}
       <View style={styles.statusBar}>
         <Text style={styles.statusText}>{llmStatus}</Text>
         {messages.length > 0 && (
@@ -107,7 +158,6 @@ export default function AssistantScreen() {
         )}
       </View>
 
-      {/* المحادثة */}
       <ScrollView
         ref={scrollRef}
         style={styles.chat}
@@ -117,9 +167,9 @@ export default function AssistantScreen() {
           <View style={styles.welcome}>
             <Text style={styles.welcomeTitle}>🤖 المساعد الذكي</Text>
             <Text style={styles.welcomeText}>
-              اسأل عن الجذور، الكواكب، الأبراج، البواقي، الترياقات، أو اطلب تحليلاً.
+              اسأل عن الجذور، الكواكب، الأبراج، أو اطلب تحليلاً. جرّب: "حلل محمد".
             </Text>
-            <Text style={styles.suggestTitle}>جرّب أحد هذه الأسئلة:</Text>
+            <Text style={styles.suggestTitle}>أمثلة:</Text>
             {SUGGESTIONS.map((s, i) => (
               <TouchableOpacity
                 key={i}
@@ -140,6 +190,7 @@ export default function AssistantScreen() {
               msg.role === 'user' ? styles.userBubble : styles.aiBubble,
             ]}
           >
+            {msg.role === 'assistant' && renderLayerBadge(msg)}
             <Text
               style={[
                 styles.bubbleText,
@@ -149,7 +200,14 @@ export default function AssistantScreen() {
               {msg.text}
             </Text>
 
-            {/* اقتراحات إضافية */}
+            {msg.warnings && msg.warnings.length > 0 && (
+              <View style={styles.warningsBox}>
+                {msg.warnings.map((w, i) => (
+                  <Text key={i} style={styles.warningText}>⚠️ {w}</Text>
+                ))}
+              </View>
+            )}
+
             {msg.response?.suggestions && msg.response.suggestions.length > 0 && (
               <View style={styles.suggestionsBox}>
                 {msg.response.suggestions.map((s, i) => (
@@ -169,12 +227,11 @@ export default function AssistantScreen() {
         {loading && (
           <View style={[styles.bubble, styles.aiBubble]}>
             <ActivityIndicator color="#d4af37" />
-            <Text style={styles.loadingText}>جارٍ البحث في قاعدة المعرفة...</Text>
+            <Text style={styles.loadingText}>جارٍ المعالجة...</Text>
           </View>
         )}
       </ScrollView>
 
-      {/* الإدخال */}
       <View style={styles.inputRow}>
         <TextInput
           style={styles.input}
@@ -227,6 +284,20 @@ const styles = StyleSheet.create({
   bubbleText: { fontSize: 14, lineHeight: 22 },
   userText: { color: '#fff' },
   aiText: { color: '#e8e8e8' },
+
+  badge: {
+    alignSelf: 'flex-start',
+    borderWidth: 1, borderRadius: 6,
+    paddingHorizontal: 6, paddingVertical: 2,
+    marginBottom: 6,
+  },
+  badgeText: { fontSize: 10, fontWeight: 'bold' },
+
+  warningsBox: {
+    marginTop: 8, paddingTop: 6,
+    borderTopWidth: 1, borderTopColor: '#2c5070',
+  },
+  warningText: { color: '#f39c12', fontSize: 11, marginVertical: 2 },
 
   suggestionsBox: { marginTop: 10, borderTopWidth: 1, borderTopColor: '#2c5070', paddingTop: 8 },
   loadingText: { color: '#d4af37', marginTop: 8, fontSize: 12 },

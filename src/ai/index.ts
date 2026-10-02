@@ -11,6 +11,7 @@ export { HybridEngine } from './HybridEngine';
 export { DemoLLMCaller } from './LLMCaller';
 export { LLMBridgeAdapter } from './LLMBridgeAdapter';
 export { ConversationMemory } from './ConversationMemory';
+export { extractNameForAnalysis } from './utils/extractName';
 
 export type { ContextMode, PromptPackage } from './ContextAwarePrompter';
 export type { LLMCaller, LLMCallResult } from './LLMCaller';
