@@ -5,6 +5,7 @@ import { ReportSection, ProductMeta } from './types';
 import { ResonanceEngine, resonanceEngine } from '../domain/services/ResonanceEngine';
 import { SchismEngine, schismEngine } from '../domain/services/SchismEngine';
 import { TemporalAnalyzer, temporalAnalyzer } from '../domain/services/TemporalAnalyzer';
+import { PsychologicalAxesEngine, psychologicalAxesEngine } from '../domain/services/PsychologicalAxesEngine';
 
 export interface DeepDiveOutput {
   meta: ProductMeta;
@@ -29,6 +30,7 @@ const SECTION_META: Array<{ id: string; title: string; icon: string; weight: num
   { id: 'shadow', title: 'الظل والجوانب الخفية', icon: '🌑', weight: 1 },
   { id: 'schism', title: 'خريطة الانسجام البنيوي (Schism)', icon: '⚖️', weight: 2 },
   { id: 'temporal', title: 'التقويم الزمني (7 أيام قادمة)', icon: '📅', weight: 2 },
+  { id: 'psychological', title: 'الملف النفسي المتكامل (15 محوراً)', icon: '🧠', weight: 3 },
   { id: 'record', title: 'بيانات السجل', icon: '📜', weight: 1 },
   { id: 'encyclopedia', title: 'الموسوعة الكاملة', icon: '📚', weight: 3 },
   { id: 'context', title: 'القراءة السياقية', icon: '🎯', weight: 2 },
@@ -47,7 +49,7 @@ const MODE_LABEL: Record<ContextMode, string> = {
   commercial: 'تشخيص تجاري',
 };
 
-const PRODUCT_META = { productName: 'التقرير العميق', version: '1.5.0' };
+const PRODUCT_META = { productName: 'التقرير العميق', version: '1.6.0' };
 
 const LAYER_LABELS: Record<string, string> = {
   root: 'الجذر', planet: 'الكوكب', sign: 'البرج', house: 'البيت',
@@ -80,7 +82,8 @@ export class DeepDiveReport {
     private weaver: NarrativeWeaver = new NarrativeWeaver(),
     private resonance: ResonanceEngine = resonanceEngine,
     private schism: SchismEngine = schismEngine,
-    private temporal: TemporalAnalyzer = temporalAnalyzer
+    private temporal: TemporalAnalyzer = temporalAnalyzer,
+    private psychology: PsychologicalAxesEngine = psychologicalAxesEngine
   ) {}
 
   generate(
@@ -140,6 +143,7 @@ export class DeepDiveReport {
       shadow: this.shadowRead(L, analysis),
       schism: this.schismRead(L, analysis),
       temporal: this.temporalRead(L),
+      psychological: this.psychologicalRead(analysis),
       record: [
         `- **الاسم:** ${analysis.name}`,
         `- **الجذر:** ${humanizeLayer(L.root, 'root')}`,
@@ -276,6 +280,42 @@ export class DeepDiveReport {
   }
 
 
+
+
+  private psychologicalRead(analysis: AnalysisResult): string {
+    const L: NameAnalysisLayers = analysis.layers ?? {};
+    const profile = this.psychology.analyze(analysis.name, L);
+    const lines: string[] = [];
+
+    // الرأس
+    lines.push(`### ${profile.summary}`);
+    lines.push('');
+    lines.push('| المحور | النتيجة | التصنيف |');
+    lines.push('|--------|---------|---------|');
+    for (const axis of profile.axes) {
+      lines.push(`| ${axis.icon} ${axis.title} | ${(axis.score * 100).toFixed(0)}% | ${axis.level} |`);
+    }
+    lines.push('');
+
+    // التفاصيل
+    lines.push('---');
+    lines.push('');
+    lines.push('### 📖 التحليل التفصيلي');
+    lines.push('');
+    for (const axis of profile.axes) {
+      lines.push(`#### ${axis.icon} ${axis.index}. ${axis.title}`);
+      lines.push(`**النتيجة:** ${(axis.score * 100).toFixed(0)}% — ${axis.level}`);
+      lines.push('');
+      lines.push(axis.narrative);
+      if (axis.insight) {
+        lines.push('');
+        lines.push(`> 💡 ${axis.insight}`);
+      }
+      lines.push('');
+    }
+
+    return lines.join('\n');
+  }
 
   private temporalRead(L: NameAnalysisLayers): string {
     const rootNum = numOf(L.root);

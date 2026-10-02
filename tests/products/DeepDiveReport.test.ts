@@ -20,19 +20,19 @@ const fakeAnalysis: AnalysisResult = {
   report: '# التقرير الجفري القياسي\n\n## بيانات السجل\n\nنص غني.',
 };
 
-describe('DeepDiveReport v1.5', () => {
+describe('DeepDiveReport v1.6', () => {
   const engine = new DeepDiveReport();
 
   it('يولّد 17 قسماً', () => {
     const out = engine.generate(fakeAnalysis);
-    expect(out.sectionCount).toBe(18);
-    expect(out.sections.length).toBe(18);
+    expect(out.sectionCount).toBe(19);
+    expect(out.sections.length).toBe(19);
   });
 
   it('meta v1.4.0', () => {
     const out = engine.generate(fakeAnalysis);
     expect(out.meta.productId).toBe('deep-dive-report');
-    expect(out.meta.version).toBe('1.5.0');
+    expect(out.meta.version).toBe('1.6.0');
   });
 
   it('يحتوي على الاسم في markdown', () => {
@@ -80,7 +80,7 @@ describe('DeepDiveReport v1.5', () => {
   it('يعمل بدون layers', () => {
     const e: AnalysisResult = { ...fakeAnalysis, layers: undefined };
     const out = engine.generate(e);
-    expect(out.sectionCount).toBe(18);
+    expect(out.sectionCount).toBe(19);
   });
 
   it('وضع marital يعرض توصيات مختلفة', () => {

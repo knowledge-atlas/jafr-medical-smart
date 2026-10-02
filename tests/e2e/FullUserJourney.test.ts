@@ -21,7 +21,7 @@ describe('E2E — رحلة مستخدم كاملة', () => {
     const a = analyzeName.execute({ name: 'محمد' });
     expect(a.status).toBe('full');
     const out = deepDive.generate(a, 'personal');
-    expect(out.sectionCount).toBe(18);
+    expect(out.sectionCount).toBe(19);
     expect(out.markdown).toContain('محمد');
   });
 
