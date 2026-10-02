@@ -123,7 +123,13 @@ export class LLMBridge {
     systemPrompt: string,
     userPrompt: string
   ): Promise<{ answer: string; tokensUsed?: number }> {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+    const MODELS = [
+      'gemini-2.0-flash',
+      'gemini-2.0-flash-exp',
+      'gemini-flash-latest',
+      'gemini-1.5-flash-002',
+    ];
+
     const body = {
       system_instruction: { parts: [{ text: systemPrompt }] },
       contents: [{ parts: [{ text: userPrompt }] }],
@@ -134,22 +140,36 @@ export class LLMBridge {
       },
     };
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
+    let lastError = '';
 
-    if (!res.ok) {
-      const txt = await res.text();
-      throw new Error(`Gemini ${res.status}: ${txt.substring(0, 200)}`);
+    for (const model of MODELS) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+
+        if (!res.ok) {
+          const txt = await res.text();
+          lastError = `${model} → ${res.status}: ${txt.substring(0, 200)}`;
+          console.warn('⚠️ فشل Gemini:', lastError);
+          continue;
+        }
+
+        const data = await res.json();
+        const answer = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const tokens = data?.usageMetadata?.totalTokenCount;
+        console.log(`✅ Gemini (${model}) نجح`);
+        return { answer: answer.trim(), tokensUsed: tokens };
+      } catch (e: any) {
+        lastError = `${model} → ${e?.message ?? 'network'}`;
+        console.warn('⚠️ خطأ شبكة:', lastError);
+      }
     }
 
-    const data = await res.json();
-    const answer = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const tokens = data?.usageMetadata?.totalTokenCount;
-
-    return { answer: answer.trim(), tokensUsed: tokens };
+    throw new Error(`كل الموديلات فشلت. آخر خطأ: ${lastError}`);
   }
 
   // ═══════════════════════════════════════════════════════════

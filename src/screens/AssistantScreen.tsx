@@ -37,7 +37,7 @@ const hybridEngine = new HybridEngine({
       }
       const result = await llmBridge.generate(
         { question: user, entities: [], relations: [] } as any,
-        system,
+        system + '\n\n' + user,
         'analytical'
       );
       return result ?? { answer: '', tokensUsed: 0 };
