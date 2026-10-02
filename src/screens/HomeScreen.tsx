@@ -1,25 +1,35 @@
-// ================================================================
-// الشاشة الرئيسية — إدخال الاسم + الأعراض + بدء التحليل
-// ================================================================
-
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet,
-  Alert,
+  Alert, ActivityIndicator,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { buildReport } from '../engine/reportBuilder';
 import { reportsStorage } from '../storage/reportsStorage';
+import { analyzeName, analysisToLegacyReport } from '../application/di';
+import { DeepDiveReport } from '../products/DeepDiveReport';
+import { ContextMode } from '../ai/ContextAwarePrompter';
 
 const SYMPTOMS = [
   'تشتت', 'جمود', 'استنزاف', 'غضب', 'خوف',
   'تردد', 'قسوة', 'عزلة', 'مبالغة', 'اندفاع',
 ];
 
+const MODES: Array<{ id: ContextMode; label: string; icon: string }> = [
+  { id: 'personal', label: 'شخصي', icon: '🧠' },
+  { id: 'marital', label: 'زواجي', icon: '💞' },
+  { id: 'professional', label: 'مهني', icon: '💼' },
+  { id: 'commercial', label: 'تجاري', icon: '🏷️' },
+];
+
+const deepDive = new DeepDiveReport();
+
 export default function HomeScreen({ navigation }: any) {
   const [name, setName] = useState('');
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [reportsCount, setReportsCount] = useState(0);
+  const [mode, setMode] = useState<ContextMode>('personal');
+  const [deepLoading, setDeepLoading] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -33,7 +43,7 @@ export default function HomeScreen({ navigation }: any) {
     );
   };
 
-  const analyze = () => {
+  const analyzeClassic = () => {
     if (!name.trim()) {
       Alert.alert('تنبيه', 'الرجاء إدخال اسم للتحليل');
       return;
@@ -46,10 +56,27 @@ export default function HomeScreen({ navigation }: any) {
     navigation.navigate('Report', { report, name: name.trim() });
   };
 
+  const runDeepDive = () => {
+    if (!name.trim()) {
+      Alert.alert('تنبيه', 'الرجاء إدخال اسم للتحليل');
+      return;
+    }
+    setDeepLoading(true);
+    try {
+      const analysis = analyzeName.execute({ name: name.trim() });
+      const out = deepDive.generate(analysis, mode);
+      const legacy = analysisToLegacyReport(analysis, out);
+      navigation.navigate('Report', { report: legacy, name: analysis.name });
+    } catch (e: any) {
+      Alert.alert('خطأ', e?.message ?? 'حدث خطأ غير متوقع');
+    } finally {
+      setDeepLoading(false);
+    }
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
 
-      {/* ═══ الشعار ═══ */}
       <View style={styles.heroSection}>
         <Text style={styles.heroEmoji}>⚖️  🪞  ⚖️</Text>
         <Text style={styles.heroTitle}>نظام الجفر الطبي الذكي</Text>
@@ -61,7 +88,6 @@ export default function HomeScreen({ navigation }: any) {
 
       <View style={styles.divider} />
 
-      {/* ═══ إدخال الاسم ═══ */}
       <View style={styles.section}>
         <Text style={styles.label}>👤 أدخل الاسم (بالعربية):</Text>
         <TextInput
@@ -74,9 +100,43 @@ export default function HomeScreen({ navigation }: any) {
         />
       </View>
 
-      {/* ═══ الأعراض ═══ */}
+      {/* اختيار السياق */}
       <View style={styles.section}>
-        <Text style={styles.label}>🤔 الأعراض (اختر ما يناسبك):</Text>
+        <Text style={styles.label}>🎯 اختر سياق التحليل:</Text>
+        <View style={styles.modesRow}>
+          {MODES.map(m => {
+            const active = mode === m.id;
+            return (
+              <TouchableOpacity
+                key={m.id}
+                style={[styles.modeChip, active && styles.modeChipActive]}
+                onPress={() => setMode(m.id)}
+              >
+                <Text style={[styles.modeText, active && styles.modeTextActive]}>
+                  {m.icon} {m.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+
+      {/* التقرير العميق — الزر الجديد */}
+      <TouchableOpacity
+        style={[styles.deepBtn, deepLoading && styles.deepBtnDisabled]}
+        onPress={runDeepDive}
+        disabled={deepLoading}
+      >
+        {deepLoading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.deepBtnText}>📖 التقرير العميق (19 قسماً)</Text>
+        )}
+      </TouchableOpacity>
+
+      {/* الأعراض — للتحليل الكلاسيكي */}
+      <View style={styles.section}>
+        <Text style={styles.label}>🤔 الأعراض (اختياري — للتحليل التقليدي):</Text>
         <View style={styles.symptomsBox}>
           {SYMPTOMS.map(s => {
             const active = selectedSymptoms.includes(s);
@@ -100,9 +160,9 @@ export default function HomeScreen({ navigation }: any) {
         )}
       </View>
 
-      {/* ═══ أزرار الإجراءات ═══ */}
-      <TouchableOpacity style={styles.primaryBtn} onPress={analyze}>
-        <Text style={styles.primaryBtnText}>🔍 تحليل شامل</Text>
+      {/* زر التحليل الكلاسيكي */}
+      <TouchableOpacity style={styles.primaryBtn} onPress={analyzeClassic}>
+        <Text style={styles.primaryBtnText}>🔍 تحليل تقليدي</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -121,7 +181,6 @@ export default function HomeScreen({ navigation }: any) {
         </Text>
       </TouchableOpacity>
 
-      {/* ═══ تذييل ═══ */}
       <Text style={styles.footerNote}>© 2026 — جميع الحقوق محفوظة</Text>
 
     </ScrollView>
@@ -145,6 +204,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', borderWidth: 1, borderColor: '#ccc',
     borderRadius: 10, padding: 14, fontSize: 18, color: '#000',
   },
+  modesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between' },
+  modeChip: {
+    backgroundColor: '#fff', borderWidth: 1, borderColor: '#ccc',
+    borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, flexGrow: 1,
+    alignItems: 'center', minWidth: 80,
+  },
+  modeChipActive: { backgroundColor: '#1a3b5d', borderColor: '#d4af37' },
+  modeText: { color: '#333', fontSize: 13 },
+  modeTextActive: { color: '#d4af37', fontWeight: 'bold' },
+  deepBtn: {
+    backgroundColor: '#2c3e50', padding: 18, borderRadius: 12,
+    alignItems: 'center', marginVertical: 10, elevation: 3,
+  },
+  deepBtnDisabled: { opacity: 0.6 },
+  deepBtnText: { color: '#d4af37', fontSize: 17, fontWeight: 'bold' },
   symptomsBox: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6 },
   symptomChip: {
     backgroundColor: '#fff', borderWidth: 1, borderColor: '#ccc',
