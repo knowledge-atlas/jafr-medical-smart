@@ -121,7 +121,7 @@ export class DeepDiveReport {
     return parts.length > 0 ? `تناغم: ${parts.join(' / ')}.` : 'لا توجد علاقات رنين واضحة.';
   }
 
-  private strengthsRead(L: Record<string, string | undefined>): string {
+  private strengthsRead(L: import('../application/use-cases/AnalyzeNameUseCase').NameAnalysisLayers): string {
     const items: string[] = [];
     if (L.element === 'ناري') items.push('اندفاع وحسم في القرارات.');
     if (L.element === 'ترابي') items.push('قدرة على الالتزام طويل المدى.');
@@ -131,7 +131,7 @@ export class DeepDiveReport {
     return items.length > 0 ? items.map((x) => `- ${x}`).join('\n') : '- تُحدد عند اكتمال البيانات.';
   }
 
-  private challengesRead(L: Record<string, string | undefined>): string {
+  private challengesRead(L: import('../application/use-cases/AnalyzeNameUseCase').NameAnalysisLayers): string {
     const items: string[] = [];
     if (L.element === 'ناري') items.push('تسرّع قد يُوقع في قرارات غير مدروسة.');
     if (L.element === 'ترابي') items.push('مقاومة للتغيير وميل للجمود.');
