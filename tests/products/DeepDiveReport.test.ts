@@ -20,19 +20,19 @@ const fakeAnalysis: AnalysisResult = {
   report: '# التقرير الجفري القياسي\n\n## بيانات السجل\n\nنص غني.',
 };
 
-describe('DeepDiveReport v1.4', () => {
+describe('DeepDiveReport v1.5', () => {
   const engine = new DeepDiveReport();
 
   it('يولّد 17 قسماً', () => {
     const out = engine.generate(fakeAnalysis);
-    expect(out.sectionCount).toBe(17);
-    expect(out.sections.length).toBe(17);
+    expect(out.sectionCount).toBe(18);
+    expect(out.sections.length).toBe(18);
   });
 
   it('meta v1.4.0', () => {
     const out = engine.generate(fakeAnalysis);
     expect(out.meta.productId).toBe('deep-dive-report');
-    expect(out.meta.version).toBe('1.4.0');
+    expect(out.meta.version).toBe('1.5.0');
   });
 
   it('يحتوي على الاسم في markdown', () => {
@@ -80,11 +80,34 @@ describe('DeepDiveReport v1.4', () => {
   it('يعمل بدون layers', () => {
     const e: AnalysisResult = { ...fakeAnalysis, layers: undefined };
     const out = engine.generate(e);
-    expect(out.sectionCount).toBe(17);
+    expect(out.sectionCount).toBe(18);
   });
 
   it('وضع marital يعرض توصيات مختلفة', () => {
     const out = engine.generate(fakeAnalysis, 'marital');
     expect(out.markdown).toContain('قراءة مشتركة');
+  });
+});
+
+describe('DeepDiveReport v1.5 — قسم temporal', () => {
+  const engine = new DeepDiveReport();
+
+  it('قسم temporal موجود', () => {
+    const out = engine.generate(fakeAnalysis);
+    const t = out.sections.find((s) => s.id === 'temporal');
+    expect(t).toBeDefined();
+    expect(t?.content).toContain('التقويم');
+  });
+
+  it('temporal يعرض 7 أيام', () => {
+    const out = engine.generate(fakeAnalysis);
+    const t = out.sections.find((s) => s.id === 'temporal');
+    expect(t?.content).toContain('الأيام السبعة');
+  });
+
+  it('temporal يحوي الترياق', () => {
+    const out = engine.generate(fakeAnalysis);
+    const t = out.sections.find((s) => s.id === 'temporal');
+    expect(t?.content).toContain('mod9');
   });
 });

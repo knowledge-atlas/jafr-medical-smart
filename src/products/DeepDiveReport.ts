@@ -4,6 +4,7 @@ import { ContextMode } from '../ai/ContextAwarePrompter';
 import { ReportSection, ProductMeta } from './types';
 import { ResonanceEngine, resonanceEngine } from '../domain/services/ResonanceEngine';
 import { SchismEngine, schismEngine } from '../domain/services/SchismEngine';
+import { TemporalAnalyzer, temporalAnalyzer } from '../domain/services/TemporalAnalyzer';
 
 export interface DeepDiveOutput {
   meta: ProductMeta;
@@ -27,6 +28,7 @@ const SECTION_META: Array<{ id: string; title: string; icon: string; weight: num
   { id: 'challenges', title: 'التحديات', icon: '⚠️', weight: 2 },
   { id: 'shadow', title: 'الظل والجوانب الخفية', icon: '🌑', weight: 1 },
   { id: 'schism', title: 'خريطة الانسجام البنيوي (Schism)', icon: '⚖️', weight: 2 },
+  { id: 'temporal', title: 'التقويم الزمني (7 أيام قادمة)', icon: '📅', weight: 2 },
   { id: 'record', title: 'بيانات السجل', icon: '📜', weight: 1 },
   { id: 'encyclopedia', title: 'الموسوعة الكاملة', icon: '📚', weight: 3 },
   { id: 'context', title: 'القراءة السياقية', icon: '🎯', weight: 2 },
@@ -45,7 +47,7 @@ const MODE_LABEL: Record<ContextMode, string> = {
   commercial: 'تشخيص تجاري',
 };
 
-const PRODUCT_META = { productName: 'التقرير العميق', version: '1.4.0' };
+const PRODUCT_META = { productName: 'التقرير العميق', version: '1.5.0' };
 
 const LAYER_LABELS: Record<string, string> = {
   root: 'الجذر', planet: 'الكوكب', sign: 'البرج', house: 'البيت',
@@ -77,7 +79,8 @@ export class DeepDiveReport {
   constructor(
     private weaver: NarrativeWeaver = new NarrativeWeaver(),
     private resonance: ResonanceEngine = resonanceEngine,
-    private schism: SchismEngine = schismEngine
+    private schism: SchismEngine = schismEngine,
+    private temporal: TemporalAnalyzer = temporalAnalyzer
   ) {}
 
   generate(
@@ -136,6 +139,7 @@ export class DeepDiveReport {
       challenges: this.challengesRead(L),
       shadow: this.shadowRead(L, analysis),
       schism: this.schismRead(L, analysis),
+      temporal: this.temporalRead(L),
       record: [
         `- **الاسم:** ${analysis.name}`,
         `- **الجذر:** ${humanizeLayer(L.root, 'root')}`,
@@ -271,6 +275,57 @@ export class DeepDiveReport {
     return items.length > 0 ? items.map((x) => `- ${x}`).join('\n') : '- لا توجد تحديات مرصودة.';
   }
 
+
+
+  private temporalRead(L: NameAnalysisLayers): string {
+    const rootNum = numOf(L.root);
+    if (rootNum === null) return 'لا يوجد جذر محدّد لبناء التقويم الزمني.';
+
+    const analysis = this.temporal.analyzeRange(new Date(), rootNum, 7);
+    const lines: string[] = [];
+
+    lines.push(analysis.summary);
+    lines.push('');
+    lines.push('### 📅 الأيام السبعة القادمة');
+    lines.push('');
+
+    for (const day of analysis.calendar) {
+      const icon =
+        day.quality === 'ذروة' ? '🌟'
+        : day.quality === 'جيد' ? '✨'
+        : day.quality === 'محايد' ? '⚖️'
+        : day.quality === 'منخفض' ? '⚠️'
+        : '💤';
+      const scorePct = (day.score * 100).toFixed(0);
+      lines.push(`**${day.date}** ${icon} **${day.quality}** (${scorePct}%)`);
+      lines.push(`- mod9: ${day.mod9} · mod7: ${day.mod7} · mod12: ${day.mod12} · mod28: ${day.mod28}`);
+      const firstLine = day.rootText.split('\n')[0];
+      if (firstLine) lines.push(`- ${firstLine}`);
+      lines.push('');
+    }
+
+    if (analysis.peakDays.length > 0) {
+      lines.push('### 🌟 أقوى 3 أيام في الشهر');
+      lines.push('');
+      const top3 = this.temporal.topDays(analysis, 3);
+      for (const d of top3) {
+        lines.push(`- **${d.date}** (${(d.score * 100).toFixed(0)}%) — ${d.quality}`);
+      }
+      lines.push('');
+    }
+
+    if (analysis.criticalDays.length > 0) {
+      lines.push('### ⚠️ أيام تحتاج انتباهاً');
+      lines.push('');
+      const bottom3 = this.temporal.bottomDays(analysis, 3);
+      for (const d of bottom3) {
+        lines.push(`- **${d.date}** (${(d.score * 100).toFixed(0)}%) — ${d.quality}`);
+      }
+      lines.push('');
+    }
+
+    return lines.join('\n');
+  }
 
   private schismRead(L: NameAnalysisLayers, _a: AnalysisResult): string {
     const result = this.schism.evaluate({
