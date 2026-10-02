@@ -23,15 +23,18 @@
     "react-dom": "19.2.3",
     "react-native": "0.86.3",
     "react-native-gesture-handler": "~2.32.0",
+    "react-native-markdown-display": "^7.0.2",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
     "react-native-web": "^0.21.2"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
+    "@types/node": "^26.6.4",
     "@types/react": "~19.2.2",
     "babel-preset-expo": "~57.0.0",
     "typescript": "~6.0.3",
+    "vite": "^8.3.2",
     "vitest": "^5.0.3"
   },
   "scripts": {

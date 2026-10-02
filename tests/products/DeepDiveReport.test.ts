@@ -6,7 +6,7 @@ const fakeAnalysis: AnalysisResult = {
   status: 'full',
   name: 'محمد',
   confidence: {
-    overall: 0.85,
+    overall: 0.86,
     level: 'عالية',
     dimensions: {
       inputQuality: 1, dataCompleteness: 1, layerConsistency: 1,
@@ -16,17 +16,17 @@ const fakeAnalysis: AnalysisResult = {
     reasons: [],
   },
   abstention: { shouldAbstain: false, reasons: [], messages: [] },
-  layers: { root: 'root_3', planet: 'planet_7', sign: 'sign_5', house: 'house_4', element: 'ناري' },
-  report: '',
+  layers: { root: 'root_2', planet: 'قمر', sign: 'السرطان', house: 'house_8', element: 'ترابي' },
+  report: '# الموسوعة الكاملة\n\nنص غني جداً للموسوعة يجب أن يظهر داخل التقرير.',
 };
 
 describe('DeepDiveReport', () => {
   const engine = new DeepDiveReport();
 
-  it('يولّد 19 قسماً', () => {
+  it('يولّد 15 قسماً', () => {
     const out = engine.generate(fakeAnalysis);
-    expect(out.sectionCount).toBe(19);
-    expect(out.sections.length).toBe(19);
+    expect(out.sectionCount).toBe(15);
+    expect(out.sections.length).toBe(15);
   });
 
   it('يحتوي على الاسم في markdown', () => {
@@ -34,26 +34,34 @@ describe('DeepDiveReport', () => {
     expect(out.markdown).toContain('محمد');
   });
 
-  it('يحوي بيانات وصفية صحيحة', () => {
+  it('يُدرج richMarkdown في قسم encyclopedia', () => {
+    const out = engine.generate(fakeAnalysis);
+    expect(out.markdown).toContain('الموسوعة الكاملة');
+    expect(out.markdown).toContain('نص غني جداً');
+  });
+
+  it('meta صحيح', () => {
     const out = engine.generate(fakeAnalysis);
     expect(out.meta.productId).toBe('deep-dive-report');
     expect(out.meta.offline).toBe(true);
+    expect(out.meta.version).toBe('1.1.0');
   });
 
-  it('يحوي درجة الثقة', () => {
+  it('يظهر درجة الثقة', () => {
     const out = engine.generate(fakeAnalysis);
-    expect(out.markdown).toContain('85%');
+    expect(out.markdown).toContain('86%');
     expect(out.markdown).toContain('عالية');
   });
 
-  it('يظهر الطبع الناري في القسم المخصص', () => {
+  it('humanizeLayer يحوّل root_2 إلى "الجذر 2"', () => {
     const out = engine.generate(fakeAnalysis);
-    expect(out.markdown).toContain('ناري');
+    expect(out.markdown).toContain('الجذر 2');
+    expect(out.markdown).not.toMatch(/\broot_2\b/);
   });
 
   it('وضع "marital" يعرض توصيات مختلفة', () => {
     const out = engine.generate(fakeAnalysis, 'marital');
-    expect(out.markdown).toContain('الطرفان');
+    expect(out.markdown).toContain('قراءة مشتركة');
   });
 
   it('وضع "commercial" يعرض اختبار A/B', () => {
@@ -67,20 +75,26 @@ describe('DeepDiveReport', () => {
     expect(out.markdown).toContain('لا يُعدّ');
   });
 
-  it('يستخرج عدد الكلمات', () => {
+  it('wordCount يعكس المحتوى الغني', () => {
     const out = engine.generate(fakeAnalysis);
-    expect(out.wordCount).toBeGreaterThan(50);
+    expect(out.wordCount).toBeGreaterThan(100);
   });
 
-  it('يعمل مع طبع ترابي', () => {
-    const e: AnalysisResult = { ...fakeAnalysis, layers: { ...fakeAnalysis.layers, element: 'ترابي' } };
-    const out = engine.generate(e);
-    expect(out.markdown).toContain('ترابي');
+  it('يستقبل richMarkdown عبر options', () => {
+    const out = engine.generate(fakeAnalysis, 'personal', {
+      richMarkdown: '# نص مخصص\n\nمحتوى تجريبي.',
+    });
+    expect(out.markdown).toContain('نص مخصص');
+  });
+
+  it('بدون richMarkdown يستخدم analysis.report', () => {
+    const out = engine.generate(fakeAnalysis);
+    expect(out.markdown).toContain('نص غني جداً');
   });
 
   it('يعمل بدون layers', () => {
     const e: AnalysisResult = { ...fakeAnalysis, layers: undefined };
     const out = engine.generate(e);
-    expect(out.sectionCount).toBe(19);
+    expect(out.sectionCount).toBe(15);
   });
 });
