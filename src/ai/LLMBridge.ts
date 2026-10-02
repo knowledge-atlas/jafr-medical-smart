@@ -180,9 +180,25 @@ export class LLMBridge {
     systemPrompt: string,
     userPrompt: string
   ): Promise<{ answer: string; tokensUsed?: number }> {
-    const url = 'https://api.openai.com/v1/chat/completions';
+    // ─── اكتشاف المزود تلقائياً من صيغة المفتاح ───
+    let url = 'https://api.openai.com/v1/chat/completions';
+    let model = 'gpt-4o-mini';
+    let providerName = 'OpenAI';
+
+    if (apiKey.startsWith('gsk_')) {
+      url = 'https://api.groq.com/openai/v1/chat/completions';
+      model = 'llama-3.3-70b-versatile';
+      providerName = 'Groq';
+    } else if (apiKey.startsWith('sk-or-v1-')) {
+      url = 'https://openrouter.ai/api/v1/chat/completions';
+      model = 'meta-llama/llama-3.3-70b-instruct:free';
+      providerName = 'OpenRouter';
+    }
+
+    console.log(`🔌 مزود: ${providerName} (${model})`);
+
     const body = {
-      model: 'gpt-4o-mini',
+      model,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
@@ -202,48 +218,47 @@ export class LLMBridge {
 
     if (!res.ok) {
       const txt = await res.text();
-      throw new Error(`OpenAI ${res.status}: ${txt.substring(0, 200)}`);
+      throw new Error(`${providerName} ${res.status}: ${txt.substring(0, 200)}`);
     }
 
-    const data = await res.json();
+    const data: any = await res.json();
     const answer = data?.choices?.[0]?.message?.content || '';
     const tokens = data?.usage?.total_tokens;
 
+    console.log(`✅ ${providerName} نجح (${tokens} token)`);
     return { answer: answer.trim(), tokensUsed: tokens };
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // System Prompt
-  // ═══════════════════════════════════════════════════════════
   private buildSystemPrompt(intent: string): string {
-    return `أنت مساعد ذكي متخصص في علم الجفر وعلم النفس البنيوي والطب التكاملي.
+    const base = `أنت مساعد ذكي في نظام الجفر الطبي الذكي (KnowledgeAtlas Sovereign).
+تخصصك: تحليل الأسماء وفق علوم الجفر والحروف والأبراج والطب التكاملي.
+لديك قاعدة معرفة شاملة: 9 جذور، 10 كواكب، 12 برجاً، 12 بيتاً، 4 طبائع، 28 حرفاً.
+التزم بالأخلاقيات: لا وعظ ديني، لا تشخيص طبي، لا تنبؤات قاطعة.`;
 
-قواعد صارمة:
-1. أجب بالاعتماد على السياق المُرفق حصراً (لا تخترع معلومات).
-2. إذا لم يكن السياق كافياً، قل صراحة: "المعلومات المتاحة غير كافية".
-3. حافظ على النص الأصلي عند الاقتباس — لا تغيّر الألفاظ.
-4. إذا كان السؤال طبياً، أضف تحذيراً: "هذه المعلومات لا تُغني عن استشارة طبيب".
-5. لا تخلط بين المصادر الداخلية والخارجية في نفس الفقرة.
-6. اكتب بالعربية الفصحى، بإيجاز ووضوح.
+    const intentHint: Record<string, string> = {
+      analytical: 'قدّم تحليلاً منهجياً منظماً.',
+      entity_lookup: 'أجب بتركيز على الكيان المطلوب.',
+      comparative: 'قدّم مقارنة واضحة بين الطرفين.',
+      therapeutic: 'قدّم توصيات عملية قابلة للتطبيق.',
+      medical: 'أشر إلى أن التحليل نمطي، ووجّه للطبيب عند الحاجة.',
+      general: 'أجب بشكل عام ومبسط.',
+    };
 
-نوع السؤال: ${intent}`;
+    return base + '\n\n' + (intentHint[intent] ?? '');
   }
 
   private intentLabel(intent: string): string {
     const labels: Record<string, string> = {
-      analytical: '🔍 تحليل',
-      therapeutic: '💊 علاج',
-      medical: '🏥 تحليل طبي',
-      comparative: '⚖️ مقارنة',
-      entity_lookup: '📖 استعلام',
-      general: '💬 سؤال عام',
+      analytical: 'تحليل شخصية',
+      entity_lookup: 'بحث عن كيان',
+      comparative: 'مقارنة',
+      therapeutic: 'توصية علاجية',
+      medical: 'استفسار طبي',
+      general: 'سؤال عام',
     };
-    return labels[intent] || '📖 استعلام';
+    return labels[intent] ?? 'عام';
   }
 
-  /**
-   * اختبار الاتصال بـ LLM
-   */
   async testConnection(provider: 'gemini' | 'openai'): Promise<{ ok: boolean; message: string }> {
     const apiKey = await this.getApiKey(provider);
     if (!apiKey) {
