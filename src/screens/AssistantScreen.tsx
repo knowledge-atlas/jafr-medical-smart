@@ -13,7 +13,7 @@ interface Message {
   role: 'user' | 'assistant';
   text: string;
   response?: AIResponse;
-  layer?: 'A' | 'B';
+  layer?: 'A' | 'B' | 'C';
   offline?: boolean;
   warnings?: string[];
   timestamp: string;
