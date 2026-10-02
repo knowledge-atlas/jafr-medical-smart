@@ -7,12 +7,12 @@ export interface ResonanceEntry {
 }
 
 export interface ResonanceResult {
-  key: string;              // "2+4"
-  rootA: number;            // الأصغر
-  rootB: number;            // الأكبر
+  key: string;
+  rootA: number;
+  rootB: number;
   entry: ResonanceEntry;
   isSelfResonance: boolean;
-  strength: number;         // 0..1
+  strength: number;
   verdict: 'بناء' | 'توازن' | 'تحذير' | 'صدام';
 }
 
@@ -96,23 +96,15 @@ export class ResonanceEngine {
   }
 
   getForRoot(root: number): ResonanceResult[] {
-    return this.getAll().filter(
-      (r) => r.rootA === root || r.rootB === root
-    );
+    return this.getAll().filter((r) => r.rootA === root || r.rootB === root);
   }
 
-  /** يُرجع أقوى 3 علاقات رنين لجذر معيّن */
   getTopForRoot(root: number, limit: number = 3): ResonanceResult[] {
-    return this.getForRoot(root)
-      .sort((a, b) => b.strength - a.strength)
-      .slice(0, limit);
+    return this.getForRoot(root).sort((a, b) => b.strength - a.strength).slice(0, limit);
   }
 
-  /** يُرجع أضعف 3 علاقات (للتنبيه من التعارض) */
   getWeakestForRoot(root: number, limit: number = 3): ResonanceResult[] {
-    return this.getForRoot(root)
-      .sort((a, b) => a.strength - b.strength)
-      .slice(0, limit);
+    return this.getForRoot(root).sort((a, b) => a.strength - b.strength).slice(0, limit);
   }
 
   size(): number {

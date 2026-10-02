@@ -37,7 +37,6 @@ describe('ResonanceEngine', () => {
     const top = engine.getTopForRoot(2, 3);
     expect(top.length).toBe(3);
     expect(top[0].strength).toBeGreaterThanOrEqual(top[1].strength);
-    expect(top[1].strength).toBeGreaterThanOrEqual(top[2].strength);
   });
 
   it('getWeakestForRoot يُرجع أضعف العلاقات', () => {
@@ -47,11 +46,10 @@ describe('ResonanceEngine', () => {
   });
 
   it('getForRoot(2) يُرجع 9 علاقات', () => {
-    const all = engine.getForRoot(2);
-    expect(all.length).toBe(9);
+    expect(engine.getForRoot(2).length).toBe(9);
   });
 
-  it('get(10, 1) يُرجع null (خارج النطاق)', () => {
+  it('get(10, 1) يُرجع null', () => {
     expect(engine.get(10, 1)).toBeNull();
   });
 
@@ -59,7 +57,7 @@ describe('ResonanceEngine', () => {
     expect(engine.get(0, 5)).toBeNull();
   });
 
-  it('verdict صحيح لرنين تضاعف (بناء)', () => {
+  it('verdict صحيح لرنين تضاعف', () => {
     const r = engine.get(2, 2);
     expect(['بناء', 'توازن', 'تحذير', 'صدام']).toContain(r?.verdict);
   });

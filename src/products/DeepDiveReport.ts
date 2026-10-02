@@ -2,6 +2,7 @@ import { AnalysisResult, NameAnalysisLayers } from '../application/use-cases/Ana
 import { NarrativeWeaver } from '../ai/NarrativeWeaver';
 import { ContextMode } from '../ai/ContextAwarePrompter';
 import { ReportSection, ProductMeta } from './types';
+import { ResonanceEngine, resonanceEngine } from '../domain/services/ResonanceEngine';
 
 export interface DeepDiveOutput {
   meta: ProductMeta;
@@ -20,12 +21,12 @@ const SECTION_META: Array<{ id: string; title: string; icon: string; weight: num
   { id: 'executive', title: 'الملخص التنفيذي', icon: '📋', weight: 2 },
   { id: 'identity', title: 'الهوية الاسمية', icon: '🪪', weight: 1 },
   { id: 'confidence', title: 'درجة الثقة', icon: '📊', weight: 1 },
-  { id: 'resonance', title: 'الرنين الطبقي', icon: '🎵', weight: 1 },
+  { id: 'resonance', title: 'الرنين الطبقي (نص البوني)', icon: '🎵', weight: 2 },
   { id: 'strengths', title: 'نقاط القوة', icon: '💪', weight: 2 },
   { id: 'challenges', title: 'التحديات', icon: '⚠️', weight: 2 },
   { id: 'shadow', title: 'الظل والجوانب الخفية', icon: '🌑', weight: 1 },
   { id: 'record', title: 'بيانات السجل', icon: '📜', weight: 1 },
-  { id: 'encyclopedia', title: 'الموسوعة الكاملة — الطبقات والرنين والطب', icon: '📚', weight: 3 },
+  { id: 'encyclopedia', title: 'الموسوعة الكاملة', icon: '📚', weight: 3 },
   { id: 'context', title: 'القراءة السياقية', icon: '🎯', weight: 2 },
   { id: 'recommendations', title: 'توصيات عملية', icon: '✅', weight: 2 },
   { id: 'smart', title: 'أهداف S.M.A.R.T', icon: '🎓', weight: 1 },
@@ -42,13 +43,10 @@ const MODE_LABEL: Record<ContextMode, string> = {
   commercial: 'تشخيص تجاري',
 };
 
-const PRODUCT_META = { productName: 'التقرير العميق', version: '1.2.0' };
+const PRODUCT_META = { productName: 'التقرير العميق', version: '1.3.0' };
 
 const LAYER_LABELS: Record<string, string> = {
-  root: 'الجذر',
-  planet: 'الكوكب',
-  sign: 'البرج',
-  house: 'البيت',
+  root: 'الجذر', planet: 'الكوكب', sign: 'البرج', house: 'البيت',
 };
 
 function humanizeLayer(id?: string, kind?: string): string {
@@ -60,10 +58,6 @@ function humanizeLayer(id?: string, kind?: string): string {
   return m ? `${label} ${m[1]}` : s;
 }
 
-/**
- * تُخفّض مستويات H في Markdown المُدمَج لتفادي كسر الشجرة البنيوية
- * (H1 يصبح H3، H2 يصبح H4، إلخ)
- */
 function normalizeMarkdownLevels(md: string, offset: number = 2): string {
   return md.replace(/^(#{1,5})\s/gm, (_, hashes: string) => {
     const newLevel = Math.min(6, hashes.length + offset);
@@ -71,8 +65,17 @@ function normalizeMarkdownLevels(md: string, offset: number = 2): string {
   });
 }
 
+function numOf(id?: string): number | null {
+  if (!id) return null;
+  const m = id.match(/(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
 export class DeepDiveReport {
-  constructor(private weaver: NarrativeWeaver = new NarrativeWeaver()) {}
+  constructor(
+    private weaver: NarrativeWeaver = new NarrativeWeaver(),
+    private resonance: ResonanceEngine = resonanceEngine
+  ) {}
 
   generate(
     analysis: AnalysisResult,
@@ -117,10 +120,13 @@ export class DeepDiveReport {
       confidence: [
         `**النتيجة الإجمالية:** ${pct}% — تصنيف: **${analysis.confidence.level}**`,
         '',
-        '**المحاور الثلاثة:**',
+        '**المحاور:**',
         `- جودة المدخل: ${(analysis.confidence.dimensions.inputQuality * 100).toFixed(0)}%`,
         `- اكتمال البيانات: ${(analysis.confidence.dimensions.dataCompleteness * 100).toFixed(0)}%`,
         `- اتساق الطبقات: ${(analysis.confidence.dimensions.layerConsistency * 100).toFixed(0)}%`,
+        `- قوة الرنين: ${(analysis.confidence.dimensions.resonanceStrength * 100).toFixed(0)}%`,
+        `- وضوح الوفق: ${(analysis.confidence.dimensions.wafqClarity * 100).toFixed(0)}%`,
+        `- سجل التحقق: ${(analysis.confidence.dimensions.verificationHistory * 100).toFixed(0)}%`,
       ].join('\n'),
       resonance: this.resonanceRead(L, analysis),
       strengths: this.strengthsRead(L),
@@ -143,15 +149,14 @@ export class DeepDiveReport {
       smart: this.smartRead(mode),
       sources: [
         '- `master.txt` — الموسوعة الأم (467 KB)',
+        '- `jafr_resonance.json` — 45 علاقة رنين حقيقية',
         '- الجذور الكاملة (9 جذور)',
         '- البواقي والأوفاق والتراكيب',
-        '- الموسوعة الطبية التكاملية',
         '- **تحليل محلي 100% — دون أي اتصال**',
       ].join('\n'),
       disclaimer:
-        'هذا تحليل نمطي لأغراض التأمل والمراجعة الذاتية. لا يُعدّ تشخيصاً طبياً ولا فتوى دينية ولا حكماً قاطعاً. القرار النهائي يبقى للمستخدم بعد استشارة المختصين.',
-      feedback:
-        'يمكنك تصنيف دقة هذا التقرير من الشاشة لتغذية النظام وتحسين دقته. تغذيتك تُخزَّن محلياً ولا تُشارك مع أي طرف.',
+        'هذا تحليل نمطي لأغراض التأمل والمراجعة الذاتية. لا يُعدّ تشخيصاً طبياً ولا فتوى دينية ولا حكماً قاطعاً.',
+      feedback: 'يمكنك تصنيف دقة هذا التقرير من الشاشة لتغذية النظام وتحسين دقته.',
       metadata: [
         `- المنتج: ${PRODUCT_META.productName} v${PRODUCT_META.version}`,
         `- الوضع: ${MODE_LABEL[mode]}`,
@@ -172,28 +177,47 @@ export class DeepDiveReport {
 
   private resonanceRead(L: NameAnalysisLayers, a: AnalysisResult): string {
     const items: string[] = [];
+    const rootNum = numOf(L.root);
 
-    if (L.root && L.planet) {
-      items.push(`- **${humanizeLayer(L.root, 'root')} ↔ ${L.planet}**: يشكّلان معاً محور الجوهر — الجذر يمنح البنية، والكوكب يمنح المحرك العاطفي.`);
-    }
-    if (L.root && L.sign) {
-      items.push(`- **${humanizeLayer(L.root, 'root')} ↔ ${L.sign}**: تناغم بين النواة والأسلوب الخارجي.`);
-    }
-    if (L.sign && L.element) {
-      items.push(`- **${L.sign} ↔ ${L.element}**: يربط الظاهر بالطبع الأساسي — قد يكون اتفاقاً أو توتّراً.`);
-    }
-    if (L.house && L.root) {
-      items.push(`- **${humanizeLayer(L.house, 'house')} ↔ ${humanizeLayer(L.root, 'root')}**: يحدد مسرح التطبيق العملي للجذر.`);
+    if (rootNum !== null) {
+      const top = this.resonance.getTopForRoot(rootNum, 3);
+      const weak = this.resonance.getWeakestForRoot(rootNum, 2);
+
+      if (top.length > 0) {
+        items.push('### 🌟 أقوى 3 رنين (نصوص البوني)');
+        items.push('');
+        for (const r of top) {
+          const partner = r.rootA === rootNum ? r.rootB : r.rootA;
+          items.push(`**${r.key} — الجذر ${rootNum} ↔ الجذر ${partner}** (${(r.strength * 100).toFixed(0)}%)`);
+          items.push(`- **الوصف:** ${r.entry.description}`);
+          items.push(`- **الظل:** ${r.entry.shadow}`);
+          items.push(`- **الترياق:** ${r.entry.remedy}`);
+          items.push('');
+        }
+      }
+
+      if (weak.length > 0 && weak[0].strength < 0.6) {
+        items.push('### ⚠️ أضعف رنين (يحتاج وعياً)');
+        items.push('');
+        for (const r of weak) {
+          if (r.strength >= 0.6) continue;
+          const partner = r.rootA === rootNum ? r.rootB : r.rootA;
+          items.push(`**${r.key} — الجذر ${rootNum} ↔ الجذر ${partner}** (${(r.strength * 100).toFixed(0)}%)`);
+          items.push(`- **التحدي:** ${r.entry.shadow}`);
+          items.push(`- **الترياق:** ${r.entry.remedy}`);
+          items.push('');
+        }
+      }
     }
 
-    const r = a.layers?.root;
-    if (r) {
-      items.push(`- **${humanizeLayer(r, 'root')} ↔ ذاته**: عند التضاعف، تتضخم قوته وظلّه معاً.`);
+    if (L.planet && L.sign) {
+      items.push('### 🔗 روابط الطبقات');
+      items.push('');
+      items.push(`- **${humanizeLayer(L.root, 'root')} ↔ ${L.planet}**: الجوهر (الجذر) يلتقي بمحرك العاطفة (الكوكب).`);
+      items.push(`- **${L.sign} ↔ ${L.element ?? '—'}**: البرج الطالع يعمل مع الطبع الأساسي.`);
     }
 
-    return items.length > 0
-      ? items.join('\n')
-      : 'لا توجد علاقات رنين واضحة.';
+    return items.length > 0 ? items.join('\n') : 'لا توجد بيانات رنين كافية.';
   }
 
   private strengthsRead(L: NameAnalysisLayers): string {
@@ -259,9 +283,9 @@ export class DeepDiveReport {
       lines.push('**في حالتك (طبع مائي):** الظل يظهر حين يتحول التعاطف إلى **ذوبان**، والحساسية إلى **غرق**، والحدس إلى **وهم**.');
     }
 
-    if (L.root && a.confidence.overall < 0.7) {
+    if (a.confidence.overall < 0.7) {
       lines.push('');
-      lines.push('**ملاحظة:** درجة الثقة أقل من 70%، فالظل هنا تقديري — يحتاج تحققاً من التجربة الشخصية.');
+      lines.push('**ملاحظة:** درجة الثقة أقل من 70%، فالظل هنا تقديري.');
     }
 
     return lines.join('\n');
@@ -269,10 +293,10 @@ export class DeepDiveReport {
 
   private contextRead(mode: ContextMode): string {
     const map: Record<ContextMode, string> = {
-      personal: 'هذه القراءة تخدم **التأمل الذاتي** وتطوير الوعي بالأنماط. اقرأها كمرآة لا كحكم — خذ ما ينفعك واترك ما لا يشبهك.',
-      marital: 'القراءة تُعرض بوصفها **نقاط وعي للعلاقة**، وليست حكماً على أحد الطرفين. شارِكها مع الشريك كأداة حوار لا كسلاح.',
-      professional: 'القراءة تُعرض **كمرآة للميول المهنية** والبيئات المناسبة. استخدمها لاختيار البيئة التي يُزهر فيها نمطك، لا لتصنيف نفسك.',
-      commercial: 'القراءة تُعرض بوصفها **انطباعاً تسويقياً محتملاً**، لا ضماناً للنجاح. جرّب اختبارها ميدانياً قبل أي استثمار.',
+      personal: 'هذه القراءة تخدم **التأمل الذاتي** وتطوير الوعي بالأنماط. اقرأها كمرآة لا كحكم.',
+      marital: 'القراءة تُعرض بوصفها **نقاط وعي للعلاقة**، وليست حكماً على أحد الطرفين.',
+      professional: 'القراءة تُعرض **كمرآة للميول المهنية** والبيئات المناسبة.',
+      commercial: 'القراءة تُعرض بوصفها **انطباعاً تسويقياً محتملاً**، لا ضماناً للنجاح.',
     };
     return map[mode];
   }
@@ -280,28 +304,28 @@ export class DeepDiveReport {
   private recommendationsRead(mode: ContextMode): string {
     const map: Record<ContextMode, string[]> = {
       personal: [
-        '**10 دقائق مراقبة يومية**: سجّل نمطك السلوكي في دفتر صغير.',
+        '**10 دقائق مراقبة يومية**: سجّل نمطك السلوكي.',
         '**مذكرة أسبوعية**: راجع القرارات الكبرى كل جمعة.',
-        '**جلسة تأمل شهرية**: راجع التقرير كل 30 يوماً لتتبع التطور.',
+        '**جلسة تأمل شهرية**: راجع التقرير كل 30 يوماً.',
         '**قاعدة "لا قبل 24 ساعة"**: لا تتخذ قراراً كبيراً في يوم غضب أو فرح شديد.',
       ],
       marital: [
         '**قراءة مشتركة**: اقرآ التقرير معاً بصوت عالٍ.',
-        '**نقطتا انسجام + نقطة وعي**: اكتبا معاً ما تريدان تعزيزه وما تريدان تحسينه.',
+        '**نقطتا انسجام + نقطة وعي**: اكتبا معاً ما تريدان تعزيزه.',
         '**حوار شهري**: اجعلا التقرير أداة حوار، لا مادة خلاف.',
-        '**قاعدة الأسبوع**: خصصا 15 دقيقة أسبوعياً لمناقشة نمطكما.',
+        '**قاعدة الأسبوع**: خصصا 15 دقيقة أسبوعياً.',
       ],
       professional: [
-        '**طابق الميول مع البيئة**: قارن الطبائع مع طبيعة عملك الحالي.',
-        '**مسار واحد لمدة 90 يوماً**: جرّب مساراً بديلاً لثلاثة أشهر — لا أكثر.',
-        '**سجّل النتائج**: استخدم المفكرة لتوثيق التغذية الراجعة.',
+        '**طابق الميول مع البيئة**: قارن الطبائع مع طبيعة عملك.',
+        '**مسار واحد لمدة 90 يوماً**: جرّب مساراً بديلاً.',
+        '**سجّل النتائج**: استخدم المفكرة.',
         '**راجع ربع سنوي**: قيّم التطور كل 3 أشهر.',
       ],
       commercial: [
-        '**اختبر مع 10 عملاء**: اعرض الاسم على 10 أشخاص من جمهورك المستهدف.',
+        '**اختبر مع 10 عملاء**: اعرض الاسم على جمهورك المستهدف.',
         '**قارن مع 3 منافسين**: ادرس الانطباع مقابل السوق.',
-        '**اختبار A/B**: قبل أي استثمار تسويقي كبير.',
-        '**استشر مختص تسويق**: التقرير نقطة انطلاق، لا وجهة نهائية.',
+        '**اختبار A/B**: قبل أي استثمار تسويقي.',
+        '**استشر مختص تسويق**: التقرير نقطة انطلاق.',
       ],
     };
     return map[mode].map((x) => `- ${x}`).join('\n');
@@ -316,9 +340,9 @@ export class DeepDiveReport {
     }[mode];
     return [
       `**S — محدد (Specific):** اختر ${target} للعمل عليه خلال 30 يوماً.`,
-      '**M — قابل للقياس (Measurable):** حدد مؤشراً يومياً واحداً (مثال: عدد المرات التي لاحظت فيها النمط).',
-      '**A — قابل للتحقيق (Achievable):** ضمن مواردك ووقتك — لا تطلب المستحيل.',
-      '**R — ذو صلة (Relevant):** مرتبط مباشرة بأحد التحديات المرصودة أعلاه.',
+      '**M — قابل للقياس (Measurable):** حدد مؤشراً يومياً واحداً.',
+      '**A — قابل للتحقيق (Achievable):** ضمن مواردك ووقتك.',
+      '**R — ذو صلة (Relevant):** مرتبط بأحد التحديات المرصودة.',
       '**T — محدد زمنياً (Time-bound):** التزم بأفق 30 يوماً، ثم قيّم.',
     ].join('\n\n');
   }
