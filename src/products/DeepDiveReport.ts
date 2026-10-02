@@ -3,6 +3,7 @@ import { NarrativeWeaver } from '../ai/NarrativeWeaver';
 import { ContextMode } from '../ai/ContextAwarePrompter';
 import { ReportSection, ProductMeta } from './types';
 import { ResonanceEngine, resonanceEngine } from '../domain/services/ResonanceEngine';
+import { SchismEngine, schismEngine } from '../domain/services/SchismEngine';
 
 export interface DeepDiveOutput {
   meta: ProductMeta;
@@ -25,6 +26,7 @@ const SECTION_META: Array<{ id: string; title: string; icon: string; weight: num
   { id: 'strengths', title: 'نقاط القوة', icon: '💪', weight: 2 },
   { id: 'challenges', title: 'التحديات', icon: '⚠️', weight: 2 },
   { id: 'shadow', title: 'الظل والجوانب الخفية', icon: '🌑', weight: 1 },
+  { id: 'schism', title: 'خريطة الانسجام البنيوي (Schism)', icon: '⚖️', weight: 2 },
   { id: 'record', title: 'بيانات السجل', icon: '📜', weight: 1 },
   { id: 'encyclopedia', title: 'الموسوعة الكاملة', icon: '📚', weight: 3 },
   { id: 'context', title: 'القراءة السياقية', icon: '🎯', weight: 2 },
@@ -43,7 +45,7 @@ const MODE_LABEL: Record<ContextMode, string> = {
   commercial: 'تشخيص تجاري',
 };
 
-const PRODUCT_META = { productName: 'التقرير العميق', version: '1.3.0' };
+const PRODUCT_META = { productName: 'التقرير العميق', version: '1.4.0' };
 
 const LAYER_LABELS: Record<string, string> = {
   root: 'الجذر', planet: 'الكوكب', sign: 'البرج', house: 'البيت',
@@ -74,7 +76,8 @@ function numOf(id?: string): number | null {
 export class DeepDiveReport {
   constructor(
     private weaver: NarrativeWeaver = new NarrativeWeaver(),
-    private resonance: ResonanceEngine = resonanceEngine
+    private resonance: ResonanceEngine = resonanceEngine,
+    private schism: SchismEngine = schismEngine
   ) {}
 
   generate(
@@ -132,6 +135,7 @@ export class DeepDiveReport {
       strengths: this.strengthsRead(L),
       challenges: this.challengesRead(L),
       shadow: this.shadowRead(L, analysis),
+      schism: this.schismRead(L, analysis),
       record: [
         `- **الاسم:** ${analysis.name}`,
         `- **الجذر:** ${humanizeLayer(L.root, 'root')}`,
@@ -265,6 +269,54 @@ export class DeepDiveReport {
       items.push('**غرق في الذاكرة**: الماضي يقيّد الحاضر.');
     }
     return items.length > 0 ? items.map((x) => `- ${x}`).join('\n') : '- لا توجد تحديات مرصودة.';
+  }
+
+
+  private schismRead(L: NameAnalysisLayers, _a: AnalysisResult): string {
+    const result = this.schism.evaluate({
+      root: L.root,
+      planet: L.planet,
+      sign: L.sign,
+      element: L.element,
+    });
+
+    const pct = (result.coherence * 100).toFixed(0);
+    const verdictIcon =
+      result.verdict === 'منسجم' ? '✅'
+      : result.verdict === 'توتّر طفيف' ? '⚠️'
+      : '🔴';
+
+    const lines: string[] = [];
+    lines.push(`**الانسجام البنيوي:** ${pct}% — ${verdictIcon} **${result.verdict}**`);
+    lines.push('');
+    lines.push(`- **الطبع الغالب:** ${result.dominantElement}`);
+    lines.push(`- **الطبع المفقود:** ${result.missingElement}`);
+    lines.push('');
+    lines.push('### تحليل الطبقات');
+    lines.push('');
+    for (const layer of result.layers) {
+      lines.push(`- **${layer.source}** → الطبع: **${layer.element}**`);
+    }
+    lines.push('');
+    if (result.pairs.length > 0) {
+      lines.push('### تقييم التناغم بين الطبقات');
+      lines.push('');
+      for (const p of result.pairs) {
+        const scorePct = (p.score * 100).toFixed(0);
+        const marker = p.score >= 0.8 ? '💚' : p.score >= 0.5 ? '💛' : '❤️';
+        lines.push(`- ${marker} **${p.a}** ↔ **${p.b}**: ${scorePct}%`);
+      }
+      lines.push('');
+    }
+    lines.push('### التفسير');
+    lines.push('');
+    lines.push(result.narrative);
+    lines.push('');
+    lines.push('### الترياق المقترح');
+    lines.push('');
+    lines.push(`> ${result.remedy}`);
+
+    return lines.join('\n');
   }
 
   private shadowRead(L: NameAnalysisLayers, a: AnalysisResult): string {
