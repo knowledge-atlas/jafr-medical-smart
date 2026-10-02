@@ -96,7 +96,7 @@ describe('DeepDiveReport v1.5 — قسم temporal', () => {
     const out = engine.generate(fakeAnalysis);
     const t = out.sections.find((s) => s.id === 'temporal');
     expect(t).toBeDefined();
-    expect(t?.content).toContain('التقويم');
+    expect(t?.content).toContain('متوسط طاقة');
   });
 
   it('temporal يعرض 7 أيام', () => {
