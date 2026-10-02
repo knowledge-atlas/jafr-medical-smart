@@ -10,6 +10,7 @@ import { loadFullEncyclopedia } from './src/data/encyclopediaLoader';
 
 import HomeScreen from './src/screens/HomeScreen';
 import ReportScreen from './src/screens/ReportScreen';
+import ReportChatScreen from './src/screens/ReportChatScreen';
 import HistoryScreen from './src/screens/HistoryScreen';
 import MedicalScreen from './src/screens/MedicalScreen';
 import SearchScreen from './src/screens/SearchScreen';
@@ -112,6 +113,7 @@ export default function App() {
       >
         <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
         <Stack.Screen name="Report" component={ReportScreen} options={{ title: 'التقرير' }} />
+        <Stack.Screen name="ReportChat" component={ReportChatScreen} options={{ title: '✨ اسأل عن التقرير' }} />
         <Stack.Screen name="History" component={HistoryScreen} options={{ title: 'السجل' }} />
         <Stack.Screen name="EntityDetail" component={EntityDetailScreen} options={{ title: 'تفاصيل الكيان' }} />
       </Stack.Navigator>

@@ -7,6 +7,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { buildReport } from '../engine/reportBuilder';
 import { reportsStorage } from '../storage/reportsStorage';
 import { analyzeName, analysisToLegacyReport } from '../application/di';
+import { reportChat } from '../ai/ReportChat';
 import { DeepDiveReport } from '../products/DeepDiveReport';
 import { ContextMode } from '../ai/ContextAwarePrompter';
 
