@@ -101,7 +101,7 @@ export class ReportChat {
     if (!inputGuard.allowed) {
       return {
         role: 'assistant',
-        content: `⚠️ ${inputGuard.reason ?? 'لا يمكنني الإجابة على هذا السؤال.'}`,
+        content: `⚠️ **لا يمكنني الإجابة على هذا السؤال.**\n\n${inputGuard.reason ?? ''}`,
         timestamp: Date.now(),
         warning: 'ethical_guardrail',
       };
