@@ -1,4 +1,4 @@
-import { AnalysisResult } from '../application/use-cases/AnalyzeNameUseCase';
+import { AnalysisResult, NameAnalysisLayers } from '../application/use-cases/AnalyzeNameUseCase';
 import { NarrativeWeaver } from '../ai/NarrativeWeaver';
 import { ContextMode } from '../ai/ContextAwarePrompter';
 import { ReportSection, ProductMeta } from './types';
@@ -41,6 +41,24 @@ const MODE_LABEL: Record<ContextMode, string> = {
   commercial: 'تشخيص تجاري',
 };
 
+const PRODUCT_META = { productName: 'التقرير العميق', version: '1.0.0' };
+
+const LAYER_LABELS: Record<string, string> = {
+  root: 'الجذر',
+  planet: 'الكوكب',
+  sign: 'البرج',
+  house: 'البيت',
+};
+
+function humanizeLayer(id?: string, kind?: string): string {
+  if (!id) return '—';
+  const s = String(id);
+  const m = s.match(/(\d+)/);
+  const prefix = kind ?? s.split('_')[0];
+  const label = LAYER_LABELS[prefix] ?? prefix;
+  return m ? `${label} ${m[1]}` : s;
+}
+
 export class DeepDiveReport {
   constructor(private weaver: NarrativeWeaver = new NarrativeWeaver()) {}
 
@@ -50,8 +68,8 @@ export class DeepDiveReport {
     const wordCount = markdown.split(/\s+/).filter(Boolean).length;
     const meta: ProductMeta = {
       productId: 'deep-dive-report',
-      productName: 'التقرير العميق',
-      version: '1.0.0',
+      productName: PRODUCT_META.productName,
+      version: PRODUCT_META.version,
       generatedAt: new Date().toISOString(),
       offline: true,
     };
@@ -66,17 +84,17 @@ export class DeepDiveReport {
   }
 
   private buildSections(analysis: AnalysisResult, mode: ContextMode): ReportSection[] {
-    const L = analysis.layers ?? {};
+    const L: NameAnalysisLayers = analysis.layers ?? {};
     const pct = (analysis.confidence.overall * 100).toFixed(0);
     const narrative = this.weaver.weave(analysis, mode);
 
     const contentMap: Record<string, string> = {
       executive: narrative,
       identity: `الاسم الأصلي: **${analysis.name}** — الوضع السياقي: ${MODE_LABEL[mode]}.`,
-      root: L.root ?? 'لم يتم استخراج الجذر.',
-      planet: L.planet ?? 'لم يتم استخراج الكوكب.',
-      sign: L.sign ?? 'لم يتم استخراج البرج.',
-      house: L.house ?? 'لم يتم استخراج البيت.',
+      root: `${humanizeLayer(L.root, 'root')} — ${L.root ?? '—'}`,
+      planet: L.planet ?? '—',
+      sign: L.sign ?? '—',
+      house: humanizeLayer(L.house, 'house'),
       element: this.elementRead(L.element),
       confidence: `**${pct}%** — تصنيف: ${analysis.confidence.level}.`,
       resonance: this.resonanceRead(analysis),
@@ -90,7 +108,7 @@ export class DeepDiveReport {
       disclaimer:
         'هذا تحليل نمطي لأغراض التأمل والمراجعة الذاتية. لا يُعدّ تشخيصاً طبياً ولا فتوى دينية ولا حكماً قاطعاً.',
       feedback: 'يمكنك تصنيف دقة هذا التقرير من الشاشة لتغذية النظام وتحسين دقته.',
-      metadata: `- المنتج: ${meta0.productName} v${meta0.version}\n- الوضع: ${MODE_LABEL[mode]}\n- الوضع دون اتصال: نعم`,
+      metadata: `- المنتج: ${PRODUCT_META.productName} v${PRODUCT_META.version}\n- الوضع: ${MODE_LABEL[mode]}\n- الوضع دون اتصال: نعم`,
     };
 
     return SECTION_META.map((s) => ({
@@ -114,24 +132,24 @@ export class DeepDiveReport {
   }
 
   private resonanceRead(a: AnalysisResult): string {
-    const L = a.layers ?? {};
+    const L: NameAnalysisLayers = a.layers ?? {};
     const parts: string[] = [];
-    if (L.root && L.planet) parts.push(`الجذر ${L.root} مع الكوكب ${L.planet}`);
+    if (L.root && L.planet) parts.push(`${humanizeLayer(L.root, 'root')} مع الكوكب ${L.planet}`);
     if (L.sign && L.element) parts.push(`البرج ${L.sign} مع الطبع ${L.element}`);
     return parts.length > 0 ? `تناغم: ${parts.join(' / ')}.` : 'لا توجد علاقات رنين واضحة.';
   }
 
-  private strengthsRead(L: import('../application/use-cases/AnalyzeNameUseCase').NameAnalysisLayers): string {
+  private strengthsRead(L: NameAnalysisLayers): string {
     const items: string[] = [];
     if (L.element === 'ناري') items.push('اندفاع وحسم في القرارات.');
     if (L.element === 'ترابي') items.push('قدرة على الالتزام طويل المدى.');
     if (L.element === 'هوائي') items.push('مهارات تواصل ومرونة عالية.');
     if (L.element === 'مائي') items.push('ذكاء عاطفي وحدس مرهف.');
-    if (L.root) items.push(`اتصال بجذر ${L.root} يمنح ثباتاً في الأزمات.`);
+    if (L.root) items.push(`اتصال بـ${humanizeLayer(L.root, 'root')} يمنح ثباتاً في الأزمات.`);
     return items.length > 0 ? items.map((x) => `- ${x}`).join('\n') : '- تُحدد عند اكتمال البيانات.';
   }
 
-  private challengesRead(L: import('../application/use-cases/AnalyzeNameUseCase').NameAnalysisLayers): string {
+  private challengesRead(L: NameAnalysisLayers): string {
     const items: string[] = [];
     if (L.element === 'ناري') items.push('تسرّع قد يُوقع في قرارات غير مدروسة.');
     if (L.element === 'ترابي') items.push('مقاومة للتغيير وميل للجمود.');
@@ -176,7 +194,7 @@ export class DeepDiveReport {
     return map[mode].map((x) => `- ${x}`).join('\n');
   }
 
-  private smartRead(mode: ContextMode): string {
+  private smartRead(_mode: ContextMode): string {
     return [
       '**محدد (Specific):** اختر نقطة واحدة للعمل عليها.',
       '**قابل للقياس (Measurable):** حدد مؤشراً واضحاً.',
@@ -205,9 +223,3 @@ export class DeepDiveReport {
     return lines.join('\n');
   }
 }
-
-// constant metadata used inside contentMap
-const meta0 = {
-  productName: 'التقرير العميق',
-  version: '1.0.0',
-};

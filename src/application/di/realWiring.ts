@@ -15,18 +15,24 @@ function realCalculateAbjad(name: string): number {
   return result.total;
 }
 
+function numberLabel(prefix: string, value: any): string | undefined {
+  if (value === undefined || value === null || value === '') return undefined;
+  if (typeof value === 'number') return `${prefix}_${value}`;
+  return String(value);
+}
+
 function realExtractLayers(name: string, _abjad: number): NameAnalysisLayers {
   const calc: any = calculate(name);
   if (!calc || (typeof calc === 'object' && 'error' in calc)) {
     return {};
   }
+
   const rootValue = calc.root;
   return {
-    root: rootValue !== undefined && rootValue !== null
-      ? `root_${rootValue}`
-      : undefined,
+    root: numberLabel('root', rootValue),
     planet: calc.internal?.planet ?? undefined,
     sign: calc.internal?.sign ?? undefined,
+    house: numberLabel('house', calc.house ?? calc.internal?.house),
     element: calc.internal?.element ?? undefined,
   };
 }
