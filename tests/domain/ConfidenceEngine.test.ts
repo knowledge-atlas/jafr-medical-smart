@@ -1,204 +1,213 @@
-// ================================================================
-// اختبارات ConfidenceEngine
-// ================================================================
-
 import { describe, it, expect } from 'vitest';
-import { confidenceEngine, ConfidenceInput } from '../../src/domain/services/ConfidenceEngine';
+import {
+  ConfidenceEngine,
+  ConfidenceDimensions,
+} from '../../src/domain/services/ConfidenceEngine';
+
+const makeDims = (overrides: Partial<ConfidenceDimensions> = {}): ConfidenceDimensions => ({
+  inputQuality: 1,
+  dataCompleteness: 1,
+  layerConsistency: 1,
+  resonanceStrength: 1,
+  wafqClarity: 1,
+  verificationHistory: 1,
+  ...overrides,
+});
 
 describe('ConfidenceEngine', () => {
-  const baseInput: ConfidenceInput = {
-    name: 'محمد',
-    letters: ['م', 'ح', 'م', 'د'],
-    root: 2,
-    planet: 'القمر',
-    sign: 'السرطان',
-    element: 'ماء',
-    house: 4,
-    resonance: { description: 'رنين موزون', compatibleWith: [4, 6] },
-    wafq: [[4, 9, 2], [3, 5, 7], [8, 1, 6]],
-  };
+  const engine = new ConfidenceEngine();
 
-  describe('calculate (full)', () => {
-    it('should return a complete result', () => {
-      const result = confidenceEngine.calculate(baseInput);
-      expect(result.total).toBeGreaterThanOrEqual(0);
-      expect(result.total).toBeLessThanOrEqual(100);
-      expect(result.level).toBeTruthy();
-      expect(result.levelId).toBeGreaterThanOrEqual(0);
-      expect(result.breakdown).toBeTruthy();
-    });
-
-    it('should have all 6 breakdown components', () => {
-      const result = confidenceEngine.calculate(baseInput);
-      expect(result.breakdown.inputQuality).toBeDefined();
-      expect(result.breakdown.dataCompleteness).toBeDefined();
-      expect(result.breakdown.layerConsistency).toBeDefined();
-      expect(result.breakdown.resonanceStrength).toBeDefined();
-      expect(result.breakdown.wafqClarity).toBeDefined();
-      expect(result.breakdown.verificationHistory).toBeDefined();
-    });
-
-    it('should give high confidence for consistent input', () => {
-      const result = confidenceEngine.calculate(baseInput);
-      expect(result.total).toBeGreaterThan(70);
-      expect(result.levelId).toBeGreaterThanOrEqual(7);
-    });
+  it('1. returns 1.0 when all dimensions perfect', () => {
+    expect(engine.calculateOverall(makeDims())).toBeCloseTo(1.0);
   });
 
-  describe('inputQuality', () => {
-    it('should give 0 for empty letters', () => {
-      const input: ConfidenceInput = { ...baseInput, letters: [] };
-      const result = confidenceEngine.calculate(input);
-      expect(result.breakdown.inputQuality).toBe(0);
-    });
-
-    it('should warn for very short name', () => {
-      const input: ConfidenceInput = { ...baseInput, name: 'ي', letters: ['ي'] };
-      const result = confidenceEngine.calculate(input);
-      expect(result.warnings.some(w => w.includes('قصير'))).toBe(true);
-    });
-
-    it('should give high score for 3-10 letters', () => {
-      const input: ConfidenceInput = { ...baseInput, name: 'فاطمة', letters: ['ف', 'ا', 'ط', 'م', 'ه'] };
-      const result = confidenceEngine.calculate(input);
-      expect(result.breakdown.inputQuality).toBeGreaterThan(80);
-    });
+  it('2. returns 0 when all dimensions zero', () => {
+    expect(
+      engine.calculateOverall(
+        makeDims({
+          inputQuality: 0,
+          dataCompleteness: 0,
+          layerConsistency: 0,
+          resonanceStrength: 0,
+          wafqClarity: 0,
+          verificationHistory: 0,
+        })
+      )
+    ).toBeCloseTo(0);
   });
 
-  describe('dataCompleteness', () => {
-    it('should detect missing planet', () => {
-      const input: ConfidenceInput = { ...baseInput, planet: '' };
-      const result = confidenceEngine.calculate(input);
-      expect(result.warnings.some(w => w.includes('الكوكب'))).toBe(true);
-    });
-
-    it('should detect missing sign', () => {
-      const input: ConfidenceInput = { ...baseInput, sign: '' };
-      const result = confidenceEngine.calculate(input);
-      expect(result.warnings.some(w => w.includes('البرج'))).toBe(true);
-    });
-
-    it('should give 100 for complete data', () => {
-      const result = confidenceEngine.calculate(baseInput);
-      expect(result.breakdown.dataCompleteness).toBeGreaterThanOrEqual(90);
-    });
+  it('3. inputQuality weight = 0.10', () => {
+    const w = engine.calculateOverall(
+      makeDims({
+        inputQuality: 1,
+        dataCompleteness: 0,
+        layerConsistency: 0,
+        resonanceStrength: 0,
+        wafqClarity: 0,
+        verificationHistory: 0,
+      })
+    );
+    expect(w).toBeCloseTo(0.1);
   });
 
-  describe('layerConsistency', () => {
-    it('should penalize planet-element mismatch', () => {
-      const input: ConfidenceInput = {
-        ...baseInput,
-        planet: 'الشمس', // ناري
-        element: 'ماء',  // مائي
-      };
-      const result = confidenceEngine.calculate(input);
-      expect(result.breakdown.layerConsistency).toBeLessThan(90);
-      expect(result.warnings.some(w => w.includes('تعارض'))).toBe(true);
-    });
-
-    it('should penalize invalid root', () => {
-      const input: ConfidenceInput = { ...baseInput, root: 15 };
-      const result = confidenceEngine.calculate(input);
-      expect(result.breakdown.layerConsistency).toBeLessThan(80);
-    });
-
-    it('should penalize invalid house', () => {
-      const input: ConfidenceInput = { ...baseInput, house: 20 };
-      const result = confidenceEngine.calculate(input);
-      expect(result.breakdown.layerConsistency).toBeLessThan(90);
-    });
-
-    it('should penalize unknown element', () => {
-      const input: ConfidenceInput = { ...baseInput, element: 'نور' };
-      const result = confidenceEngine.calculate(input);
-      expect(result.breakdown.layerConsistency).toBeLessThan(80);
-    });
-
-    it('should give 100 for perfectly consistent input', () => {
-      const result = confidenceEngine.calculate(baseInput);
-      expect(result.breakdown.layerConsistency).toBe(100);
-    });
+  it('4. classifies 0.90 as عالية', () => {
+    expect(engine.classify(0.9)).toBe('عالية');
   });
 
-  describe('resonanceStrength', () => {
-    it('should give neutral score for no resonance', () => {
-      const input: ConfidenceInput = { ...baseInput, resonance: undefined };
-      const result = confidenceEngine.calculate(input);
-      expect(result.breakdown.resonanceStrength).toBe(70);
-    });
-
-    it('should give high score for complete resonance', () => {
-      const result = confidenceEngine.calculate(baseInput);
-      expect(result.breakdown.resonanceStrength).toBeGreaterThan(80);
-    });
+  it('5. classifies 0.80 as عالية (boundary)', () => {
+    expect(engine.classify(0.8)).toBe('عالية');
   });
 
-  describe('wafqClarity', () => {
-    it('should give neutral score for no wafq', () => {
-      const input: ConfidenceInput = { ...baseInput, wafq: undefined };
-      const result = confidenceEngine.calculate(input);
-      expect(result.breakdown.wafqClarity).toBe(60);
-    });
-
-    it('should detect 3x3 wafq', () => {
-      const result = confidenceEngine.calculate(baseInput);
-      expect(result.breakdown.wafqClarity).toBeGreaterThanOrEqual(80);
-    });
+  it('6. classifies 0.79 as متوسطة', () => {
+    expect(engine.classify(0.79)).toBe('متوسطة');
   });
 
-  describe('level classification', () => {
-    it('should classify perfect input as يقين مطلق or شبه يقينية', () => {
-      const result = confidenceEngine.calculate(baseInput);
-      expect(result.levelId).toBeGreaterThanOrEqual(8);
-    });
-
-    it('should classify poor input as ضعيفة', () => {
-      const input: ConfidenceInput = {
-        name: 'ي',
-        letters: ['ي'],
-        root: 15,
-        planet: '',
-        sign: '',
-        element: 'نور',
-        house: 20,
-      };
-      const result = confidenceEngine.calculate(input);
-      expect(result.levelId).toBeLessThan(4);
-    });
+  it('7. classifies 0.65 as متوسطة (boundary)', () => {
+    expect(engine.classify(0.65)).toBe('متوسطة');
   });
 
-  describe('shouldAbstain', () => {
-    it('should recommend abstention for low confidence', () => {
-      const input: ConfidenceInput = {
-        name: 'ي',
-        letters: ['ي'],
-        root: 15,
-        planet: '',
-        sign: '',
-        element: 'نور',
-        house: 20,
-      };
-      const result = confidenceEngine.calculate(input);
-      expect(confidenceEngine.shouldAbstain(result)).toBe(true);
-    });
-
-    it('should NOT recommend abstention for high confidence', () => {
-      const result = confidenceEngine.calculate(baseInput);
-      expect(confidenceEngine.shouldAbstain(result)).toBe(false);
-    });
+  it('8. classifies 0.64 as ضعيفة', () => {
+    expect(engine.classify(0.64)).toBe('ضعيفة');
   });
 
-  describe('getLevelEmoji', () => {
-    it('should return green for high level', () => {
-      expect(confidenceEngine.getLevelEmoji(10)).toBe('🟢');
-    });
+  it('9. classifies 0.50 as ضعيفة (boundary)', () => {
+    expect(engine.classify(0.5)).toBe('ضعيفة');
+  });
 
-    it('should return yellow for medium level', () => {
-      expect(confidenceEngine.getLevelEmoji(6)).toBe('🟡');
-    });
+  it('10. classifies 0.49 as منعدمة', () => {
+    expect(engine.classify(0.49)).toBe('منعدمة');
+  });
 
-    it('should return red for low level', () => {
-      expect(confidenceEngine.getLevelEmoji(2)).toBe('🔴');
+  it('11. classifies 0.00 as منعدمة', () => {
+    expect(engine.classify(0)).toBe('منعدمة');
+  });
+
+  it('12. no abstention when all dimensions healthy', () => {
+    expect(engine.evaluate(makeDims()).shouldAbstain).toBe(false);
+  });
+
+  it('13. abstains when overall < threshold', () => {
+    const r = engine.evaluate(
+      makeDims({
+        inputQuality: 0.2,
+        dataCompleteness: 0.2,
+        layerConsistency: 0.2,
+        resonanceStrength: 0.2,
+        wafqClarity: 0.2,
+        verificationHistory: 0.2,
+      })
+    );
+    expect(r.shouldAbstain).toBe(true);
+    expect(r.reasons.some((x) => x.includes('الإجمالية'))).toBe(true);
+  });
+
+  it('14. abstains when layerConsistency < 0.30', () => {
+    const r = engine.evaluate(makeDims({ layerConsistency: 0.25 }));
+    expect(r.shouldAbstain).toBe(true);
+    expect(r.reasons.some((x) => x.includes('اتساق'))).toBe(true);
+  });
+
+  it('15. abstains when dataCompleteness < 0.20', () => {
+    const r = engine.evaluate(makeDims({ dataCompleteness: 0.15 }));
+    expect(r.shouldAbstain).toBe(true);
+  });
+
+  it('16. abstains when inputQuality < 0.10', () => {
+    const r = engine.evaluate(makeDims({ inputQuality: 0.05 }));
+    expect(r.shouldAbstain).toBe(true);
+  });
+
+  it('17. level عالية for strong dims', () => {
+    const r = engine.evaluate(
+      makeDims({ inputQuality: 0.9, dataCompleteness: 0.9, layerConsistency: 0.9 })
+    );
+    expect(r.level).toBe('عالية');
+  });
+
+  it('18. level ضعيفة for borderline dims', () => {
+    const r = engine.evaluate(
+      makeDims({
+        inputQuality: 0.6,
+        dataCompleteness: 0.6,
+        layerConsistency: 0.6,
+        resonanceStrength: 0.6,
+        wafqClarity: 0.6,
+        verificationHistory: 0.6,
+      })
+    );
+    expect(r.level).toBe('ضعيفة');
+  });
+
+  it('19. level منعدمة for very weak dims', () => {
+    const r = engine.evaluate(
+      makeDims({
+        inputQuality: 0.1,
+        dataCompleteness: 0.1,
+        layerConsistency: 0.1,
+        resonanceStrength: 0.1,
+        wafqClarity: 0.1,
+        verificationHistory: 0.1,
+      })
+    );
+    expect(r.level).toBe('منعدمة');
+  });
+
+  it('20. custom threshold respected', () => {
+    const strict = new ConfidenceEngine(undefined, 0.75);
+    const r = strict.evaluate(
+      makeDims({
+        inputQuality: 0.7,
+        dataCompleteness: 0.7,
+        layerConsistency: 0.7,
+        resonanceStrength: 0.7,
+        wafqClarity: 0.7,
+        verificationHistory: 0.7,
+      })
+    );
+    expect(r.shouldAbstain).toBe(true);
+  });
+
+  it('21. custom weights applied', () => {
+    const custom = new ConfidenceEngine({
+      inputQuality: 0.5,
+      dataCompleteness: 0.5,
+      layerConsistency: 0,
+      resonanceStrength: 0,
+      wafqClarity: 0,
+      verificationHistory: 0,
     });
+    const score = custom.calculateOverall(
+      makeDims({
+        inputQuality: 1,
+        dataCompleteness: 0,
+        layerConsistency: 0,
+        resonanceStrength: 0,
+        wafqClarity: 0,
+        verificationHistory: 0,
+      })
+    );
+    expect(score).toBeCloseTo(0.5);
+  });
+
+  it('22. returns dimensions in result', () => {
+    const dims = makeDims();
+    expect(engine.evaluate(dims).dimensions).toEqual(dims);
+  });
+
+  it('23. reasons empty when no abstention', () => {
+    expect(engine.evaluate(makeDims()).reasons).toEqual([]);
+  });
+
+  it('24. multiple abstention reasons coexist', () => {
+    const r = engine.evaluate(
+      makeDims({ layerConsistency: 0.1, dataCompleteness: 0.1, inputQuality: 0.05 })
+    );
+    expect(r.reasons.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('25. overall within [0, 1]', () => {
+    const r = engine.evaluate(makeDims());
+    expect(r.overall).toBeGreaterThanOrEqual(0);
+    expect(r.overall).toBeLessThanOrEqual(1);
   });
 });
