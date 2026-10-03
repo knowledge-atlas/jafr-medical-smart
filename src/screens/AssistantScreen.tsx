@@ -8,7 +8,7 @@ import { AIResponse } from '../ai/types';
 import { createRealAnalyzeNameUseCase } from '../application/di';
 import { routeAssistantText } from './assistantRouter';
 import { defaultLLMCaller } from '../ai/defaultLLMCaller';
-import { ScientificReportEngine } from '../ai/ScientificReportEngine';
+import { AnalyticalHypothesisEngine } from "../ai/AnalyticalHypothesisEngine"
 import { DeepDiveReport } from '../products/DeepDiveReport';
 import { analyzeName } from '../application/di';
 
@@ -31,7 +31,7 @@ const SUGGESTIONS = [
   'ما هي أفضل أيام الذروة القادمة؟',
 ];
 
-const scientificEngine = new ScientificReportEngine();
+const analyticalEngine = new AnalyticalHypothesisEngine();
 const deepDive = new DeepDiveReport();
 
 const hybridEngine = new HybridEngine({
@@ -99,7 +99,7 @@ export default function AssistantScreen() {
           const deepDiveOutput = deepDive.generate(analysis, route.mode ?? 'personal', {
             richMarkdown: analysis.report,
           });
-          const scientific = await scientificEngine.buildFromDeepDive(deepDiveOutput);
+          const scientific = await analyticalEngine.buildFromDeepDive(deepDiveOutput);
 
           const aiMsg: Message = {
             id: (Date.now() + 2).toString(),

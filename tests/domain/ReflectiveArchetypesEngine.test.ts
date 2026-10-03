@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PsychologicalAxesEngine, psychologicalAxesEngine } from '../../src/domain/services/PsychologicalAxesEngine';
+import { ReflectiveArchetypesEngine, reflectiveArchetypesEngine } from '../../src/domain/services/ReflectiveArchetypesEngine';
 import { NameAnalysisLayers } from '../../src/application/use-cases/AnalyzeNameUseCase';
 
 const layers: NameAnalysisLayers = {
@@ -10,8 +10,8 @@ const layers: NameAnalysisLayers = {
   element: 'ترابي',
 };
 
-describe('PsychologicalAxesEngine', () => {
-  const engine = new PsychologicalAxesEngine();
+describe('ReflectiveArchetypesEngine', () => {
+  const engine = new ReflectiveArchetypesEngine();
 
   it('يولّد 12 محوراً فريد', () => {
     const p = engine.analyze('محمد', layers);
@@ -92,15 +92,15 @@ describe('PsychologicalAxesEngine', () => {
     expect(axis?.narrative).toContain('متوسط طاقة شهرك');
   });
 
-  it('محور الطاقة الهرمونية يستخدم MEDICAL_ROOTS', () => {
+  it('محور الإيقاع الرمزي موجود', () => {
     const p = engine.analyze('محمد', layers);
-    const axis = p.axes.find((a) => a.id === 'hormonal_energy');
+    const axis = p.axes.find((a) => a.id === 'symbolic_rhythm');
     expect(axis).toBeDefined();
   });
 
-  it('محور النقطة الحيوية موجود', () => {
+  it('محور المركز الرمزي موجود', () => {
     const p = engine.analyze('محمد', layers);
-    const axis = p.axes.find((a) => a.id === 'vital_point');
+    const axis = p.axes.find((a) => a.id === 'symbolic_center');
     expect(axis).toBeDefined();
   });
 
@@ -180,6 +180,6 @@ describe('PsychologicalAxesEngine', () => {
   });
 
   it('singleton موجود', () => {
-    expect(psychologicalAxesEngine.analyze('محمد', layers)).toBeDefined();
+    expect(reflectiveArchetypesEngine.analyze('محمد', layers)).toBeDefined();
   });
 });

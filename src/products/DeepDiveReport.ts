@@ -5,7 +5,7 @@ import { ReportSection, ProductMeta } from './types';
 import { ResonanceEngine, resonanceEngine } from '../domain/services/ResonanceEngine';
 import { SchismEngine, schismEngine } from '../domain/services/SchismEngine';
 import { TemporalAnalyzer, temporalAnalyzer } from '../domain/services/TemporalAnalyzer';
-import { PsychologicalAxesEngine, psychologicalAxesEngine } from '../domain/services/PsychologicalAxesEngine';
+import { ReflectiveArchetypesEngine, reflectiveArchetypesEngine } from '../domain/services/ReflectiveArchetypesEngine';
 
 export interface DeepDiveOutput {
   meta: ProductMeta;
@@ -83,7 +83,7 @@ export class DeepDiveReport {
     private resonance: ResonanceEngine = resonanceEngine,
     private schism: SchismEngine = schismEngine,
     private temporal: TemporalAnalyzer = temporalAnalyzer,
-    private psychology: PsychologicalAxesEngine = psychologicalAxesEngine
+    private psychology: ReflectiveArchetypesEngine = reflectiveArchetypesEngine
   ) {}
 
   generate(

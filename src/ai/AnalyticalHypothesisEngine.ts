@@ -47,7 +47,7 @@ const MEDICAL_PATTERNS = [
   { pattern: /5-HT\d?[A-Z]?/gi, label: 'مصطلح طبي' },
 ];
 
-export class ScientificReportEngine {
+export class AnalyticalHypothesisEngine {
   private llmCaller?: LLMCaller;
 
   constructor(deps: { llmCaller?: LLMCaller | null } = {}) {
@@ -315,4 +315,4 @@ export class ScientificReportEngine {
   }
 }
 
-export const scientificReportEngine = new ScientificReportEngine();
+export const scientificReportEngine = new AnalyticalHypothesisEngine();

@@ -9,7 +9,7 @@ import {
 
 export type AxisLevel = 'مرتفع' | 'متوسط' | 'منخفض';
 
-export interface PsychologicalAxis {
+export interface ReflectiveAxis {
   id: string;
   index: number;
   title: string;
@@ -21,9 +21,9 @@ export interface PsychologicalAxis {
   layers: string[];
 }
 
-export interface PsychologicalProfile {
+export interface ReflectiveProfile {
   name: string;
-  axes: PsychologicalAxis[];
+  axes: ReflectiveAxis[];
   dominantAxis: string;
   weakestAxis: string;
   overallBalance: number;
@@ -320,8 +320,8 @@ const AXES: AxisDef[] = [
     },
   },
   {
-    id: 'hormonal_energy',
-    title: 'الطاقة الهرمونية',
+    id: 'symbolic_rhythm',
+    title: 'الإيقاع الرمزي',
     icon: '🧬',
     compute: (ctx) => {
       if (!ctx.rootNum || !MEDICAL_ROOTS[ctx.rootNum]) {
@@ -337,8 +337,8 @@ const AXES: AxisDef[] = [
     },
   },
   {
-    id: 'vital_point',
-    title: 'النقطة الحيوية',
+    id: 'symbolic_center',
+    title: 'المركز الرمزي',
     icon: '💊',
     compute: (ctx) => {
       if (!ctx.rootNum) return { score: 0.5, narrative: 'لا يوجد جذر.', insight: '-', layers: [] };
@@ -413,14 +413,14 @@ const AXES: AxisDef[] = [
   },
 ];
 
-export class PsychologicalAxesEngine {
+export class ReflectiveArchetypesEngine {
   constructor(
     private resonance: ResonanceEngine = resonanceEngine,
     private schism: SchismEngine = schismEngine,
     private temporal: TemporalAnalyzer = temporalAnalyzer
   ) {}
 
-  analyze(name: string, layers: NameAnalysisLayers): PsychologicalProfile {
+  analyze(name: string, layers: NameAnalysisLayers): ReflectiveProfile {
     const ctx: AxisContext = {
       L: layers,
       rootNum: numOf(layers.root),
@@ -440,7 +440,7 @@ export class PsychologicalAxesEngine {
     const EXCLUDED = new Set(['internal_structure', 'primary_shadow', 'interpersonal']);
     const filteredAxes = AXES.filter((a) => !EXCLUDED.has(a.id));
 
-    const axes: PsychologicalAxis[] = filteredAxes.map((def, i) => {
+    const axes: ReflectiveAxis[] = filteredAxes.map((def, i) => {
       const r = def.compute(ctx, deps);
       return {
         id: def.id,
@@ -485,7 +485,7 @@ export class PsychologicalAxesEngine {
     ].join('\n');
   }
 
-  renderMarkdown(profile: PsychologicalProfile): string {
+  renderMarkdown(profile: ReflectiveProfile): string {
     const lines: string[] = [];
     lines.push(profile.summary);
     lines.push('');
@@ -504,4 +504,4 @@ export class PsychologicalAxesEngine {
   }
 }
 
-export const psychologicalAxesEngine = new PsychologicalAxesEngine();
+export const reflectiveArchetypesEngine = new ReflectiveArchetypesEngine();

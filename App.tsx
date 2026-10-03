@@ -1,12 +1,11 @@
 import 'react-native-gesture-handler';
-import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, ActivityIndicator, StyleSheet, InteractionManager } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { KnowledgeBase, importAll } from './src/kb';
-import { loadFullEncyclopedia } from './src/data/encyclopediaLoader';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import HomeScreen from './src/screens/HomeScreen';
 import ReportScreen from './src/screens/ReportScreen';
@@ -23,9 +22,12 @@ import EntityDetailScreen from './src/screens/EntityDetailScreen';
 import AssistantScreen from './src/screens/AssistantScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import CompareScreen from './src/screens/CompareScreen';
+import ConsentScreen from './src/screens/ConsentScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
+
+const CONSENT_KEY = '@knowledgeatlas/consent_v1';
 
 function MainTabs() {
   return (
@@ -64,48 +66,89 @@ function MainTabs() {
 }
 
 export default function App() {
-  const [ready, setReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState('جارٍ التهيئة...');
+  const [consented, setConsented] = useState<boolean | null>(null);
+  const [kbReady, setKbReady] = useState(false);
+  const [encyclopediaLoaded, setEncyclopediaLoaded] = useState(false);
 
+  // ═══ 1) فحص حالة الموافقة + بدء التهيئة الخفيفة ═══
   useEffect(() => {
-    const init = async () => {
+    const bootstrap = async () => {
+      // 1. فحص الموافقة
       try {
-        setStatus('جارٍ تهيئة قاعدة المعرفة...');
-        await KnowledgeBase.initialize();
-        const stats = KnowledgeBase.stats();
-        if (stats.totalEntities === 0) {
-          setStatus('جارٍ استيراد البيانات...');
-          await importAll();
-        }
-        setStatus('جارٍ تحميل الموسوعة الكبيرة...');
-        await loadFullEncyclopedia();
-        setReady(true);
-      } catch (e: any) {
-        setError(e?.message || 'فشل التهيئة');
+        const stored = await AsyncStorage.getItem(CONSENT_KEY);
+        setConsented(stored === 'accepted');
+      } catch {
+        setConsented(false);
       }
+
+      // 2. تحميل KB في الخلفية (لا يُوقف الواجهة)
+      InteractionManager.runAfterInteractions(async () => {
+        try {
+          const { KnowledgeBase, importAll } = await import('./src/kb');
+          await KnowledgeBase.initialize();
+          const stats = KnowledgeBase.stats();
+          if (stats.totalEntities === 0) {
+            await importAll();
+          }
+          setKbReady(true);
+        } catch (e) {
+          console.warn('⚠️ KB load failed:', e);
+          setKbReady(true); // نسمح بالمتابعة
+        }
+      });
     };
-    init();
+
+    bootstrap();
   }, []);
 
-  if (error) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>❌ خطأ في التهيئة</Text>
-        <Text style={styles.errorDetail}>{error}</Text>
-      </View>
-    );
-  }
+  // ═══ 2) تحميل الموسوعة الكبيرة — بشكل كسول (Lazy) ═══
+  useEffect(() => {
+    if (!kbReady || encyclopediaLoaded) return;
+    if (!consented) return;
 
-  if (!ready) {
+    InteractionManager.runAfterInteractions(async () => {
+      try {
+        const { loadFullEncyclopedia } = await import('./src/data/encyclopediaLoader');
+        await loadFullEncyclopedia();
+        setEncyclopediaLoaded(true);
+      } catch (e) {
+        console.warn('⚠️ Encyclopedia load failed:', e);
+        setEncyclopediaLoaded(true);
+      }
+    });
+  }, [kbReady, consented, encyclopediaLoaded]);
+
+  const handleAccept = useCallback(async () => {
+    try {
+      await AsyncStorage.setItem(CONSENT_KEY, 'accepted');
+    } catch {}
+    setConsented(true);
+  }, []);
+
+  const handleDecline = useCallback(() => {
+    // لا نستخدم BackHandler هنا — يمكن للمستخدم إغلاق التطبيق يدوياً
+    setConsented(false);
+  }, []);
+
+  // ═══ 3) عرض شاشة الموافقة أولاً ═══
+  if (consented === null) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#d4af37" />
-        <Text style={styles.loadingText}>{status}</Text>
       </View>
     );
   }
 
+  if (consented === false) {
+    return (
+      <ConsentScreen
+        onAccept={handleAccept}
+        onDecline={handleDecline}
+      />
+    );
+  }
+
+  // ═══ 4) عرض التطبيق مباشرة (KB يُحمّل في الخلفية) ═══
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -124,7 +167,6 @@ export default function App() {
         <Stack.Screen name="Brand" component={BrandScreen} options={{ title: 'التشخيص التجاري' }} />
         <Stack.Screen name="Temporal" component={TemporalScreen} options={{ title: 'التقويم الزمني' }} />
         <Stack.Screen name="Remedy" component={RemedyScreen} options={{ title: 'متتبع الالتزام' }} />
-
         <Stack.Screen name="History" component={HistoryScreen} options={{ title: 'السجل' }} />
         <Stack.Screen name="EntityDetail" component={EntityDetailScreen} options={{ title: 'تفاصيل الكيان' }} />
       </Stack.Navigator>
@@ -133,8 +175,5 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0a1628', padding: 20 },
-  loadingText: { marginTop: 15, fontSize: 16, color: '#d4af37', fontWeight: 'bold' },
-  errorText: { fontSize: 20, color: '#e74c3c', marginBottom: 10, fontWeight: 'bold' },
-  errorDetail: { fontSize: 14, color: '#c0c0c0', textAlign: 'center' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0a1628' },
 });
