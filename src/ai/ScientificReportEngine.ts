@@ -1,4 +1,5 @@
-import { DeepDiveOutput, ReportSection } from '../products/DeepDiveReport';
+import { DeepDiveOutput } from '../products/DeepDiveReport';
+import { ReportSection } from '../products/types';
 import { LLMCaller } from './LLMCaller';
 import { defaultLLMCaller } from './defaultLLMCaller';
 

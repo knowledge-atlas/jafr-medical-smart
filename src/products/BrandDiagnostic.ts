@@ -1,5 +1,6 @@
 import { AnalysisResult } from '../application/use-cases/AnalyzeNameUseCase';
 import { ProductMeta } from './types';
+import { describeBrand } from './BrandHints';
 
 export interface BrandDimension {
   id: string;
@@ -269,29 +270,86 @@ export class BrandDiagnostic {
   ): string {
     const pct = (overall * 100).toFixed(0);
     const lines: string[] = [];
+
+    // ─── الرأس ───
     lines.push(`# 🏷️ التشخيص التجاري — ${brand}`);
-    if (activity) lines.push(`> النشاط: ${activity}`);
+    if (activity) {
+      lines.push('');
+      lines.push(`> **النشاط:** ${activity}`);
+    }
     lines.push('');
-    lines.push(`**النتيجة الإجمالية:** ${pct}% — تصنيف: ${level}`);
+    lines.push(`**النتيجة الإجمالية:** ${pct}% — تصنيف: **${level}**`);
     lines.push('');
-    lines.push('## الأبعاد الستة');
+    lines.push('> كل بُعد مشروح بالتفصيل — مع تفسير النتيجة وتوصية عملية.');
     lines.push('');
-    for (const d of dims) {
-      lines.push(`### ${d.label}`);
-      lines.push(`- النتيجة: **${(d.score * 100).toFixed(0)}%** (${d.level})`);
-      lines.push(`- ${d.note}`);
+    lines.push('---');
+    lines.push('');
+
+    // ─── الأبعاد مع الشرح ───
+    for (let i = 0; i < dims.length; i++) {
+      const d = dims[i];
+      lines.push(`## ${i + 1}. ${d.label}`);
+      lines.push('');
+      lines.push(`**النتيجة:** ${(d.score * 100).toFixed(0)}% — **${d.level}**`);
+      lines.push('');
+
+      const hint = describeBrand(d.id, d.score);
+      if (hint) {
+        lines.push(`**📖 ما هذا البُعد؟**`);
+        lines.push('');
+        lines.push(hint.description);
+        lines.push('');
+        lines.push(`**🎯 ماذا يعني هذا لعلامتك؟**`);
+        lines.push('');
+        lines.push(hint.interpretation);
+        lines.push('');
+        lines.push(`**💡 التوصية:**`);
+        lines.push('');
+        lines.push(hint.recommendation);
+        lines.push('');
+      }
+
+      lines.push(`**📊 تفاصيل:** ${d.note}`);
+      lines.push('');
+      lines.push('---');
       lines.push('');
     }
-    lines.push('## بدائل مقترحة');
+
+    // ─── البدائل ───
+    lines.push('## 🌟 بدائل مقترحة');
+    lines.push('');
+    lines.push('> أسماء بديلة يمكن اختبارها ميدانياً قبل أي قرار.');
     lines.push('');
     alts.forEach((a, i) => {
-      lines.push(`${i + 1}. **${a.name}** — ${(a.projectedScore * 100).toFixed(0)}%`);
-      lines.push(`   _${a.rationale}_`);
+      lines.push(`### البديل ${i + 1}: **${a.name}** (${(a.projectedScore * 100).toFixed(0)}%)`);
+      lines.push('');
+      lines.push(`- **المنطق:** ${a.rationale}`);
+      lines.push('');
     });
+    lines.push('---');
     lines.push('');
-    lines.push('## ملاحظة');
+
+    // ─── الخلاصة ───
+    lines.push('## 📌 الخلاصة العملية');
     lines.push('');
-    lines.push('هذا تشخيص لغوي-نمطي، وليس ضماناً تجارياً. القرار النهائي يعود لصاحب المشروع.');
+    const strong = dims.filter((d) => d.score >= 0.7);
+    const weak = dims.filter((d) => d.score < 0.45);
+
+    if (strong.length > 0) {
+      lines.push('**✅ نقاط القوة:**');
+      lines.push('');
+      strong.forEach((d) => lines.push(`- **${d.label}** (${(d.score * 100).toFixed(0)}%)`));
+      lines.push('');
+    }
+    if (weak.length > 0) {
+      lines.push('**⚠️ نقاط تحتاج تحسيناً:**');
+      lines.push('');
+      weak.forEach((d) => lines.push(`- **${d.label}** (${(d.score * 100).toFixed(0)}%)`));
+      lines.push('');
+    }
+
+    lines.push('> هذا تشخيص لغوي-نمطي، وليس ضماناً تجارياً. القرار النهائي يعود لصاحب المشروع.');
+
     return lines.join('\n');
   }
 }
