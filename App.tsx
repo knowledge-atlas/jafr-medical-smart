@@ -11,6 +11,11 @@ import { loadFullEncyclopedia } from './src/data/encyclopediaLoader';
 import HomeScreen from './src/screens/HomeScreen';
 import ReportScreen from './src/screens/ReportScreen';
 import ReportChatScreen from './src/screens/ReportChatScreen';
+import ProductPickerScreen from './src/screens/ProductPickerScreen';
+import CompatibilityScreen from './src/screens/CompatibilityScreen';
+import BrandScreen from './src/screens/BrandScreen';
+import TemporalScreen from './src/screens/TemporalScreen';
+import RemedyScreen from './src/screens/RemedyScreen';
 import HistoryScreen from './src/screens/HistoryScreen';
 import MedicalScreen from './src/screens/MedicalScreen';
 import SearchScreen from './src/screens/SearchScreen';
@@ -114,6 +119,12 @@ export default function App() {
         <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
         <Stack.Screen name="Report" component={ReportScreen} options={{ title: 'التقرير' }} />
         <Stack.Screen name="ReportChat" component={ReportChatScreen} options={{ title: '✨ اسأل عن التقرير' }} />
+        <Stack.Screen name="ProductPicker" component={ProductPickerScreen} options={{ title: 'اختر التقرير' }} />
+        <Stack.Screen name="Compatibility" component={CompatibilityScreen} options={{ title: 'التوافق' }} />
+        <Stack.Screen name="Brand" component={BrandScreen} options={{ title: 'التشخيص التجاري' }} />
+        <Stack.Screen name="Temporal" component={TemporalScreen} options={{ title: 'التقويم الزمني' }} />
+        <Stack.Screen name="Remedy" component={RemedyScreen} options={{ title: 'متتبع الالتزام' }} />
+
         <Stack.Screen name="History" component={HistoryScreen} options={{ title: 'السجل' }} />
         <Stack.Screen name="EntityDetail" component={EntityDetailScreen} options={{ title: 'تفاصيل الكيان' }} />
       </Stack.Navigator>

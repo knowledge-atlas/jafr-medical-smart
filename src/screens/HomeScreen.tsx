@@ -135,6 +135,25 @@ export default function HomeScreen({ navigation }: any) {
         )}
       </TouchableOpacity>
 
+      {/* زر المنتجات — جديد */}
+      <TouchableOpacity
+        style={styles.productsBtn}
+        onPress={() => {
+          if (!name.trim()) {
+            Alert.alert('تنبيه', 'أدخل اسمك أولاً لاختيار التقرير.');
+            return;
+          }
+          const analysis = analyzeName.execute({ name: name.trim() });
+          navigation.navigate('ProductPicker', {
+            analysis,
+            name: name.trim(),
+            mode,
+          });
+        }}
+      >
+        <Text style={styles.productsBtnText}>🎯 اختر نوع التقرير</Text>
+      </TouchableOpacity>
+
       {/* الأعراض — للتحليل الكلاسيكي */}
       <View style={styles.section}>
         <Text style={styles.label}>🤔 الأعراض (اختياري — للتحليل التقليدي):</Text>
@@ -229,6 +248,14 @@ const styles = StyleSheet.create({
   symptomText: { color: '#333', fontSize: 13 },
   symptomTextActive: { color: '#d4af37', fontWeight: 'bold' },
   symptomsSelected: { marginTop: 8, fontSize: 12, color: '#27ae60', textAlign: 'right' },
+  productsBtn: {
+    backgroundColor: '#8e44ad',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginVertical: 6,
+  },
+  productsBtnText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   primaryBtn: {
     backgroundColor: '#27ae60', padding: 16, borderRadius: 12,
     alignItems: 'center', marginVertical: 6,
