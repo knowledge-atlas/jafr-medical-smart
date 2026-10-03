@@ -8,6 +8,9 @@ import { AIResponse } from '../ai/types';
 import { createRealAnalyzeNameUseCase } from '../application/di';
 import { routeAssistantText } from './assistantRouter';
 import { defaultLLMCaller } from '../ai/defaultLLMCaller';
+import { ScientificReportEngine } from '../ai/ScientificReportEngine';
+import { DeepDiveReport } from '../products/DeepDiveReport';
+import { analyzeName } from '../application/di';
 
 interface Message {
   id: string;
@@ -27,6 +30,9 @@ const SUGGESTIONS = [
   'كيف أطبق توصيات تقريري؟',
   'ما هي أفضل أيام الذروة القادمة؟',
 ];
+
+const scientificEngine = new ScientificReportEngine();
+const deepDive = new DeepDiveReport();
 
 const hybridEngine = new HybridEngine({
   analyzer: createRealAnalyzeNameUseCase(),
@@ -74,15 +80,47 @@ export default function AssistantScreen() {
     try {
       const route = routeAssistantText(text.trim(), hasLLM);
 
-      if (route.decision === 'hybrid') {
+      // ─── حالة 1: يوجد اسم → التقرير التأملي العلمي ───
+      if (route.name) {
+        const analysis = analyzeName.execute({ name: route.name });
+
+        if (analysis.status === 'abstained') {
+          const aiMsg: Message = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            text: analysis.report,
+            layer: 'A',
+            offline: true,
+            warnings: analysis.abstention.messages,
+            timestamp: new Date().toISOString(),
+          };
+          setMessages(prev => [...prev, aiMsg]);
+        } else {
+          const deepDiveOutput = deepDive.generate(analysis, route.mode ?? 'personal', {
+            richMarkdown: analysis.report,
+          });
+          const scientific = await scientificEngine.buildFromDeepDive(deepDiveOutput);
+
+          const aiMsg: Message = {
+            id: (Date.now() + 2).toString(),
+            role: 'assistant',
+            text: scientific.markdown,
+            layer: scientific.offline ? 'A' : 'B',
+            offline: scientific.offline,
+            timestamp: new Date().toISOString(),
+          };
+          setMessages(prev => [...prev, aiMsg]);
+        }
+      }
+      // ─── حالة 2: لا اسم → محادثة عامة ───
+      else if (hasLLM) {
         const result = await hybridEngine.process({
           question: text.trim(),
-          nameForAnalysis: route.name,
           mode: route.mode,
         });
 
         const aiMsg: Message = {
-          id: (Date.now() + 1).toString(),
+          id: (Date.now() + 3).toString(),
           role: 'assistant',
           text: result.answer,
           layer: result.layer,
@@ -91,11 +129,13 @@ export default function AssistantScreen() {
           timestamp: new Date().toISOString(),
         };
         setMessages(prev => [...prev, aiMsg]);
-      } else {
+      }
+      // ─── حالة 3: KB محلي فقط ───
+      else {
         const response = await queryRouter.route(text.trim());
         const formatted = responseFormatter.format(response);
         const aiMsg: Message = {
-          id: (Date.now() + 2).toString(),
+          id: (Date.now() + 4).toString(),
           role: 'assistant',
           text: formatted,
           response,
