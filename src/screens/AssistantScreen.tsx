@@ -7,6 +7,7 @@ import { queryRouter, responseFormatter, llmBridge, HybridEngine } from '../ai';
 import { AIResponse } from '../ai/types';
 import { createRealAnalyzeNameUseCase } from '../application/di';
 import { routeAssistantText } from './assistantRouter';
+import { defaultLLMCaller } from '../ai/defaultLLMCaller';
 
 interface Message {
   id: string;
@@ -20,29 +21,16 @@ interface Message {
 }
 
 const SUGGESTIONS = [
-  'حلل شخصية أحمد',
-  'ما هو الجفر؟',
-  'قارن بين الجذر 1 و 2',
-  'حلل محمد',
-  'ما هي أعراض خلل الجذر 5؟',
+  'السلام عليكم',
+  'حلل شخصية محمد',
+  'اشرح لي الفرق بين الجذر والكوكب',
+  'كيف أطبق توصيات تقريري؟',
+  'ما هي أفضل أيام الذروة القادمة؟',
 ];
 
 const hybridEngine = new HybridEngine({
   analyzer: createRealAnalyzeNameUseCase(),
-  llmCaller: {
-    generate: async (system, user) => {
-      const provider = await llmBridge.getProvider();
-      if (provider === 'none') {
-        return { answer: '', tokensUsed: 0 };
-      }
-      const result = await llmBridge.generate(
-        { question: user, entities: [], relations: [] } as any,
-        system + '\n\n' + user,
-        'analytical'
-      );
-      return result ?? { answer: '', tokensUsed: 0 };
-    },
-  },
+  llmCaller: defaultLLMCaller,
 });
 
 export default function AssistantScreen() {
@@ -50,6 +38,7 @@ export default function AssistantScreen() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [llmStatus, setLlmStatus] = useState<string>('');
+  const [hasLLM, setHasLLM] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -58,12 +47,14 @@ export default function AssistantScreen() {
 
   const checkLlmStatus = async () => {
     const provider = await llmBridge.getProvider();
+    const enabled = provider === 'gemini' || provider === 'openai';
+    setHasLLM(enabled);
     if (provider === 'none') {
       setLlmStatus('🔒 وضع محلي (بدون إنترنت)');
     } else if (provider === 'demo') {
       setLlmStatus('🤖 وضع تجريبي');
     } else {
-      setLlmStatus(`🌐 ${provider === 'gemini' ? 'Gemini' : 'OpenAI'} مفعّل`);
+      setLlmStatus(`🌐 ${provider === 'gemini' ? 'Gemini' : 'OpenAI/Groq'} مفعّل`);
     }
   };
 
@@ -81,9 +72,9 @@ export default function AssistantScreen() {
     setLoading(true);
 
     try {
-      const route = routeAssistantText(text.trim());
+      const route = routeAssistantText(text.trim(), hasLLM);
 
-      if (route.decision === 'hybrid' && route.name) {
+      if (route.decision === 'hybrid') {
         const result = await hybridEngine.process({
           question: text.trim(),
           nameForAnalysis: route.name,
@@ -167,9 +158,10 @@ export default function AssistantScreen() {
           <View style={styles.welcome}>
             <Text style={styles.welcomeTitle}>🤖 المساعد الذكي</Text>
             <Text style={styles.welcomeText}>
-              اسأل عن الجذور، الكواكب، الأبراج، أو اطلب تحليلاً. جرّب: "حلل محمد".
+              اسأل بحرية — عن الجفر، التحليل، التوصيات، أو أي شيء يدور في ذهنك.
+              {hasLLM ? ' الذكاء الاصطناعي مفعّل ويرد مباشرة.' : ' فعّل Gemini أو Groq من الإعدادات لردود ذكية.'}
             </Text>
-            <Text style={styles.suggestTitle}>أمثلة:</Text>
+            <Text style={styles.suggestTitle}>جرّب:</Text>
             {SUGGESTIONS.map((s, i) => (
               <TouchableOpacity
                 key={i}
@@ -207,27 +199,13 @@ export default function AssistantScreen() {
                 ))}
               </View>
             )}
-
-            {msg.response?.suggestions && msg.response.suggestions.length > 0 && (
-              <View style={styles.suggestionsBox}>
-                {msg.response.suggestions.map((s, i) => (
-                  <TouchableOpacity
-                    key={i}
-                    style={styles.suggestionChip}
-                    onPress={() => sendMessage(s)}
-                  >
-                    <Text style={styles.suggestionText}>↪ {s}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
           </View>
         ))}
 
         {loading && (
           <View style={[styles.bubble, styles.aiBubble]}>
             <ActivityIndicator color="#d4af37" />
-            <Text style={styles.loadingText}>جارٍ المعالجة...</Text>
+            <Text style={styles.loadingText}>جارٍ التفكير...</Text>
           </View>
         )}
       </ScrollView>
@@ -263,45 +241,35 @@ const styles = StyleSheet.create({
   },
   statusText: { color: '#d4af37', fontSize: 12 },
   clearBtn: { color: '#e74c3c', fontSize: 12 },
-
   chat: { flex: 1 },
   welcome: { padding: 20, alignItems: 'center' },
   welcomeTitle: { color: '#d4af37', fontSize: 22, fontWeight: 'bold', marginBottom: 10 },
-  welcomeText: { color: '#c0c0c0', fontSize: 14, textAlign: 'center', marginBottom: 20 },
+  welcomeText: { color: '#c0c0c0', fontSize: 14, textAlign: 'center', marginBottom: 20, lineHeight: 22 },
   suggestTitle: { color: '#d4af37', fontSize: 14, marginBottom: 10 },
-
   suggestionChip: {
     backgroundColor: '#1a3b5d', borderRadius: 8,
-    paddingVertical: 8, paddingHorizontal: 12, marginVertical: 4,
+    paddingVertical: 10, paddingHorizontal: 14, marginVertical: 4,
+    alignSelf: 'stretch',
   },
   suggestionText: { color: '#d4af37', fontSize: 13 },
-
-  bubble: {
-    maxWidth: '90%', marginVertical: 6, padding: 12, borderRadius: 12,
-  },
+  bubble: { maxWidth: '92%', marginVertical: 6, padding: 12, borderRadius: 12 },
   userBubble: { alignSelf: 'flex-end', backgroundColor: '#1abc9c' },
   aiBubble: { alignSelf: 'flex-start', backgroundColor: '#1a3b5d' },
-  bubbleText: { fontSize: 14, lineHeight: 22 },
+  bubbleText: { fontSize: 14, lineHeight: 24 },
   userText: { color: '#fff' },
   aiText: { color: '#e8e8e8' },
-
   badge: {
     alignSelf: 'flex-start',
     borderWidth: 1, borderRadius: 6,
-    paddingHorizontal: 6, paddingVertical: 2,
-    marginBottom: 6,
+    paddingHorizontal: 6, paddingVertical: 2, marginBottom: 6,
   },
   badgeText: { fontSize: 10, fontWeight: 'bold' },
-
   warningsBox: {
     marginTop: 8, paddingTop: 6,
     borderTopWidth: 1, borderTopColor: '#2c5070',
   },
   warningText: { color: '#f39c12', fontSize: 11, marginVertical: 2 },
-
-  suggestionsBox: { marginTop: 10, borderTopWidth: 1, borderTopColor: '#2c5070', paddingTop: 8 },
   loadingText: { color: '#d4af37', marginTop: 8, fontSize: 12 },
-
   inputRow: {
     flexDirection: 'row', padding: 8, backgroundColor: '#0f2438',
     borderTopWidth: 1, borderTopColor: '#1a3b5d',

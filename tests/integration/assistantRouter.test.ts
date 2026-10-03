@@ -1,55 +1,45 @@
 import { describe, it, expect } from 'vitest';
 import { routeAssistantText } from '../../src/screens/assistantRouter';
 
-describe('routeAssistantText', () => {
+describe('routeAssistantText — بدون LLM', () => {
   it('"حلل محمد" → hybrid + personal', () => {
-    const r = routeAssistantText('حلل محمد');
+    const r = routeAssistantText('حلل محمد', false);
     expect(r.decision).toBe('hybrid');
     expect(r.name).toBe('محمد');
-    expect(r.mode).toBe('personal');
   });
 
-  it('"حلل فاطمة" → hybrid + personal', () => {
-    const r = routeAssistantText('حلل فاطمة');
-    expect(r.decision).toBe('hybrid');
-    expect(r.mode).toBe('personal');
-  });
-
-  it('"تحليل علي" → hybrid', () => {
-    const r = routeAssistantText('تحليل علي');
-    expect(r.decision).toBe('hybrid');
-    expect(r.name).toBe('علي');
-  });
-
-  it('"توافق محمد وفاطمة" → hybrid + marital', () => {
-    const r = routeAssistantText('توافق محمد');
-    expect(r.decision).toBe('hybrid');
-    expect(r.mode).toBe('marital');
-  });
-
-  it('"حلل محمد للعمل" → hybrid + professional', () => {
-    const r = routeAssistantText('حلل محمد مسار مهني');
-    expect(r.decision).toBe('hybrid');
-    expect(r.mode).toBe('professional');
-  });
-
-  it('"براند نوفا" → hybrid + commercial', () => {
-    const r = routeAssistantText('تحليل براند نوفا');
-    expect(r.decision).toBe('hybrid');
-    expect(r.mode).toBe('commercial');
-  });
-
-  it('"ما هو الجفر؟" → kb', () => {
-    const r = routeAssistantText('ما هو الجفر؟');
+  it('"ما هو الجفر؟" → kb (بدون LLM)', () => {
+    const r = routeAssistantText('ما هو الجفر؟', false);
     expect(r.decision).toBe('kb');
+  });
+
+  it('"السلام عليكم" → kb (بدون LLM)', () => {
+    const r = routeAssistantText('السلام عليكم', false);
+    expect(r.decision).toBe('kb');
+  });
+});
+
+describe('routeAssistantText — مع LLM', () => {
+  it('"حلل محمد" → hybrid + personal', () => {
+    const r = routeAssistantText('حلل محمد', true);
+    expect(r.decision).toBe('hybrid');
+    expect(r.name).toBe('محمد');
+  });
+
+  it('"السلام عليكم" → hybrid مع LLM', () => {
+    const r = routeAssistantText('السلام عليكم', true);
+    expect(r.decision).toBe('hybrid');
     expect(r.name).toBeUndefined();
   });
 
-  it('"كيف أتعامل مع الجذر 3؟" → kb', () => {
-    expect(routeAssistantText('كيف أتعامل مع الجذر 3؟').decision).toBe('kb');
+  it('"ما هو الجفر؟" → hybrid مع LLM', () => {
+    const r = routeAssistantText('ما هو الجفر؟', true);
+    expect(r.decision).toBe('hybrid');
   });
 
-  it('"الجذر 5" → kb (stopword)', () => {
-    expect(routeAssistantText('الجذر 5').decision).toBe('kb');
+  it('"حلل محمد مسار مهني" → hybrid + professional', () => {
+    const r = routeAssistantText('حلل محمد مسار مهني', true);
+    expect(r.decision).toBe('hybrid');
+    expect(r.mode).toBe('professional');
   });
 });

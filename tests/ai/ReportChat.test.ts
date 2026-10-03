@@ -19,27 +19,28 @@ const fakeAnalysis: AnalysisResult = {
 const fakeReport = new DeepDiveReport().generate(fakeAnalysis, 'personal');
 
 describe('ReportChat — offline mode', () => {
+  const makeOffline = () => new ReportChat({ llmCaller: null });
   it('يبدأ بلا تقرير محمّل', () => {
-    const chat = new ReportChat();
+    const chat = makeOffline();
     expect(chat.isLoaded()).toBe(false);
   });
 
   it('loadReport يحمّل التقرير', () => {
-    const chat = new ReportChat();
+    const chat = makeOffline();
     chat.loadReport(fakeReport, 'personal');
     expect(chat.isLoaded()).toBe(true);
     expect(chat.getReportName()).toBe('محمد');
   });
 
   it('ask بدون تقرير يُرجع رسالة تنبيه', async () => {
-    const chat = new ReportChat();
+    const chat = makeOffline();
     const reply = await chat.ask('ما جذري؟');
     expect(reply.role).toBe('assistant');
     expect(reply.content).toContain('لم يتم تحميل');
   });
 
   it('ask مع تقرير بدون LLM → إجابة محلية', async () => {
-    const chat = new ReportChat();
+    const chat = makeOffline();
     chat.loadReport(fakeReport, 'personal');
     const reply = await chat.ask('ما جذري؟');
     expect(reply.role).toBe('assistant');
@@ -47,21 +48,21 @@ describe('ReportChat — offline mode', () => {
   });
 
   it('ask عن الرنين → إجابة محلية', async () => {
-    const chat = new ReportChat();
+    const chat = makeOffline();
     chat.loadReport(fakeReport, 'personal');
     const reply = await chat.ask('أريد الرنين');
     expect(reply.content).toContain('قسم الرنين');
   });
 
   it('ask عن الترياق → توصيات', async () => {
-    const chat = new ReportChat();
+    const chat = makeOffline();
     chat.loadReport(fakeReport, 'personal');
     const reply = await chat.ask('ما الترياق؟');
     expect(reply.role).toBe('assistant');
   });
 
   it('رفض سؤال عن الموت (Guardrails)', async () => {
-    const chat = new ReportChat();
+    const chat = makeOffline();
     chat.loadReport(fakeReport, 'personal');
     const reply = await chat.ask('هل سأموت قريباً؟');
     expect(reply.content).toContain('لا يمكنني');
@@ -69,14 +70,14 @@ describe('ReportChat — offline mode', () => {
   });
 
   it('رفض سؤال طبي', async () => {
-    const chat = new ReportChat();
+    const chat = makeOffline();
     chat.loadReport(fakeReport, 'personal');
     const reply = await chat.ask('ما علاجي؟');
     expect(reply.warning).toBe('ethical_guardrail');
   });
 
   it('clear يفرّغ الذاكرة', async () => {
-    const chat = new ReportChat();
+    const chat = makeOffline();
     chat.loadReport(fakeReport, 'personal');
     await chat.ask('سؤال');
     chat.clear();
@@ -84,7 +85,7 @@ describe('ReportChat — offline mode', () => {
   });
 
   it('getHistory يعرض المحادثة', async () => {
-    const chat = new ReportChat();
+    const chat = makeOffline();
     chat.loadReport(fakeReport, 'personal');
     await chat.ask('سؤال');
     const history = chat.getHistory();

@@ -3,6 +3,7 @@ import { ConversationMemory, ConversationTurn } from './ConversationMemory';
 import { DeepDiveOutput } from '../products/DeepDiveReport';
 import { ContextMode } from './ContextAwarePrompter';
 import { EthicalGuardrails, ethicalGuardrails } from './EthicalGuardrails';
+import { defaultLLMCaller } from './defaultLLMCaller';
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
@@ -20,34 +21,42 @@ export interface ReportChatContext {
 const CHAT_SYSTEM_PROMPT = (ctx: ReportChatContext) => {
   const summary = ctx.report.sections
     .slice(0, 20)
-    .map((s) => `### ${s.title}\n${s.content.slice(0, 400)}`)
+    .map((s) => `### ${s.title}\n${s.content.slice(0, 500)}`)
     .join('\n\n');
 
-  return `أنت خبير في نظام الجفر الطبي الذكي، وتجيب على أسئلة صاحب الاسم "${ctx.report.name}" حول تقريره العميق.
+  const toneMap: Record<ContextMode, string> = {
+    personal: 'شخصية ودودة تخاطب صاحب الاسم مباشرة',
+    marital: 'موجهة للعلاقة الزوجية كنقاط حوار',
+    professional: 'احترافية للمسار المهني',
+    commercial: 'تجارية لصاحب مشروع',
+  };
 
-## سياق التقرير الكامل
+  return `أنت خبير في نظام الجفر الطبي الذكي، تجيب على أسئلة "${ctx.report.name}" حول تقريره.
+
+## 📚 سياق التقرير الكامل
 ${summary}
 
-## قواعد الإجابة
-1. اعتمد فقط على ما في التقرير أعلاه.
-2. اذكر رقم القسم أو اسمه عند الإشارة له.
-3. إذا كان السؤال خارج نطاق التقرير، قل ذلك بوضوح.
-4. لا تُعطي تشخيصاً طبياً — أشر لاستشارة مختص.
-5. لا تُعطي فتوى دينية — أشر لاستشارة شيخ.
-6. النبرة: ${ctx.mode === 'personal' ? 'شخصية ودودة' : ctx.mode === 'marital' ? 'موجهة للعلاقة' : ctx.mode === 'professional' ? 'احترافية' : 'تجارية'}.
-7. اكتب بالعربية الفصحى المبسطة.
+## 🎯 قواعد الإجابة
+1. **أجب بالعربية الفصحى المبسطة فقط.**
+2. **لا تكرر السؤال** — ابدأ بالإجابة مباشرة.
+3. **اعتمد فقط على البيانات أعلاه.** لا تخترع معلومات.
+4. **اذكر اسم القسم** عند الإشارة له (مثلاً: "في قسم الرنين الطبقي…").
+5. **اكتب 3-4 فقرات على الأقل** للإجابات التحليلية.
+6. إذا كان السؤال خارج نطاق التقرير، **قل ذلك بوضوح** واقترح سؤالاً بديلاً.
+7. **لا تُعطي تشخيصاً طبياً** — وجّه للطبيب.
+8. **لا تُعطي فتوى دينية** — وجّه للمختص.
+9. النبرة: ${toneMap[ctx.mode]}.
+10. اختم كل إجابة بـ **جملة عملية واحدة**.
 
-## أمثلة أسئلة شائعة
-- "لماذا جذري 2؟"
-- "ما الفرق بين Schism والظل؟"
-- "كيف أطبّق الترياق عملياً؟"
-- "ما أقوى محور عندي ولماذا؟"
-- "اشرح لي قسم الرنين"
-- "ما أيام الذروة القادمة؟"`;
+## أمثلة
+- "لماذا جذري 2؟" → اشرح من قسم "الهوية الجوهرية" و"الرنين".
+- "كيف أطبق الترياق؟" → اقتبس من "التوصيات" و"الملف النفسي".
+- "ما الفرق بين Schism والظل؟" → اقتبس من القسمين معاً.`;
 };
 
 export interface ReportChatDeps {
-  llmCaller?: LLMCaller;
+  /** مرّر null لتعطيل LLM صراحةً (للوضع المحلي) */
+  llmCaller?: LLMCaller | null;
   guardrails?: EthicalGuardrails;
 }
 
@@ -59,7 +68,9 @@ export class ReportChat {
 
   constructor(deps: ReportChatDeps = {}) {
     this.memory = new ConversationMemory(20);
-    this.llmCaller = deps.llmCaller;
+    this.llmCaller = deps.llmCaller === null
+      ? undefined
+      : (deps.llmCaller ?? defaultLLMCaller);
     this.guardrails = deps.guardrails ?? ethicalGuardrails;
   }
 

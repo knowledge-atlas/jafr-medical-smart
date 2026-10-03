@@ -70,11 +70,37 @@ export class HybridEngine {
       }
     }
 
-    // Layer B: LLM (إن مُرّر caller)
+    // ═══════════════════════════════════════════════════════
+    // Layer B: LLM — يميّز بين محادثة عادية وتحليل
+    // ═══════════════════════════════════════════════════════
     if (this.llmCaller) {
       try {
-        const prompt = this.prompter.buildPrompt(mode, analysis ?? null, input.question);
-        const llmResp = await this.llmCaller.generate(prompt.systemPrompt, prompt.userPrompt);
+        let systemPrompt: string;
+        let userPrompt: string;
+
+        if (analysis) {
+          // ─── حالة التحليل: نستخدم Prompt التحليل ───
+          const prompt = this.prompter.buildPrompt(mode, analysis, input.question);
+          systemPrompt = prompt.systemPrompt;
+          userPrompt = prompt.userPrompt;
+        } else {
+          // ─── حالة محادثة عامة: Prompt مبسّط ───
+          systemPrompt = [
+            'أنت "مساعد KnowledgeAtlas" — مساعد ذكي ودود بالعربية.',
+            '',
+            'قواعد صارمة:',
+            '1. رد بالعربية الفصحى المبسطة.',
+            '2. لا تخترع تحليلات أو أرقاماً أو أسماء كواكب/أبراج.',
+            '3. إذا سألك المستخدم عن اسم معيّن (حلل محمد)، اطلب منه صياغة أوضح: "حلل شخصية محمد".',
+            '4. إذا سألك عن الجفر أو المعرفة، أجب بمعلومات عامة عن النظام.',
+            '5. إذا كان السؤال ترحيباً (سلام، مرحبا)، رد بترحيب ودود واسأل كيف يمكنك المساعدة.',
+            '6. لا تكرر السؤال ولا تستخدم صيغة "### ملخص الطبع".',
+            '7. أجب بشكل طبيعي وموجز.',
+          ].join('\n');
+          userPrompt = input.question;
+        }
+
+        const llmResp = await this.llmCaller.generate(systemPrompt, userPrompt);
         const outGuard = this.guardrails.checkOutput(llmResp.answer);
         return {
           answer: outGuard.sanitized ?? llmResp.answer,
@@ -88,17 +114,27 @@ export class HybridEngine {
       }
     }
 
+    // ═══════════════════════════════════════════════════════
     // Layer A: Offline Reasoning
-    const narrative = analysis
-      ? this.weaver.weave(analysis, mode)
-      : 'لم أتمكن من توليد تحليل. الرجاء تحديد اسم صريح.';
-    const outGuard = this.guardrails.checkOutput(narrative);
+    // ═══════════════════════════════════════════════════════
+    if (analysis) {
+      const narrative = this.weaver.weave(analysis, mode);
+      const outGuard = this.guardrails.checkOutput(narrative);
+      return {
+        answer: outGuard.sanitized ?? narrative,
+        offline: true,
+        layer: 'A',
+        analysis,
+        warnings: outGuard.warnings,
+      };
+    }
+
+    // لا تحليل ولا LLM — رد عام
     return {
-      answer: outGuard.sanitized ?? narrative,
+      answer: 'للمساعدة في تحليل اسم أو استشارة، اكتب مثلاً:\n- "حلل شخصية محمد"\n- "ما هو علم الجفر؟"\n\nلتفعيل الردود الذكية، افتح الإعدادات وأضف مفتاح Groq أو Gemini.',
       offline: true,
       layer: 'A',
-      analysis,
-      warnings: outGuard.warnings,
+      warnings: [],
     };
   }
 }

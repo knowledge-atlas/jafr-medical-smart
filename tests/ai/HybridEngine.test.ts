@@ -39,7 +39,7 @@ describe('HybridEngine — Layer A (Offline)', () => {
 
   it('بدون اسم → رسالة توضيحية', async () => {
     const r = await engine.process({ question: 'ما هو الجفر؟' });
-    expect(r.answer).toContain('الرجاء تحديد اسم');
+    expect(r.answer).toContain('للمساعدة في تحليل اسم');
   });
 });
 

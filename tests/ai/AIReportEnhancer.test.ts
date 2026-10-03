@@ -20,7 +20,7 @@ const fakeReport = new DeepDiveReport().generate(fakeAnalysis, 'personal');
 
 describe('AIReportEnhancer', () => {
   it('بدون LLM يُرجع تقريراً فارغاً', async () => {
-    const enhancer = new AIReportEnhancer();
+    const enhancer = new AIReportEnhancer({ llmCaller: null });
     const result = await enhancer.enhanceReport(fakeReport, 'personal');
     expect(result.sections.length).toBe(0);
     expect(result.successCount).toBe(0);

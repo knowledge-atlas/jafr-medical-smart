@@ -61,16 +61,6 @@ export default function ReportChatScreen({ navigation }: any) {
     };
     setMessages((prev) => [...prev, userMsg]);
 
-    // إذا كان هناك LLM، نمرره
-    if (!reportChat['llmCaller'] && (provider === 'gemini' || provider === 'openai')) {
-      // نبني adapter
-      const adapter = new LLMBridgeAdapter({
-        generate: async (context: any, contextText: string, intent: string) => {
-          return await llmBridge.generate(context, contextText, intent);
-        },
-      });
-      (reportChat as any).llmCaller = adapter;
-    }
 
     try {
       const reply = await reportChat.ask(text.trim());

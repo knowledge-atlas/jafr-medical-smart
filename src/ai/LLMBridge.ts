@@ -180,53 +180,100 @@ export class LLMBridge {
     systemPrompt: string,
     userPrompt: string
   ): Promise<{ answer: string; tokensUsed?: number }> {
-    // ─── اكتشاف المزود تلقائياً من صيغة المفتاح ───
-    let url = 'https://api.openai.com/v1/chat/completions';
-    let model = 'gpt-4o-mini';
+    let isGroq = false;
+    let isOpenRouter = false;
     let providerName = 'OpenAI';
 
     if (apiKey.startsWith('gsk_')) {
-      url = 'https://api.groq.com/openai/v1/chat/completions';
-      model = 'llama-3.3-70b-versatile';
+      isGroq = true;
       providerName = 'Groq';
     } else if (apiKey.startsWith('sk-or-v1-')) {
-      url = 'https://openrouter.ai/api/v1/chat/completions';
-      model = 'meta-llama/llama-3.3-70b-instruct:free';
+      isOpenRouter = true;
       providerName = 'OpenRouter';
     }
 
-    console.log(`🔌 مزود: ${providerName} (${model})`);
+    // قوائم الموديلات لكل مزود
+    const MODELS = isOpenRouter
+      ? [
+          'google/gemma-3-27b-it:free',
+          'meta-llama/llama-3.1-8b-instruct:free',
+          'qwen/qwen3-32b:free',
+          'deepseek/deepseek-r1-0528:free',
+          'nvidia/nemotron-3-super-120b-a12b:free',
+        ]
+      : isGroq
+      ? [
+          'openai/gpt-oss-120b',
+          'openai/gpt-oss-20b',
+          'qwen/qwen3-32b',
+          'gemma2-9b-it',
+          'llama-3.1-8b-instant',
+        ]
+      : ['gpt-4o-mini', 'gpt-4o', 'gpt-3.5-turbo'];
 
-    const body = {
-      model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.3,
-      max_tokens: 2048,
-    };
+    const url = isOpenRouter
+      ? 'https://openrouter.ai/api/v1/chat/completions'
+      : isGroq
+      ? 'https://api.groq.com/openai/v1/chat/completions'
+      : 'https://api.openai.com/v1/chat/completions';
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify(body),
-    });
+    let lastError = '';
 
-    if (!res.ok) {
-      const txt = await res.text();
-      throw new Error(`${providerName} ${res.status}: ${txt.substring(0, 200)}`);
+    for (const model of MODELS) {
+      try {
+        console.log(`🔌 ${providerName}: تجربة ${model}`);
+
+        const body = {
+          model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          temperature: 0.3,
+          max_tokens: 2048,
+        };
+
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        };
+
+        if (isOpenRouter) {
+          headers['HTTP-Referer'] = 'https://knowledgeatlas.app';
+          headers['X-Title'] = 'KnowledgeAtlas Sovereign';
+        }
+
+        const res = await fetch(url, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(body),
+        });
+
+        if (!res.ok) {
+          const txt = await res.text();
+          lastError = `${model} → ${res.status}: ${txt.substring(0, 150)}`;
+          console.warn(`⚠️ ${providerName} فشل:`, lastError);
+          continue;
+        }
+
+        const data: any = await res.json();
+        const answer = data?.choices?.[0]?.message?.content || '';
+        const tokens = data?.usage?.total_tokens;
+
+        if (!answer) {
+          lastError = `${model} → رد فارغ`;
+          continue;
+        }
+
+        console.log(`✅ ${providerName} (${model}) نجح — ${tokens} token`);
+        return { answer: answer.trim(), tokensUsed: tokens };
+      } catch (e: any) {
+        lastError = `${model} → ${e?.message ?? 'network'}`;
+        console.warn('⚠️ خطأ:', lastError);
+      }
     }
 
-    const data: any = await res.json();
-    const answer = data?.choices?.[0]?.message?.content || '';
-    const tokens = data?.usage?.total_tokens;
-
-    console.log(`✅ ${providerName} نجح (${tokens} token)`);
-    return { answer: answer.trim(), tokensUsed: tokens };
+    throw new Error(`كل الموديلات فشلت. آخر خطأ: ${lastError}`);
   }
 
   private buildSystemPrompt(intent: string): string {

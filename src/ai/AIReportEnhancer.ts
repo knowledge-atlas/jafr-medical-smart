@@ -2,6 +2,7 @@ import { LLMCaller, LLMCallResult } from './LLMCaller';
 import { DeepDiveOutput } from '../products/DeepDiveReport';
 import { ContextMode } from './ContextAwarePrompter';
 import { EthicalGuardrails, ethicalGuardrails } from './EthicalGuardrails';
+import { defaultLLMCaller } from './defaultLLMCaller';
 
 export interface EnhancedSection {
   id: string;
@@ -43,7 +44,8 @@ const SECTION_ENHANCE_PROMPT = (mode: ContextMode) => {
 };
 
 export interface AIReportEnhancerDeps {
-  llmCaller?: LLMCaller;
+  /** مرّر null لتعطيل LLM صراحةً */
+  llmCaller?: LLMCaller | null;
   guardrails?: EthicalGuardrails;
 }
 
@@ -52,7 +54,9 @@ export class AIReportEnhancer {
   private guardrails: EthicalGuardrails;
 
   constructor(deps: AIReportEnhancerDeps = {}) {
-    this.llmCaller = deps.llmCaller;
+    this.llmCaller = deps.llmCaller === null
+      ? undefined
+      : (deps.llmCaller ?? defaultLLMCaller);
     this.guardrails = deps.guardrails ?? ethicalGuardrails;
   }
 

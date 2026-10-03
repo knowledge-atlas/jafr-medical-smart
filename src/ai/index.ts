@@ -33,3 +33,5 @@ export type {
   LLMConfig,
   AIContext,
 } from './types';
+
+export { DefaultLLMCaller, defaultLLMCaller } from './defaultLLMCaller';
