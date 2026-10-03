@@ -11,7 +11,23 @@ import * as Clipboard from 'expo-clipboard';
 import { reportsStorage, SavedReport } from '../storage/reportsStorage';
 
 export default function ReportScreen({ route, navigation }: any) {
-  const { report, name } = route.params;
+  const { report, name } = route.params || {};
+
+  // حماية: إذا وصل التقرير بشكل غير صحيح
+  if (!report) {
+    return (
+      <View style={styles.container}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={{ color: '#e74c3c', fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
+            ⚠️ لم يتم استلام التقرير بشكل صحيح
+          </Text>
+          <Text style={{ color: '#c0c0c0', fontSize: 14, textAlign: 'center' }}>
+            اعد من الشاشة الرئيسية
+          </Text>
+        </View>
+      </View>
+    );
+  }
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);

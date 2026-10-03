@@ -3,6 +3,10 @@ import {
   View, Text, TouchableOpacity, ScrollView, StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { analysisToLegacyReport } from '../application/di';
+import { DeepDiveReport } from '../products/DeepDiveReport';
+import { reportChat } from '../ai/ReportChat';
+import { ContextMode } from '../ai/ContextAwarePrompter';
 
 interface ProductCard {
   id: string;
@@ -71,16 +75,24 @@ export default function ProductPickerScreen({ navigation, route }: any) {
   const { analysis, name, mode } = route.params || {};
 
   const openProduct = (product: ProductCard) => {
+    // ─── المنتجات التي تحتاج التقرير العميق (تحويل كامل) ───
     if (product.id === 'psychology' || product.id === 'deep-dive') {
-      // نفس التقرير العميق
-      navigation.navigate('Report', {
-        analysis,
-        name: name,
-        mode: mode,
+      if (!analysis) {
+        navigation.navigate('Home');
+        return;
+      }
+      const deepDive = new DeepDiveReport();
+      const ctxMode: ContextMode = (mode as ContextMode) ?? 'personal';
+      const out = deepDive.generate(analysis, ctxMode, {
+        richMarkdown: analysis.report,
       });
+      reportChat.loadReport(out, ctxMode);
+      const legacy = analysisToLegacyReport(analysis, out);
+      navigation.navigate('Report', { report: legacy, name: analysis.name });
       return;
     }
 
+    // ─── بقية المنتجات: تمرير analysis كاملاً ───
     navigation.navigate(product.route, {
       analysis,
       name,
