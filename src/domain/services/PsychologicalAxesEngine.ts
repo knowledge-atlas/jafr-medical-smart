@@ -436,7 +436,11 @@ export class PsychologicalAxesEngine {
       temporal: this.temporal,
     };
 
-    const axes: PsychologicalAxis[] = AXES.map((def, i) => {
+    // ─── استبعاد المحاور المكررة مع أقسام DeepDive ───
+    const EXCLUDED = new Set(['internal_structure', 'primary_shadow', 'interpersonal']);
+    const filteredAxes = AXES.filter((a) => !EXCLUDED.has(a.id));
+
+    const axes: PsychologicalAxis[] = filteredAxes.map((def, i) => {
       const r = def.compute(ctx, deps);
       return {
         id: def.id,

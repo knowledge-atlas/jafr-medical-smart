@@ -13,9 +13,9 @@ const layers: NameAnalysisLayers = {
 describe('PsychologicalAxesEngine', () => {
   const engine = new PsychologicalAxesEngine();
 
-  it('يولّد 15 محوراً', () => {
+  it('يولّد 12 محوراً فريد', () => {
     const p = engine.analyze('محمد', layers);
-    expect(p.axes.length).toBe(15);
+    expect(p.axes.length).toBe(12);
   });
 
   it('الفهرس متسلسل من 1 إلى 15', () => {
@@ -28,7 +28,7 @@ describe('PsychologicalAxesEngine', () => {
   it('كل محور له id فريد', () => {
     const p = engine.analyze('محمد', layers);
     const ids = p.axes.map((a) => a.id);
-    expect(new Set(ids).size).toBe(15);
+    expect(new Set(ids).size).toBe(12);
   });
 
   it('محور الهوية الجوهرية موجود', () => {
@@ -62,19 +62,19 @@ describe('PsychologicalAxesEngine', () => {
     expect(axis?.narrative).toContain('ترابي');
   });
 
-  it('محور الظل يستخدم ResonanceEngine', () => {
+  it.skip('محور الظل مدمج مع قسم الظل', () => {
     const p = engine.analyze('محمد', layers);
     const axis = p.axes.find((a) => a.id === 'primary_shadow');
     expect(axis?.narrative).toContain('ظلك الأساسي');
   });
 
-  it('محور العلاقات يذكر جذور متوافقة', () => {
+  it.skip('محور العلاقات مدمج مع الرنين', () => {
     const p = engine.analyze('محمد', layers);
     const axis = p.axes.find((a) => a.id === 'interpersonal');
     expect(axis?.narrative).toContain('أفضل تناغم');
   });
 
-  it('محور البنية الداخلية يستخدم SchismEngine', () => {
+  it.skip('محور البنية مدمج مع Schism', () => {
     const p = engine.analyze('محمد', layers);
     const axis = p.axes.find((a) => a.id === 'internal_structure');
     expect(axis?.narrative).toContain('الانسجام البنيوي');
@@ -169,12 +169,12 @@ describe('PsychologicalAxesEngine', () => {
 
   it('يعمل بدون layers كاملة', () => {
     const p = engine.analyze('محمد', {});
-    expect(p.axes.length).toBe(15);
+    expect(p.axes.length).toBe(12);
   });
 
   it('يعمل مع جذر 1', () => {
     const p = engine.analyze('فاطمة', { root: 'root_1', element: 'ناري' });
-    expect(p.axes.length).toBe(15);
+    expect(p.axes.length).toBe(12);
     const axis = p.axes.find((a) => a.id === 'core_identity');
     expect(axis?.narrative).toContain('السيادة');
   });
