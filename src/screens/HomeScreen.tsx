@@ -1,20 +1,12 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet,
-  Alert, ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { buildReport } from '../engine/reportBuilder';
-import { reportsStorage } from '../storage/reportsStorage';
-import { analyzeName, analysisToLegacyReport } from '../application/di';
-import { reportChat } from '../ai/ReportChat';
-import { DeepDiveReport } from '../products/DeepDiveReport';
+import { reportsStorage, SavedReport } from '../storage/reportsStorage';
+import { analyzeName } from '../application/di';
 import { ContextMode } from '../ai/ContextAwarePrompter';
-
-const SYMPTOMS = [
-  'تشتت', 'جمود', 'استنزاف', 'غضب', 'خوف',
-  'تردد', 'قسوة', 'عزلة', 'مبالغة', 'اندفاع',
-];
 
 const MODES: Array<{ id: ContextMode; label: string; icon: string }> = [
   { id: 'personal', label: 'شخصي', icon: '🧠' },
@@ -23,89 +15,104 @@ const MODES: Array<{ id: ContextMode; label: string; icon: string }> = [
   { id: 'commercial', label: 'تجاري', icon: '🏷️' },
 ];
 
-const deepDive = new DeepDiveReport();
-
 export default function HomeScreen({ navigation }: any) {
   const [name, setName] = useState('');
-  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
-  const [reportsCount, setReportsCount] = useState(0);
   const [mode, setMode] = useState<ContextMode>('personal');
-  const [deepLoading, setDeepLoading] = useState(false);
+  const [recent, setRecent] = useState<SavedReport[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
-      reportsStorage.count().then(setReportsCount);
+      loadRecent();
     }, [])
   );
 
-  const toggleSymptom = (sym: string) => {
-    setSelectedSymptoms(prev =>
-      prev.includes(sym) ? prev.filter(s => s !== sym) : [...prev, sym]
-    );
-  };
-
-  const analyzeClassic = () => {
-    if (!name.trim()) {
-      Alert.alert('تنبيه', 'الرجاء إدخال اسم للتحليل');
-      return;
-    }
-    const report = buildReport(name.trim(), selectedSymptoms);
-    if (report.error) {
-      Alert.alert('خطأ', report.error);
-      return;
-    }
-    navigation.navigate('Report', { report, name: name.trim() });
-  };
-
-  const runDeepDive = () => {
-    if (!name.trim()) {
-      Alert.alert('تنبيه', 'الرجاء إدخال اسم للتحليل');
-      return;
-    }
-    setDeepLoading(true);
+  const loadRecent = async () => {
     try {
-      const analysis = analyzeName.execute({ name: name.trim() });
-      const out = deepDive.generate(analysis, mode);
-      const legacy = analysisToLegacyReport(analysis, out);
-      navigation.navigate('Report', { report: legacy, name: analysis.name });
-    } catch (e: any) {
-      Alert.alert('خطأ', e?.message ?? 'حدث خطأ غير متوقع');
-    } finally {
-      setDeepLoading(false);
+      const count = await reportsStorage.count();
+      setTotalCount(count);
+      const all = await (reportsStorage as any).getAll?.() ?? [];
+      const sorted = Array.isArray(all)
+        ? [...all].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')).slice(0, 3)
+        : [];
+      setRecent(sorted);
+    } catch {
+      setTotalCount(0);
+      setRecent([]);
     }
+  };
+
+  const analyze = () => {
+    if (!name.trim()) {
+      Alert.alert('تنبيه', 'أدخل اسمك أولاً');
+      return;
+    }
+    const analysis = analyzeName.execute({ name: name.trim() });
+    if (analysis.status === 'abstained') {
+      Alert.alert('تنبيه', analysis.report);
+      return;
+    }
+    navigation.navigate('ProductPicker', {
+      analysis,
+      name: name.trim(),
+      mode,
+    });
+  };
+
+  const openRecent = (report: SavedReport) => {
+    const analysis = analyzeName.execute({ name: report.name });
+    if (analysis.status !== 'full') {
+      Alert.alert('تنبيه', 'تعذّر إعادة التحليل');
+      return;
+    }
+    navigation.navigate('ProductPicker', {
+      analysis,
+      name: report.name,
+      mode: 'personal',
+    });
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
 
-      <View style={styles.heroSection}>
-        <Text style={styles.heroEmoji}>⚖️  🪞  ⚖️</Text>
-        <Text style={styles.heroTitle}>نظام الجفر الطبي الذكي</Text>
-        <Text style={styles.heroSubtitle}>ميزان المرآة الذكي</Text>
-        <Text style={styles.heroQuote}>
-          "حيث ينعكس كيانك على ميزان دقيق، وتلتقي روحك بالعلم الطبي"
-        </Text>
+      {/* ═══ Hero ═══ */}
+      <View style={styles.hero}>
+        <Text style={styles.heroEmoji}>🪞</Text>
+        <Text style={styles.heroTitle}>KnowledgeAtlas Sovereign</Text>
+        <Text style={styles.heroSubtitle}>ميزان المرآة الذكي · v1.0</Text>
       </View>
 
-      <View style={styles.divider} />
+      {/* ═══ Dashboard مصغّر ═══ */}
+      <View style={styles.statsRow}>
+        <View style={styles.statCard}>
+          <Text style={styles.statValue}>{totalCount}</Text>
+          <Text style={styles.statLabel}>تقرير</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statValue}>19</Text>
+          <Text style={styles.statLabel}>قسم</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statValue}>10</Text>
+          <Text style={styles.statLabel}>محرك</Text>
+        </View>
+      </View>
 
-      <View style={styles.section}>
-        <Text style={styles.label}>👤 أدخل الاسم (بالعربية):</Text>
+      {/* ═══ بطاقة التحليل ═══ */}
+      <View style={styles.card}>
+        <Text style={styles.label}>👤 أدخل اسمك (بالعربية):</Text>
         <TextInput
           style={styles.input}
           value={name}
           onChangeText={setName}
           placeholder="مثال: محمد"
-          placeholderTextColor="#999"
+          placeholderTextColor="#666"
           textAlign="right"
         />
-      </View>
 
-      {/* اختيار السياق */}
-      <View style={styles.section}>
-        <Text style={styles.label}>🎯 اختر سياق التحليل:</Text>
+        <Text style={styles.label}>🎯 اختر السياق:</Text>
         <View style={styles.modesRow}>
-          {MODES.map(m => {
+          {MODES.map((m) => {
             const active = mode === m.id;
             return (
               <TouchableOpacity
@@ -120,156 +127,132 @@ export default function HomeScreen({ navigation }: any) {
             );
           })}
         </View>
+
+        <TouchableOpacity style={styles.primaryBtn} onPress={analyze}>
+          <Text style={styles.primaryBtnText}>🎯 حلّل الآن</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* التقرير العميق — الزر الجديد */}
-      <TouchableOpacity
-        style={[styles.deepBtn, deepLoading && styles.deepBtnDisabled]}
-        onPress={runDeepDive}
-        disabled={deepLoading}
-      >
-        {deepLoading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.deepBtnText}>📖 التقرير العميق (19 قسماً)</Text>
-        )}
-      </TouchableOpacity>
-
-      {/* زر المنتجات — جديد */}
-      <TouchableOpacity
-        style={styles.productsBtn}
-        onPress={() => {
-          if (!name.trim()) {
-            Alert.alert('تنبيه', 'أدخل اسمك أولاً لاختيار التقرير.');
-            return;
-          }
-          const analysis = analyzeName.execute({ name: name.trim() });
-          navigation.navigate('ProductPicker', {
-            analysis,
-            name: name.trim(),
-            mode,
-          });
-        }}
-      >
-        <Text style={styles.productsBtnText}>🎯 اختر نوع التقرير</Text>
-      </TouchableOpacity>
-
-      {/* الأعراض — للتحليل الكلاسيكي */}
-      <View style={styles.section}>
-        <Text style={styles.label}>🤔 الأعراض (اختياري — للتحليل التقليدي):</Text>
-        <View style={styles.symptomsBox}>
-          {SYMPTOMS.map(s => {
-            const active = selectedSymptoms.includes(s);
-            return (
-              <TouchableOpacity
-                key={s}
-                style={[styles.symptomChip, active && styles.symptomChipActive]}
-                onPress={() => toggleSymptom(s)}
-              >
-                <Text style={[styles.symptomText, active && styles.symptomTextActive]}>
-                  {s}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+      {/* ═══ آخر التقارير ═══ */}
+      {recent.length > 0 && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>📂 آخر التقارير</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('History')}>
+              <Text style={styles.sectionLink}>الكل →</Text>
+            </TouchableOpacity>
+          </View>
+          {recent.map((r, i) => (
+            <TouchableOpacity
+              key={r.id || i}
+              style={styles.recentCard}
+              onPress={() => openRecent(r)}
+            >
+              <Text style={styles.recentName}>{r.name}</Text>
+              <Text style={styles.recentMeta}>
+                الجذر {r.root} · {r.createdAt?.slice(0, 10) ?? '—'}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
-        {selectedSymptoms.length > 0 && (
-          <Text style={styles.symptomsSelected}>
-            المختار: {selectedSymptoms.join('، ')}
-          </Text>
-        )}
+      )}
+
+      {/* ═══ اختصارات ═══ */}
+      <View style={styles.shortcutsRow}>
+        <TouchableOpacity
+          style={styles.shortcut}
+          onPress={() => navigation.navigate('Main', { screen: 'SearchTab' })}
+        >
+          <Text style={styles.shortcutIcon}>📖</Text>
+          <Text style={styles.shortcutLabel}>البحث</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.shortcut}
+          onPress={() => navigation.navigate('Main', { screen: 'CompareTab' })}
+        >
+          <Text style={styles.shortcutIcon}>💞</Text>
+          <Text style={styles.shortcutLabel}>قارن</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.shortcut}
+          onPress={() => navigation.navigate('History')}
+        >
+          <Text style={styles.shortcutIcon}>📂</Text>
+          <Text style={styles.shortcutLabel}>السجل</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.shortcut}
+          onPress={() => navigation.navigate('Main', { screen: 'SettingsTab' })}
+        >
+          <Text style={styles.shortcutIcon}>⚙️</Text>
+          <Text style={styles.shortcutLabel}>الإعدادات</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* زر التحليل الكلاسيكي */}
-      <TouchableOpacity style={styles.primaryBtn} onPress={analyzeClassic}>
-        <Text style={styles.primaryBtnText}>🔍 تحليل تقليدي</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.secondaryBtn}
-        onPress={() => navigation.navigate('Main', { screen: 'SearchTab' })}
-      >
-        <Text style={styles.secondaryBtnText}>📖 البحث في المعرفة</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.historyBtn}
-        onPress={() => navigation.navigate('History')}
-      >
-        <Text style={styles.historyBtnText}>
-          📂 سجل التقارير ({reportsCount})
-        </Text>
-      </TouchableOpacity>
-
-      <Text style={styles.footerNote}>© 2026 — جميع الحقوق محفوظة</Text>
-
+      <Text style={styles.footer}>© 2026 — KnowledgeAtlas Sovereign</Text>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, padding: 20, backgroundColor: '#f5f5f5' },
-  heroSection: {
-    alignItems: 'center', backgroundColor: '#1a3b5d', borderRadius: 16,
-    padding: 20, marginBottom: 15, elevation: 4,
+  container: { padding: 16, backgroundColor: '#0a1628', flexGrow: 1 },
+
+  hero: { alignItems: 'center', padding: 20, marginBottom: 14 },
+  heroEmoji: { fontSize: 44, marginBottom: 6 },
+  heroTitle: { color: '#d4af37', fontSize: 22, fontWeight: 'bold', marginBottom: 4 },
+  heroSubtitle: { color: '#a0a0a0', fontSize: 13 },
+
+  statsRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
+  statCard: {
+    flex: 1, backgroundColor: '#1a3b5d', borderRadius: 10,
+    padding: 12, alignItems: 'center',
   },
-  heroEmoji: { fontSize: 28, marginBottom: 8 },
-  heroTitle: { fontSize: 22, fontWeight: 'bold', color: '#d4af37', textAlign: 'center', marginBottom: 4 },
-  heroSubtitle: { fontSize: 14, color: '#c0c0c0', marginBottom: 10 },
-  heroQuote: { fontSize: 12, color: '#a0a0a0', textAlign: 'center', fontStyle: 'italic', lineHeight: 18 },
-  divider: { height: 1, backgroundColor: '#ccc', marginVertical: 15 },
-  section: { marginBottom: 15 },
-  label: { fontSize: 16, fontWeight: 'bold', color: '#333', marginBottom: 8, textAlign: 'right' },
+  statValue: { color: '#d4af37', fontSize: 22, fontWeight: 'bold' },
+  statLabel: { color: '#b0b8c0', fontSize: 11, marginTop: 4 },
+
+  card: {
+    backgroundColor: '#1a3b5d', padding: 18, borderRadius: 14, marginBottom: 16,
+  },
+  label: { color: '#d4af37', fontSize: 15, fontWeight: 'bold', marginBottom: 8, textAlign: 'right' },
   input: {
-    backgroundColor: '#fff', borderWidth: 1, borderColor: '#ccc',
-    borderRadius: 10, padding: 14, fontSize: 18, color: '#000',
+    backgroundColor: '#0a1628', borderWidth: 1, borderColor: '#2c5070',
+    borderRadius: 10, padding: 14, fontSize: 18, color: '#fff', marginBottom: 14,
   },
-  modesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between' },
+  modesRow: { flexDirection: 'row', gap: 6, marginBottom: 14 },
   modeChip: {
-    backgroundColor: '#fff', borderWidth: 1, borderColor: '#ccc',
-    borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, flexGrow: 1,
-    alignItems: 'center', minWidth: 80,
+    flex: 1, backgroundColor: '#0a1628', borderWidth: 1, borderColor: '#2c5070',
+    borderRadius: 10, paddingVertical: 10, alignItems: 'center',
   },
-  modeChipActive: { backgroundColor: '#1a3b5d', borderColor: '#d4af37' },
-  modeText: { color: '#333', fontSize: 13 },
-  modeTextActive: { color: '#d4af37', fontWeight: 'bold' },
-  deepBtn: {
-    backgroundColor: '#2c3e50', padding: 18, borderRadius: 12,
-    alignItems: 'center', marginVertical: 10, elevation: 3,
-  },
-  deepBtnDisabled: { opacity: 0.6 },
-  deepBtnText: { color: '#d4af37', fontSize: 17, fontWeight: 'bold' },
-  symptomsBox: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6 },
-  symptomChip: {
-    backgroundColor: '#fff', borderWidth: 1, borderColor: '#ccc',
-    borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, margin: 3,
-  },
-  symptomChipActive: { backgroundColor: '#1a3b5d', borderColor: '#1a3b5d' },
-  symptomText: { color: '#333', fontSize: 13 },
-  symptomTextActive: { color: '#d4af37', fontWeight: 'bold' },
-  symptomsSelected: { marginTop: 8, fontSize: 12, color: '#27ae60', textAlign: 'right' },
-  productsBtn: {
-    backgroundColor: '#8e44ad',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginVertical: 6,
-  },
-  productsBtnText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  modeChipActive: { backgroundColor: '#d4af37', borderColor: '#d4af37' },
+  modeText: { color: '#d4af37', fontSize: 12, fontWeight: 'bold' },
+  modeTextActive: { color: '#0a1628' },
+
   primaryBtn: {
-    backgroundColor: '#27ae60', padding: 16, borderRadius: 12,
-    alignItems: 'center', marginVertical: 6,
+    backgroundColor: '#27ae60', padding: 16, borderRadius: 12, alignItems: 'center',
   },
-  primaryBtnText: { color: '#fff', fontSize: 17, fontWeight: 'bold' },
-  secondaryBtn: {
-    backgroundColor: '#1abc9c', padding: 14, borderRadius: 12,
-    alignItems: 'center', marginVertical: 6,
+  primaryBtnText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+
+  section: { marginBottom: 16 },
+  sectionHeader: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', marginBottom: 10,
   },
-  secondaryBtnText: { color: '#fff', fontSize: 15, fontWeight: 'bold' },
-  historyBtn: {
-    backgroundColor: '#8e44ad', padding: 14, borderRadius: 12,
-    alignItems: 'center', marginVertical: 6,
+  sectionTitle: { color: '#d4af37', fontSize: 16, fontWeight: 'bold' },
+  sectionLink: { color: '#3498db', fontSize: 13 },
+  recentCard: {
+    backgroundColor: '#1a3b5d', padding: 12, borderRadius: 10, marginBottom: 8,
+    borderLeftWidth: 3, borderLeftColor: '#d4af37',
   },
-  historyBtnText: { color: '#fff', fontSize: 15, fontWeight: 'bold' },
-  footerNote: { textAlign: 'center', color: '#999', fontSize: 11, marginTop: 20 },
+  recentName: { color: '#fff', fontSize: 15, fontWeight: 'bold', textAlign: 'right' },
+  recentMeta: { color: '#a0a0a0', fontSize: 12, marginTop: 4, textAlign: 'right' },
+
+  shortcutsRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  shortcut: {
+    flex: 1, backgroundColor: '#1a3b5d', borderRadius: 10,
+    padding: 12, alignItems: 'center',
+  },
+  shortcutIcon: { fontSize: 22, marginBottom: 4 },
+  shortcutLabel: { color: '#b0b8c0', fontSize: 11 },
+
+  footer: { textAlign: 'center', color: '#555', fontSize: 11, marginTop: 8 },
 });
