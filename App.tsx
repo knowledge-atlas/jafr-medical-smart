@@ -23,6 +23,7 @@ import AssistantScreen from './src/screens/AssistantScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import CompareScreen from './src/screens/CompareScreen';
 import ConsentScreen from './src/screens/ConsentScreen';
+import TraditionalReportScreen from './src/screens/TraditionalReportScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -169,6 +170,7 @@ export default function App() {
         <Stack.Screen name="Remedy" component={RemedyScreen} options={{ title: 'متتبع الالتزام' }} />
         <Stack.Screen name="History" component={HistoryScreen} options={{ title: 'السجل' }} />
         <Stack.Screen name="EntityDetail" component={EntityDetailScreen} options={{ title: 'تفاصيل الكيان' }} />
+        <Stack.Screen name="TraditionalReport" component={TraditionalReportScreen} options={{ title: '📜 التقرير التقليدي' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

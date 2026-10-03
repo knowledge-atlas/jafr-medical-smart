@@ -63,11 +63,20 @@ const PRODUCTS: ProductCard[] = [
   {
     id: 'psychology',
     title: 'الملف النفسي',
-    subtitle: '15 محوراً تحليلياً متكاملاً',
+    subtitle: '12 محوراً انعكاسياً متكاملاً',
     icon: 'person-circle',
     color: '#1abc9c',
     route: 'Report',
     badge: '🧠 داخل التقرير',
+  },
+  {
+    id: 'traditional',
+    title: 'التقرير التقليدي الشامل',
+    subtitle: 'الموسوعة المرجعية كاملة — كل نص بلا اختصار',
+    icon: 'document-text',
+    color: '#f39c12',
+    route: 'TraditionalReport',
+    badge: '📜 6000+ كلمة',
   },
 ];
 
@@ -89,6 +98,12 @@ export default function ProductPickerScreen({ navigation, route }: any) {
       reportChat.loadReport(out, ctxMode);
       const legacy = analysisToLegacyReport(analysis, out);
       navigation.navigate('Report', { report: legacy, name: analysis.name });
+      return;
+    }
+
+    // ─── التقرير التقليدي ───
+    if (product.id === 'traditional') {
+      navigation.navigate('TraditionalReport', { name });
       return;
     }
 
