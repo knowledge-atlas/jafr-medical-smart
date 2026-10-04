@@ -7,90 +7,11 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { buildReport } from '../engine/reportBuilder';
 import { medicalFilter } from '../domain/services/MedicalFilter';
-
-interface Section {
-  id: string;
-  title: string;
-  icon: string;
-  content: string;
-  defaultOpen?: boolean;
-}
-
-/**
- * يقسّم النص الكامل إلى أقسام بناءً على الأنماط
- * 【 القسم ... 】 أو "القسم الأول/الثاني/..."
- */
-function splitIntoSections(text: string): Section[] {
-  const sections: Section[] = [];
-
-  // محاولة 1: التقسيم بحسب 【 القسم ... 】
-  const pattern1 = /【\s*القسم\s+([^】]+)\s*】/g;
-  const matches1 = [...text.matchAll(pattern1)];
-
-  if (matches1.length > 0) {
-    for (let i = 0; i < matches1.length; i++) {
-      const start = matches1[i].index!;
-      const end = i + 1 < matches1.length ? matches1[i + 1].index! : text.length;
-      const sectionText = text.slice(start, end).trim();
-      const titleMatch = sectionText.match(/【\s*القسم\s+([^】]+)\s*】/);
-      const title = titleMatch ? `القسم ${titleMatch[1]}` : `القسم ${i + 1}`;
-      sections.push({
-        id: `sec_${i}`,
-        title,
-        icon: pickIcon(title),
-        content: sectionText,
-        defaultOpen: i === 0,
-      });
-    }
-    return sections;
-  }
-
-  // محاولة 2: التقسيم بحسب "القسم" ككلمة مستقلة
-  const parts = text.split(/(?=القسم\s+(?:الأول|الثاني|الثالث|الرابع|الخامس|السادس|السابع|الثامن|التاسع|العاشر|الحادي عشر|الثاني عشر))/g);
-  if (parts.length > 1) {
-    parts.forEach((part, i) => {
-      if (!part.trim()) return;
-      const firstLine = part.split('\n')[0].trim();
-      sections.push({
-        id: `sec_${i}`,
-        title: firstLine.slice(0, 50) || `قسم ${i + 1}`,
-        icon: pickIcon(firstLine),
-        content: part.trim(),
-        defaultOpen: i === 0,
-      });
-    });
-    return sections;
-  }
-
-  // Fallback: قسم واحد
-  return [{
-    id: 'sec_all',
-    title: 'التقرير الكامل',
-    icon: '📜',
-    content: text,
-    defaultOpen: true,
-  }];
-}
-
-function pickIcon(title: string): string {
-  if (/الملخص|التنفيذي/.test(title)) return '📋';
-  if (/الجذر|الحقيقي/.test(title)) return '🌱';
-  if (/الطبقة|الداخلية/.test(title)) return '🔥';
-  if (/الخارجية/.test(title)) return '🌍';
-  if (/المكتسب/.test(title)) return '✨';
-  if (/البواقي|التفصيلية/.test(title)) return '🔢';
-  if (/رنين/.test(title)) return '🎵';
-  if (/التراكيب/.test(title)) return '🔗';
-  if (/الوفق/.test(title)) return '⚖️';
-  if (/التوصية|العامة/.test(title)) return '💡';
-  if (/الطبية|الكاملة/.test(title)) return '🏥';
-  if (/بيانات|السجل/.test(title)) return '📖';
-  return '📄';
-}
+import { splitIntoSections, ReportSectionSplit } from '../utils/splitIntoSections';
 
 export default function TraditionalReportScreen({ route, navigation }: any) {
   const { name } = route.params || {};
-  const [sections, setSections] = useState<Section[]>([]);
+  const [sections, setSections] = useState<ReportSectionSplit[]>([]);
   const [openIds, setOpenIds] = useState<Set<string>>(new Set());
   const [fullText, setFullText] = useState('');
   const [loading, setLoading] = useState(true);
@@ -198,7 +119,6 @@ export default function TraditionalReportScreen({ route, navigation }: any) {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>📜 التقرير التقليدي الشامل</Text>
         <Text style={styles.headerSubtitle}>
@@ -206,7 +126,6 @@ export default function TraditionalReportScreen({ route, navigation }: any) {
         </Text>
       </View>
 
-      {/* Quick actions */}
       <View style={styles.actionsRow}>
         <TouchableOpacity style={styles.actionBtn} onPress={expandAll}>
           <Ionicons name="chevron-down-circle-outline" size={16} color="#d4af37" />
@@ -218,7 +137,6 @@ export default function TraditionalReportScreen({ route, navigation }: any) {
         </TouchableOpacity>
       </View>
 
-      {/* Sections (Accordion) */}
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         {sections.map((section, i) => {
           const isOpen = openIds.has(section.id);
@@ -261,13 +179,18 @@ export default function TraditionalReportScreen({ route, navigation }: any) {
         })}
       </ScrollView>
 
-      {/* Bottom actions */}
       <View style={styles.bottomActions}>
-        <TouchableOpacity style={[styles.bottomBtn, { backgroundColor: '#3498db' }]} onPress={copyFullReport}>
+        <TouchableOpacity
+          style={[styles.bottomBtn, { backgroundColor: '#3498db' }]}
+          onPress={copyFullReport}
+        >
           <Ionicons name="copy-outline" size={18} color="#fff" />
           <Text style={styles.bottomBtnText}> نسخ الكل</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.bottomBtn, { backgroundColor: '#27ae60' }]} onPress={shareReport}>
+        <TouchableOpacity
+          style={[styles.bottomBtn, { backgroundColor: '#27ae60' }]}
+          onPress={shareReport}
+        >
           <Ionicons name="share-outline" size={18} color="#fff" />
           <Text style={styles.bottomBtnText}> مشاركة</Text>
         </TouchableOpacity>
@@ -299,8 +222,7 @@ const styles = StyleSheet.create({
   headerSubtitle: { color: '#c0c0c0', fontSize: 12, textAlign: 'center', marginTop: 4 },
 
   actionsRow: {
-    flexDirection: 'row', gap: 8, padding: 8,
-    backgroundColor: '#0f2438',
+    flexDirection: 'row', gap: 8, padding: 8, backgroundColor: '#0f2438',
   },
   actionBtn: {
     flex: 1, backgroundColor: '#1a3b5d', paddingVertical: 8,
@@ -312,39 +234,27 @@ const styles = StyleSheet.create({
   scrollContent: { padding: 10 },
 
   sectionCard: {
-    backgroundColor: '#1a3b5d',
-    borderRadius: 10, marginBottom: 8,
-    overflow: 'hidden',
-    borderLeftWidth: 4, borderLeftColor: '#f39c12',
+    backgroundColor: '#1a3b5d', borderRadius: 10, marginBottom: 8,
+    overflow: 'hidden', borderLeftWidth: 4, borderLeftColor: '#f39c12',
   },
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    justifyContent: 'space-between',
+    flexDirection: 'row', alignItems: 'center',
+    padding: 12, justifyContent: 'space-between',
   },
   sectionHeaderOpen: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#2c5070',
+    borderBottomWidth: 1, borderBottomColor: '#2c5070',
   },
   sectionHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    flexDirection: 'row', alignItems: 'center', flex: 1,
   },
   sectionIcon: { fontSize: 22, marginRight: 10 },
   sectionTitle: { color: '#fff', fontSize: 15, fontWeight: 'bold', textAlign: 'right' },
   sectionMeta: { color: '#a0a0a0', fontSize: 11, marginTop: 4, textAlign: 'right' },
 
-  sectionContent: {
-    padding: 12,
-    backgroundColor: '#0a1628',
-  },
+  sectionContent: { padding: 12, backgroundColor: '#0a1628' },
   sectionText: {
-    color: '#e8e8e8',
-    fontSize: 11,
-    fontFamily: 'monospace',
-    lineHeight: 18,
+    color: '#e8e8e8', fontSize: 11,
+    fontFamily: 'monospace', lineHeight: 18,
   },
 
   bottomActions: {

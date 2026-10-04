@@ -111,3 +111,76 @@ describe('DeepDiveReport v1.5 — قسم temporal', () => {
     expect(t?.content).toContain('mod9');
   });
 });
+
+import { computeElementBalance } from '../../src/products/DeepDiveReport';
+
+describe('computeElementBalance — توازن الطبائع', () => {
+  it('طبع ترابي + قمر + السرطان → ترابي 3، مائي 4', () => {
+    const balance = computeElementBalance({
+      element: 'ترابي', planet: 'قمر', sign: 'السرطان',
+    });
+    expect(balance.ترابي).toBe(3);
+    expect(balance.مائي).toBe(4);
+    expect(balance.ناري).toBe(0);
+    expect(balance.هوائي).toBe(0);
+  });
+
+  it('طبع ناري + شمس + الأسد → ناري 7', () => {
+    const balance = computeElementBalance({
+      element: 'ناري', planet: 'شمس', sign: 'الأسد',
+    });
+    expect(balance.ناري).toBe(7);
+    expect(balance.ترابي).toBe(0);
+  });
+
+  it('طبع هوائي + عطارد + الجوزاء → هوائي 7', () => {
+    const balance = computeElementBalance({
+      element: 'هوائي', planet: 'عطارد', sign: 'الجوزاء',
+    });
+    expect(balance.هوائي).toBe(7);
+  });
+
+  it('طبع مائي + نبتون + الحوت → مائي 7', () => {
+    const balance = computeElementBalance({
+      element: 'مائي', planet: 'نبتون', sign: 'الحوت',
+    });
+    expect(balance.مائي).toBe(7);
+  });
+
+  it('طبقات ناقصة → تعمل بلا أخطاء', () => {
+    const balance = computeElementBalance({ element: 'ناري' });
+    expect(balance.ناري).toBe(3);
+    expect(balance.مائي).toBe(0);
+  });
+
+  it('بدون طبقات → كل القيم 0', () => {
+    const balance = computeElementBalance({});
+    expect(balance.ناري).toBe(0);
+    expect(balance.ترابي).toBe(0);
+    expect(balance.هوائي).toBe(0);
+    expect(balance.مائي).toBe(0);
+  });
+
+  it('كوكب غير معروف → لا يضيف', () => {
+    const balance = computeElementBalance({ element: 'ناري', planet: 'كوكب_وهمي' });
+    expect(balance.ناري).toBe(3);
+  });
+
+  it('برج غير معروف → لا يضيف', () => {
+    const balance = computeElementBalance({ element: 'مائي', sign: 'برج_وهمي' });
+    expect(balance.مائي).toBe(3);
+  });
+
+  it('مزج طبائع متعددة → كل قيمة صحيحة', () => {
+    const balance = computeElementBalance({
+      element: 'ناري', planet: 'زحل', sign: 'الثور',
+    });
+    expect(balance.ناري).toBe(3);
+    expect(balance.ترابي).toBe(4);
+  });
+
+  it('دائماً يُرجع 4 مفاتيح', () => {
+    const balance = computeElementBalance({});
+    expect(Object.keys(balance).sort()).toEqual(['ترابي', 'مائي', 'ناري', 'هوائي'].sort());
+  });
+});

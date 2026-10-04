@@ -19,14 +19,12 @@ const REMOVAL_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
   { pattern: /(?:جرعة|الجرعة)[:：]\s*[^\n]+/gi, label: 'سطر الجرعة' },
 
   // أسماء الأدوية الكيميائية (SSRIs / SNRIs)
-  { pattern: /\(?\s*(?:SSRIs?|SNRIs?)\s*\([^)]*\)\s*\)?/gi, label: 'اسم فئة دوائية' },
+  { pattern: /\bSSRIs?\b|\bSNRIs?\b/gi, label: 'اسم فئة دوائية' },
   { pattern: /Sertraline|Escitalopram|Fluoxetine|Venlafaxine|Duloxetine|Paroxetine|Citalopram|Fluvoxamine/gi, label: 'اسم دواء كيميائي' },
   { pattern: /سيرترالين|إسيتالوبرام|فلوكسيتين|فينلافاكسين|دولوكسيتين|باروكسيتين|سيتالوبرام/gi, label: 'اسم دواء بالعربية' },
 
   // الناقلات العصبية كأسماء أدوية (يمكن الإبقاء عليها كوصف)
   // لكن لا نُبقيها كـ "توصية دوائية"
-  { pattern: /الدواء الأساسي[:：]\s*[^\n]+/gi, label: 'سطر الدواء الأساسي' },
-  { pattern: /الدواء البديل[:：]\s*[^\n]+/gi, label: 'سطر الدواء البديل' },
 ];
 
 const RENAME_MAP: Array<{ from: RegExp; to: string }> = [
