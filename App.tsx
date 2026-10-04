@@ -6,6 +6,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { consentStorage, CONSENT_KEY } from './src/utils/consentStorage';
 
 import HomeScreen from './src/screens/HomeScreen';
 import ReportScreen from './src/screens/ReportScreen';
@@ -29,7 +30,6 @@ import TraditionalTabScreen from './src/screens/TraditionalTabScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const CONSENT_KEY = '@knowledgeatlas/consent_v1';
 
 function MainTabs() {
   return (
@@ -78,12 +78,8 @@ export default function App() {
   useEffect(() => {
     const bootstrap = async () => {
       // 1. فحص الموافقة
-      try {
-        const stored = await AsyncStorage.getItem(CONSENT_KEY);
-        setConsented(stored === 'accepted');
-      } catch {
-        setConsented(false);
-      }
+      const stored = await consentStorage.get();
+      setConsented(stored === 'accepted');
 
       // 2. تحميل KB في الخلفية (لا يُوقف الواجهة)
       InteractionManager.runAfterInteractions(async () => {
@@ -123,14 +119,12 @@ export default function App() {
   }, [kbReady, consented, encyclopediaLoaded]);
 
   const handleAccept = useCallback(async () => {
-    try {
-      await AsyncStorage.setItem(CONSENT_KEY, 'accepted');
-    } catch {}
+    await consentStorage.accept();
     setConsented(true);
   }, []);
 
-  const handleDecline = useCallback(() => {
-    // لا نستخدم BackHandler هنا — يمكن للمستخدم إغلاق التطبيق يدوياً
+  const handleDecline = useCallback(async () => {
+    await consentStorage.decline();
     setConsented(false);
   }, []);
 
