@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>KnowledgeAtlas — Assets Generator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #0a1628;
+    color: #e8e8e8;
+    padding: 20px;
+    line-height: 1.6;
+  }
+  h1 {
+    color: #d4af37;
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 20px;
+  }
+  h2 {
+    color: #d4af37;
+    font-size: 20px;
+    margin: 20px 0 10px;
+    border-bottom: 2px solid #d4af37;
+    padding-bottom: 8px;
+  }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .preview {
+    background: #1a3b5d;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .preview canvas, .preview svg {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+  }
+  .instructions {
+    background: #1a3b5d;
+    padding: 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border-left: 4px solid #3498db;
+  }
+  .instructions ol {
+    padding-right: 20px;
+  }
+  .instructions li {
+    margin-bottom: 8px;
+  }
+  .btn {
+    background: #d4af37;
+    color: #0a1628;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 8px;
+    transition: transform 0.2s;
+  }
+  .btn:hover {
+    transform: scale(1.05);
+  }
+  .buttons {
+    text-align: center;
+    margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>🎨 KnowledgeAtlas — مولّد الأصول البصرية</h1>
+
+  <div class="instructions">
+    <strong>📖 طريقة الاستخدام:</strong>
+    <ol>
+      <li>اضغط زر <strong>"تحميل"</strong> تحت كل صورة</li>
+      <li>سيتم تنزيل الصورة كـ PNG</li>
+      <li>ارفعها إلى Google Play Console</li>
+    </ol>
+  </div>
+
+  <!-- ═══ 1. ICON 512×512 ═══ -->
+  <h2>1️⃣ أيقونة التطبيق (512×512)</h2>
+  <div class="preview">
+    <canvas id="iconCanvas" width="512" height="512"></canvas>
+  </div>
+  <div class="buttons">
+    <button class="btn" onclick="downloadCanvas('iconCanvas', 'icon-512.png')">
+      ⬇️ تحميل الأيقونة
+    </button>
+  </div>
+
+  <!-- ═══ 2. FEATURE GRAPHIC 1024×500 ═══ -->
+  <h2>2️⃣ Feature Graphic (1024×500)</h2>
+  <div class="preview">
+    <canvas id="featureCanvas" width="1024" height="500"></canvas>
+  </div>
+  <div class="buttons">
+    <button class="btn" onclick="downloadCanvas('featureCanvas', 'feature-graphic.png')">
+      ⬇️ تحميل الـ Feature Graphic
+    </button>
+  </div>
+
+  <!-- ═══ 3. SCREENSHOT FRAME 1080×1920 ═══ -->
+  <h2>3️⃣ قالب Screenshot (1080×1920)</h2>
+  <div class="preview">
+    <canvas id="screenshotCanvas" width="540" height="960"></canvas>
+  </div>
+  <div class="buttons">
+    <button class="btn" onclick="downloadCanvas('screenshotCanvas', 'screenshot-frame.png')">
+      ⬇️ تحميل قالب Screenshot
+    </button>
+  </div>
+
+  <div class="instructions">
+    <strong>📱 كيف تنشئ Screenshots حقيقية:</strong>
+    <ol>
+      <li>افتح التطبيق في <strong>Expo Go</strong></li>
+      <li>انتقل لكل شاشة (الرئيسية، التقرير، إلخ)</li>
+      <li>خُذ screenshot من الهاتف (Power + Volume Down)</li>
+      <li>الحجم المطلوب: 1080×1920 أو أكبر</li>
+      <li>ارفع 6-8 صور إلى Play Store</li>
+    </ol>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// رسم الأيقونة 512×512
+// ═══════════════════════════════════════════════════════════
+function drawIcon() {
+  const canvas = document.getElementById('iconCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // خلفية متدرجة
+  const grad = ctx.createLinearGradient(0, 0, 512, 512);
+  grad.addColorStop(0, '#0a1628');
+  grad.addColorStop(1, '#1a3b5d');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 512, 512);
+
+  // إطار ذهبي دائري
+  ctx.strokeStyle = '#d4af37';
+  ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.arc(256, 256, 220, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // رمز المرآة/الكتاب
+  ctx.font = '180px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#d4af37';
+  ctx.fillText('🪞', 256, 240);
+
+  // نص عربي
+  ctx.font = 'bold 48px Tahoma';
+  ctx.fillStyle = '#d4af37';
+  ctx.fillText('KA', 256, 400);
+
+  ctx.font = 'bold 20px Tahoma';
+  ctx.fillStyle = '#e8e8e8';
+  ctx.fillText('KnowledgeAtlas', 256, 445);
+}
+
+// ═══════════════════════════════════════════════════════════
+// رسم الـ Feature Graphic 1024×500
+// ═══════════════════════════════════════════════════════════
+function drawFeature() {
+  const canvas = document.getElementById('featureCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // خلفية متدرجة
+  const grad = ctx.createLinearGradient(0, 0, 1024, 500);
+  grad.addColorStop(0, '#0a1628');
+  grad.addColorStop(0.5, '#1a3b5d');
+  grad.addColorStop(1, '#0a1628');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1024, 500);
+
+  // زخرفة: مربعات ذهبية
+  ctx.strokeStyle = '#d4af37';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 5; i++) {
+    const x = 100 + i * 180;
+    ctx.strokeRect(x, 50, 60, 60);
+  }
+
+  // الشعار
+  ctx.font = '120px serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#d4af37';
+  ctx.fillText('🪞', 512, 230);
+
+  // العنوان الرئيسي
+  ctx.font = 'bold 56px Tahoma';
+  ctx.fillStyle = '#d4af37';
+  ctx.fillText('KnowledgeAtlas', 512, 310);
+
+  ctx.font = 'bold 32px Tahoma';
+  ctx.fillStyle = '#e8e8e8';
+  ctx.fillText('نظام تشغيل المعرفة السيادي', 512, 360);
+
+  // السطر الفرعي
+  ctx.font = '22px Tahoma';
+  ctx.fillStyle = '#b0b8c0';
+  ctx.fillText('يعمل بدون إنترنت  ·  11 محركاً تحليلياً  ·  AI اختياري', 512, 410);
+
+  // إطار سفلي
+  ctx.fillStyle = '#d4af37';
+  ctx.fillRect(0, 490, 1024, 10);
+}
+
+// ═══════════════════════════════════════════════════════════
+// رسم قالب Screenshot
+// ═══════════════════════════════════════════════════════════
+function drawScreenshot() {
+  const canvas = document.getElementById('screenshotCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+
+  // خلفية
+  ctx.fillStyle = '#0a1628';
+  ctx.fillRect(0, 0, W, H);
+
+  // شريط علوي
+  ctx.fillStyle = '#1a3b5d';
+  ctx.fillRect(0, 0, W, 80);
+
+  // عنوان
+  ctx.font = 'bold 28px Tahoma';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#d4af37';
+  ctx.fillText('التطبيق', W / 2, 50);
+
+  // منطقة المحتوى
+  ctx.fillStyle = '#1a3b5d';
+  ctx.fillRect(30, 110, W - 60, H - 200);
+
+  // نص
+  ctx.font = 'bold 22px Tahoma';
+  ctx.fillStyle = '#e8e8e8';
+  ctx.textAlign = 'center';
+  ctx.fillText('ضع هنا', W / 2, H / 2 - 20);
+  ctx.fillText('Screenshot التطبيق', W / 2, H / 2 + 20);
+
+  // تلميح
+  ctx.font = '14px Tahoma';
+  ctx.fillStyle = '#a0a0a0';
+  ctx.fillText('(استخدم screenshot حقيقي من الهاتف)', W / 2, H / 2 + 60);
+
+  // شريط سفلي
+  ctx.fillStyle = '#0f2438';
+  ctx.fillRect(0, H - 70, W, 70);
+
+  // تبويبات وهمية
+  for (let i = 0; i < 5; i++) {
+    ctx.fillStyle = '#2c5070';
+    ctx.fillRect(20 + i * 100, H - 50, 80, 30);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// تحميل الصورة
+// ═══════════════════════════════════════════════════════════
+function downloadCanvas(canvasId, filename) {
+  const canvas = document.getElementById(canvasId);
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+// ═══════════════════════════════════════════════════════════
+// التشغيل
+// ═══════════════════════════════════════════════════════════
+window.onload = () => {
+  drawIcon();
+  drawFeature();
+  drawScreenshot();
+};
+</script>
+</body>
+</html>
