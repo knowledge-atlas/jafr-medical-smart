@@ -1,12 +1,12 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, InteractionManager } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { consentStorage, CONSENT_KEY } from './src/utils/consentStorage';
+import { consentStorage } from './src/utils/consentStorage';
 
 import HomeScreen from './src/screens/HomeScreen';
 import ReportScreen from './src/screens/ReportScreen';
@@ -29,7 +29,6 @@ import TraditionalTabScreen from './src/screens/TraditionalTabScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
-
 
 function MainTabs() {
   return (
@@ -57,10 +56,10 @@ function MainTabs() {
         options={{ title: 'البحث', tabBarIcon: ({ color, size }) => <Ionicons name="search" size={size} color={color} /> }} />
       <Tab.Screen name="AssistantTab" component={AssistantScreen}
         options={{ title: 'المساعد', tabBarIcon: ({ color, size }) => <Ionicons name="chatbubbles" size={size} color={color} /> }} />
-      <Tab.Screen name="CompareTab" component={CompareScreen}
-        options={{ title: 'المقارنة', tabBarIcon: ({ color, size }) => <Ionicons name="git-compare" size={size} color={color} /> }} />
       <Tab.Screen name="TraditionalTab" component={TraditionalTabScreen}
         options={{ title: 'التقليدي', tabBarIcon: ({ color, size }) => <Ionicons name="document-text" size={size} color={color} /> }} />
+      <Tab.Screen name="CompareTab" component={CompareScreen}
+        options={{ title: 'المقارنة', tabBarIcon: ({ color, size }) => <Ionicons name="git-compare" size={size} color={color} /> }} />
       <Tab.Screen name="MedicalTab" component={MedicalScreen}
         options={{ title: 'الطبية', tabBarIcon: ({ color, size }) => <Ionicons name="medkit" size={size} color={color} /> }} />
       <Tab.Screen name="SettingsTab" component={SettingsScreen}
@@ -79,26 +78,32 @@ export default function App() {
       const t0 = Date.now();
       console.log('⏱️ START bootstrap');
 
-      // 1. فحص الموافقة
       const stored = await consentStorage.get();
       console.log(`⏱️ consent check: ${Date.now() - t0}ms`);
       setConsented(stored === 'accepted');
 
-      // 2. تحميل KB في الخلفية (لا يُوقف الواجهة)
-      InteractionManager.runAfterInteractions(async () => {
+      // تحميل KB في الخلفية بعد تأخير بسيط
+      setTimeout(async () => {
+        const tKB = Date.now();
         try {
           const { KnowledgeBase, importAll } = await import('./src/kb');
+          console.log(`⏱️ KB import: ${Date.now() - tKB}ms`);
+          const tInit = Date.now();
           await KnowledgeBase.initialize();
+          console.log(`⏱️ KB init: ${Date.now() - tInit}ms`);
           const stats = KnowledgeBase.stats();
           if (stats.totalEntities === 0) {
+            const tImp = Date.now();
             await importAll();
+            console.log(`⏱️ KB importAll: ${Date.now() - tImp}ms`);
           }
           setKbReady(true);
+          console.log(`⏱️ TOTAL KB: ${Date.now() - tKB}ms`);
         } catch (e) {
           console.warn('⚠️ KB load failed:', e);
-          setKbReady(true); // نسمح بالمتابعة
+          setKbReady(true);
         }
-      });
+      }, 50);
     };
 
     bootstrap();
@@ -114,11 +119,11 @@ export default function App() {
     setConsented(false);
   }, []);
 
-  // ═══ 3) عرض شاشة الموافقة أولاً ═══
   if (consented === null) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#d4af37" />
+        <Text style={styles.loadingText}>جارٍ التحميل...</Text>
       </View>
     );
   }
@@ -132,7 +137,6 @@ export default function App() {
     );
   }
 
-  // ═══ 4) عرض التطبيق مباشرة (KB يُحمّل في الخلفية) ═══
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -161,4 +165,5 @@ export default function App() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0a1628' },
+  loadingText: { color: '#d4af37', fontSize: 14, marginTop: 12, fontWeight: 'bold' },
 });

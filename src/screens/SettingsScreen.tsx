@@ -8,6 +8,7 @@ import {
   Alert, ActivityIndicator,
 } from 'react-native';
 import { llmBridge } from '../ai';
+import { consentStorage } from '../utils/consentStorage';
 import { KnowledgeBase, importAll } from '../kb';
 
 type Provider = 'none' | 'demo' | 'gemini' | 'openai';
@@ -81,7 +82,25 @@ export default function SettingsScreen() {
     Alert.alert('✅', 'تم تعطيل الذكاء الاصطناعي — التطبيق يعمل محلياً');
   };
 
-  const saveKey = async (which: 'gemini' | 'openai') => {
+    const resetConsent = async () => {
+    Alert.alert(
+      'إعادة تعيين الموافقة',
+      'ستُطلب الموافقة مرة أخرى عند إعادة فتح التطبيق.',
+      [
+        { text: 'إلغاء', style: 'cancel' },
+        {
+          text: 'إعادة تعيين',
+          style: 'destructive',
+          onPress: async () => {
+            await consentStorage.reset();
+            Alert.alert('✅', 'تم. أعد فتح التطبيق لرؤية شاشة الموافقة.');
+          },
+        },
+      ]
+    );
+  };
+
+const saveKey = async (which: 'gemini' | 'openai') => {
     const key = which === 'gemini' ? geminiKey : openaiKey;
     if (!key || key.startsWith('••')) {
       Alert.alert('تنبيه', 'الرجاء إدخال مفتاح صالح');
