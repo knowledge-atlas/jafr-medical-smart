@@ -72,13 +72,16 @@ function MainTabs() {
 export default function App() {
   const [consented, setConsented] = useState<boolean | null>(null);
   const [kbReady, setKbReady] = useState(false);
-  const [encyclopediaLoaded, setEncyclopediaLoaded] = useState(false);
 
   // ═══ 1) فحص حالة الموافقة + بدء التهيئة الخفيفة ═══
   useEffect(() => {
     const bootstrap = async () => {
+      const t0 = Date.now();
+      console.log('⏱️ START bootstrap');
+
       // 1. فحص الموافقة
       const stored = await consentStorage.get();
+      console.log(`⏱️ consent check: ${Date.now() - t0}ms`);
       setConsented(stored === 'accepted');
 
       // 2. تحميل KB في الخلفية (لا يُوقف الواجهة)
@@ -100,23 +103,6 @@ export default function App() {
 
     bootstrap();
   }, []);
-
-  // ═══ 2) تحميل الموسوعة الكبيرة — بشكل كسول (Lazy) ═══
-  useEffect(() => {
-    if (!kbReady || encyclopediaLoaded) return;
-    if (!consented) return;
-
-    InteractionManager.runAfterInteractions(async () => {
-      try {
-        const { loadFullEncyclopedia } = await import('./src/data/encyclopediaLoader');
-        await loadFullEncyclopedia();
-        setEncyclopediaLoaded(true);
-      } catch (e) {
-        console.warn('⚠️ Encyclopedia load failed:', e);
-        setEncyclopediaLoaded(true);
-      }
-    });
-  }, [kbReady, consented, encyclopediaLoaded]);
 
   const handleAccept = useCallback(async () => {
     await consentStorage.accept();

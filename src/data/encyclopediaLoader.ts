@@ -14,33 +14,10 @@ let loadPromise: Promise<any> | null = null;
  * تحميل الموسوعة الكاملة (505KB) من assets/
  */
 export const loadFullEncyclopedia = async (): Promise<any> => {
-  if (cachedFull) return cachedFull;
-  if (loadPromise) return loadPromise;
-
-  loadPromise = (async () => {
-    try {
-      console.log('📚 تحميل الموسوعة الكبيرة...');
-      const asset = Asset.fromModule(
-        require('../../assets/jafr_encyclopedia_FULL_v2.json')
-      );
-      if (!asset.localUri) {
-        await asset.downloadAsync();
-      }
-      const uri = asset.localUri || asset.uri;
-      const content = await FileSystem.readAsStringAsync(uri);
-      cachedFull = JSON.parse(content);
-      console.log('✅ تم تحميل الموسوعة الكبيرة');
-      return cachedFull;
-    } catch (e: any) {
-      console.warn('⚠️ فشل تحميل الموسوعة الكبيرة:', e?.message);
-      cachedFull = {};
-      return cachedFull;
-    } finally {
-      loadPromise = null;
-    }
-  })();
-
-  return loadPromise;
+  // ─── تم تعطيل التحميل (يعمل بدون assets) ───
+  // البيانات الكاملة متوفرة في src/data/*.ts
+  console.log('ℹ️ encyclopediaLoader معطّل — البيانات في src/data/*.ts');
+  return {};
 };
 
 /**
