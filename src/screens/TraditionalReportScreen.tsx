@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { buildReport } from '../engine/reportBuilder';
+import { medicalFilter } from '../domain/services/MedicalFilter';
 
 export default function TraditionalReportScreen({ route, navigation }: any) {
   const { name } = route.params || {};
@@ -33,12 +34,18 @@ export default function TraditionalReportScreen({ route, navigation }: any) {
         return;
       }
 
-      const fullReport =
+      const rawReport =
         (report as any).fullReport ||
         (report as any).text ||
         JSON.stringify(report, null, 2);
 
-      setReportText(fullReport);
+      // 🛡️ حماية: حجب الجرعات + إعادة تسمية الأدوية
+      const filtered = medicalFilter.filter(rawReport);
+      setReportText(filtered.text);
+
+      if (filtered.applied && filtered.removedItems.length > 0) {
+        console.log('🛡️ MedicalFilter حجب:', filtered.removedItems.join(', '));
+      }
       setError(null);
     } catch (e: any) {
       setError(e?.message ?? 'فشل التوليد');

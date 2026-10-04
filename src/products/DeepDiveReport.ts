@@ -227,6 +227,39 @@ export class DeepDiveReport {
     lines.push(`| سجل التحقق | ${(d.verificationHistory * 100).toFixed(0)}% | تغذية راجعة من تحليلات سابقة |`);
     lines.push('');
     lines.push('> هذه درجة **اتساق داخلي للنموذج** — ليست دقة علمية ولا احتمال صحة التنبؤات.');
+
+    // ─── شرح النسبة المفقودة ───
+    const missing = 100 - parseFloat(pct);
+    if (missing > 0) {
+      const deductions: string[] = [];
+      if (d.resonanceStrength < 1) {
+        deductions.push(`- **قوة الرنين: -${((1 - d.resonanceStrength) * 100).toFixed(0)}%** — عدد قليل من العلاقات متوفر مع الجذور الأخرى.`);
+      }
+      if (d.wafqClarity < 1) {
+        deductions.push(`- **وضوح الوفق: -${((1 - d.wafqClarity) * 100).toFixed(0)}%** — تفاوت في انتظام المربع العددي.`);
+      }
+      if (d.verificationHistory < 1) {
+        deductions.push(`- **سجل التحقق: -${((1 - d.verificationHistory) * 100).toFixed(0)}%** — لا توجد تغذية راجعة سابقة من المستخدم.`);
+      }
+      if (d.layerConsistency < 1) {
+        deductions.push(`- **اتساق الطبقات: -${((1 - d.layerConsistency) * 100).toFixed(0)}%** — تباين بين الطبقات.`);
+      }
+
+      if (deductions.length > 0) {
+        lines.push('');
+        lines.push(`### 🔍 تفسير النسبة المفقودة (${missing}%)`);
+        lines.push('');
+        lines.push(...deductions);
+        lines.push('');
+        lines.push('> 💡 **كيف ترفع النسبة؟**');
+        lines.push('- قدّم تغذية راجعة إيجابية/سلبية بعد كل تقرير.');
+        lines.push('- أعد التحليل بعد 30 يوماً لتحديث سجل التحقق.');
+      } else {
+        lines.push('');
+        lines.push(`> 💡 ${missing}% المفقودة تعود لطبيعة البيانات التراثية المحدودة (لا يوجد تاريخ تحقق سابق).`);
+      }
+    }
+
     return lines.join('\n');
   }
 
