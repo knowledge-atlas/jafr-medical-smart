@@ -97,7 +97,7 @@ export default function ProductPickerScreen({ navigation, route }: any) {
       });
       reportChat.loadReport(out, ctxMode);
       const legacy = analysisToLegacyReport(analysis, out);
-      navigation.navigate('Report', { report: legacy, name: analysis.name });
+      navigation.navigate('Report', { report: legacy, name: analysis.name, layers: analysis.layers });
       return;
     }
 

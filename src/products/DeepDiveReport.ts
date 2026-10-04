@@ -55,6 +55,48 @@ const LAYER_LABELS: Record<string, string> = {
   root: 'الجذر', planet: 'الكوكب', sign: 'البرج', house: 'البيت',
 };
 
+
+/**
+ * يوزّع الطبع على المحاور الأربعة + يبني كائن balance
+ */
+export function computeElementBalance(layers: NameAnalysisLayers): {
+  ناري: number;
+  ترابي: number;
+  هوائي: number;
+  مائي: number;
+} {
+  const balance = { ناري: 0, ترابي: 0, هوائي: 0, مائي: 0 };
+
+  // الطبع الأساسي: 3 نقاط
+  if (layers.element && layers.element in balance) {
+    balance[layers.element as keyof typeof balance] += 3;
+  }
+
+  // الكوكب: 2 نقاط
+  const planetElement: Record<string, keyof typeof balance> = {
+    'شمس': 'ناري', 'مريخ': 'ناري', 'مشتري': 'ناري',
+    'زحل': 'ترابي', 'زهرة': 'ترابي',
+    'عطارد': 'هوائي', 'أورانوس': 'هوائي',
+    'قمر': 'مائي', 'نبتون': 'مائي', 'بلوتو': 'مائي',
+  };
+  if (layers.planet && planetElement[layers.planet]) {
+    balance[planetElement[layers.planet]] += 2;
+  }
+
+  // البرج: نقطتان
+  const signElement: Record<string, keyof typeof balance> = {
+    'الحمل': 'ناري', 'الأسد': 'ناري', 'القوس': 'ناري',
+    'الثور': 'ترابي', 'العذراء': 'ترابي', 'الجدي': 'ترابي',
+    'الجوزاء': 'هوائي', 'الميزان': 'هوائي', 'الدلو': 'هوائي',
+    'السرطان': 'مائي', 'العقرب': 'مائي', 'الحوت': 'مائي',
+  };
+  if (layers.sign && signElement[layers.sign]) {
+    balance[signElement[layers.sign]] += 2;
+  }
+
+  return balance;
+}
+
 function humanizeLayer(id?: string, kind?: string): string {
   if (!id) return '—';
   const s = String(id);

@@ -24,6 +24,7 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import CompareScreen from './src/screens/CompareScreen';
 import ConsentScreen from './src/screens/ConsentScreen';
 import TraditionalReportScreen from './src/screens/TraditionalReportScreen';
+import TraditionalTabScreen from './src/screens/TraditionalTabScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -58,6 +59,8 @@ function MainTabs() {
         options={{ title: 'المساعد', tabBarIcon: ({ color, size }) => <Ionicons name="chatbubbles" size={size} color={color} /> }} />
       <Tab.Screen name="CompareTab" component={CompareScreen}
         options={{ title: 'المقارنة', tabBarIcon: ({ color, size }) => <Ionicons name="git-compare" size={size} color={color} /> }} />
+      <Tab.Screen name="TraditionalTab" component={TraditionalTabScreen}
+        options={{ title: 'التقليدي', tabBarIcon: ({ color, size }) => <Ionicons name="document-text" size={size} color={color} /> }} />
       <Tab.Screen name="MedicalTab" component={MedicalScreen}
         options={{ title: 'الطبية', tabBarIcon: ({ color, size }) => <Ionicons name="medkit" size={size} color={color} /> }} />
       <Tab.Screen name="SettingsTab" component={SettingsScreen}

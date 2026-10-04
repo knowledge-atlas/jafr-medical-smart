@@ -9,9 +9,11 @@ import {
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { reportsStorage, SavedReport } from '../storage/reportsStorage';
+import ElementsRadarChart from '../components/ElementsRadarChart';
+import { computeElementBalance } from '../products/DeepDiveReport';
 
 export default function ReportScreen({ route, navigation }: any) {
-  const { report, name } = route.params || {};
+  const { report, name, layers } = route.params || {};
 
   // حماية: إذا وصل التقرير بشكل غير صحيح
   if (!report) {
