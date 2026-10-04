@@ -139,7 +139,9 @@ export default function ReportScreen({ route, navigation }: any) {
 
         {/* Markdown Report */}
         {text ? (
-          <Markdown style={markdownStyles as any} rules={markdownRules as any}>{text}</Markdown>
+          <View style={{ direction: 'rtl' as const }}>
+            <Markdown style={markdownStyles as any} rules={markdownRules as any}>{text}</Markdown>
+          </View>
         ) : (
           <Text style={styles.emptyText}>لا يوجد محتوى للتقرير.</Text>
         )}
@@ -259,9 +261,33 @@ const markdownRules = {
       {children}
     </View>
   ),
+  text: (node: any, children: any, parent: any, styles: any) => (
+    <Text key={node.key} style={styles.text}>
+      {node.content}
+    </Text>
+  ),
+  textgroup: (node: any, children: any, parent: any, styles: any) => (
+    <Text key={node.key} style={styles.textgroup}>
+      {children}
+    </Text>
+  ),
 };
 
 const markdownStyles = {
+  text: {
+    color: '#e8e8e8',
+    fontSize: 15,
+    lineHeight: 26,
+    textAlign: 'right' as const,
+    writingDirection: 'rtl' as const,
+  },
+  textgroup: {
+    color: '#e8e8e8',
+    fontSize: 15,
+    lineHeight: 26,
+    textAlign: 'right' as const,
+    writingDirection: 'rtl' as const,
+  },
   body: {
     color: '#e8e8e8',
     fontSize: 15,
@@ -312,6 +338,7 @@ const markdownStyles = {
     marginBottom: 12,
     textAlign: 'right' as const,
     writingDirection: 'rtl' as const,
+    direction: 'rtl' as const,
   },
   strong: {
     color: '#d4af37',
@@ -333,6 +360,7 @@ const markdownStyles = {
     marginBottom: 6,
     textAlign: 'right' as const,
     writingDirection: 'rtl' as const,
+    direction: 'rtl' as const,
   },
   blockquote: {
     borderLeftWidth: 0,
