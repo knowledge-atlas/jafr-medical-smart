@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
   ActivityIndicator, Alert, Share,
@@ -7,11 +7,12 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { buildReport } from '../engine/reportBuilder';
 import { medicalFilter } from '../domain/services/MedicalFilter';
-import { splitIntoSections, ReportSectionSplit } from '../utils/splitIntoSections';
+import { parseReportToBlocks, ReportSection } from '../utils/reportBlocksParser';
+import BlockRenderer from '../components/report/BlockRenderer';
 
 export default function TraditionalReportScreen({ route, navigation }: any) {
   const { name } = route.params || {};
-  const [sections, setSections] = useState<ReportSectionSplit[]>([]);
+  const [sections, setSections] = useState<ReportSection[]>([]);
   const [openIds, setOpenIds] = useState<Set<string>>(new Set());
   const [fullText, setFullText] = useState('');
   const [loading, setLoading] = useState(true);
@@ -46,18 +47,13 @@ export default function TraditionalReportScreen({ route, navigation }: any) {
       const filtered = medicalFilter.filter(raw);
       setFullText(filtered.text);
 
-      const parsed = splitIntoSections(filtered.text);
+      const parsed = parseReportToBlocks(filtered.text);
       setSections(parsed);
 
+      // فتح القسم الأول فقط افتراضياً
       const initialOpen = new Set<string>();
-      parsed.forEach((s) => {
-        if (s.defaultOpen) initialOpen.add(s.id);
-      });
+      if (parsed.length > 0) initialOpen.add(parsed[0].id);
       setOpenIds(initialOpen);
-
-      if (filtered.applied && filtered.removedItems.length > 0) {
-        console.log('🛡️ MedicalFilter حجب:', filtered.removedItems.join(', '));
-      }
     } catch (e: any) {
       setError(e?.message ?? 'فشل التوليد');
     } finally {
@@ -100,7 +96,7 @@ export default function TraditionalReportScreen({ route, navigation }: any) {
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#d4af37" />
         <Text style={styles.loadingText}>جارٍ توليد التقرير الشامل...</Text>
-        <Text style={styles.loadingHint}>يتم تحميل كل نصوص الموسوعة المرجعية</Text>
+        <Text style={styles.loadingHint}>يتم تحليل الموسوعة المرجعية الكاملة</Text>
       </View>
     );
   }
@@ -119,73 +115,107 @@ export default function TraditionalReportScreen({ route, navigation }: any) {
 
   return (
     <View style={styles.container}>
+
+      {/* ═══ Header ═══ */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>📜 التقرير التقليدي الشامل</Text>
-        <Text style={styles.headerSubtitle}>
-          {name} · {fullText.length.toLocaleString()} حرف · {sections.length} قسم
-        </Text>
+        <View style={styles.headerLeft}>
+          <Text style={styles.headerEmoji}>📜</Text>
+          <View>
+            <Text style={styles.headerTitle}>التقرير التقليدي الشامل</Text>
+            <Text style={styles.headerSubtitle}>
+              {name} · {sections.length} قسم · {fullText.length.toLocaleString()} حرف
+            </Text>
+          </View>
+        </View>
       </View>
 
-      <View style={styles.actionsRow}>
-        <TouchableOpacity style={styles.actionBtn} onPress={expandAll}>
+      {/* ═══ Section Tabs ═══ */}
+      <View style={styles.tabsWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabsContent}
+        >
+          {sections.map((s, i) => {
+            const isOpen = openIds.has(s.id);
+            return (
+              <TouchableOpacity
+                key={s.id}
+                style={[styles.tab, isOpen && styles.tabActive]}
+                onPress={() => toggleSection(s.id)}
+              >
+                <Text style={[styles.tabIcon]}>{s.icon}</Text>
+                <Text style={[styles.tabLabel, isOpen && styles.tabLabelActive]} numberOfLines={1}>
+                  {i + 1}. {s.title.replace(/^القسم\s+/, '')}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {/* ═══ Quick Actions ═══ */}
+      <View style={styles.quickActions}>
+        <TouchableOpacity style={styles.quickBtn} onPress={expandAll}>
           <Ionicons name="chevron-down-circle-outline" size={16} color="#d4af37" />
-          <Text style={styles.actionText}> توسيع الكل</Text>
+          <Text style={styles.quickBtnText}> توسيع الكل</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionBtn} onPress={collapseAll}>
+        <TouchableOpacity style={styles.quickBtn} onPress={collapseAll}>
           <Ionicons name="chevron-up-circle-outline" size={16} color="#d4af37" />
-          <Text style={styles.actionText}> طي الكل</Text>
+          <Text style={styles.quickBtnText}> طي الكل</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+      {/* ═══ Content ═══ */}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+      >
         {sections.map((section, i) => {
           const isOpen = openIds.has(section.id);
+          if (!isOpen) return null;
+
           return (
             <View key={section.id} style={styles.sectionCard}>
-              <TouchableOpacity
-                style={[styles.sectionHeader, isOpen && styles.sectionHeaderOpen]}
-                onPress={() => toggleSection(section.id)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.sectionHeaderLeft}>
-                  <Text style={styles.sectionIcon}>{section.icon}</Text>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.sectionTitle}>
-                      {i + 1}. {section.title}
-                    </Text>
-                    <Text style={styles.sectionMeta}>
-                      {isOpen ? '▼ اضغط للطي' : `▶ ${section.content.length.toLocaleString()} حرف`}
-                    </Text>
-                  </View>
-                </View>
-                <Ionicons
-                  name={isOpen ? 'chevron-up' : 'chevron-down'}
-                  size={22}
-                  color="#d4af37"
-                />
-              </TouchableOpacity>
+              {/* Section Header */}
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionIcon}>{section.icon}</Text>
+                <Text style={styles.sectionTitle}>{section.title}</Text>
+              </View>
 
-              {isOpen && (
-                <View style={styles.sectionContent}>
-                  <ScrollView horizontal showsHorizontalScrollIndicator>
-                    <Text style={styles.sectionText} selectable>
-                      {section.content}
-                    </Text>
-                  </ScrollView>
-                </View>
-              )}
+              {/* Section Blocks */}
+              <View style={styles.sectionBody}>
+                {section.blocks.map((block, bi) => (
+                  <BlockRenderer key={bi} block={block} index={bi} />
+                ))}
+              </View>
+
+              {/* Close Button */}
+              <TouchableOpacity
+                style={styles.closeSectionBtn}
+                onPress={() => toggleSection(section.id)}
+              >
+                <Text style={styles.closeSectionText}>طي القسم ▲</Text>
+              </TouchableOpacity>
             </View>
           );
         })}
+
+        {sections.length === 0 && (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>لا توجد بيانات</Text>
+          </View>
+        )}
       </ScrollView>
 
+      {/* ═══ Bottom Actions ═══ */}
       <View style={styles.bottomActions}>
         <TouchableOpacity
           style={[styles.bottomBtn, { backgroundColor: '#3498db' }]}
           onPress={copyFullReport}
         >
           <Ionicons name="copy-outline" size={18} color="#fff" />
-          <Text style={styles.bottomBtnText}> نسخ الكل</Text>
+          <Text style={styles.bottomBtnText}> نسخ</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.bottomBtn, { backgroundColor: '#27ae60' }]}
@@ -201,70 +231,164 @@ export default function TraditionalReportScreen({ route, navigation }: any) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a1628' },
+
   center: {
     flex: 1, justifyContent: 'center', alignItems: 'center',
     backgroundColor: '#0a1628', padding: 20,
   },
   loadingText: { color: '#d4af37', fontSize: 16, marginTop: 15, fontWeight: 'bold' },
-  loadingHint: { color: '#a0a0a0', fontSize: 12, marginTop: 8, textAlign: 'center' },
+  loadingHint: { color: '#a0a0a0', fontSize: 12, marginTop: 8 },
   errorIcon: { fontSize: 48, marginBottom: 10 },
   errorText: { color: '#e74c3c', fontSize: 15, textAlign: 'center', marginBottom: 20 },
   retryBtn: {
-    backgroundColor: '#3498db', padding: 14, borderRadius: 10, paddingHorizontal: 30,
+    backgroundColor: '#3498db', paddingVertical: 12, paddingHorizontal: 30,
+    borderRadius: 10,
   },
   retryBtnText: { color: '#fff', fontWeight: 'bold' },
 
+  // Header
   header: {
-    backgroundColor: '#1a3b5d', padding: 14,
-    borderBottomWidth: 1, borderBottomColor: '#2c5070',
+    backgroundColor: '#1a3b5d',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: '#d4af37',
   },
-  headerTitle: { color: '#d4af37', fontSize: 18, fontWeight: 'bold', textAlign: 'center' },
-  headerSubtitle: { color: '#c0c0c0', fontSize: 12, textAlign: 'center', marginTop: 4 },
+  headerLeft: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10 },
+  headerEmoji: { fontSize: 28 },
+  headerTitle: {
+    color: '#d4af37',
+    fontSize: 17,
+    fontWeight: 'bold',
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
+  headerSubtitle: {
+    color: '#a0a0a0',
+    fontSize: 11,
+    marginTop: 3,
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
 
-  actionsRow: {
-    flexDirection: 'row', gap: 8, padding: 8, backgroundColor: '#0f2438',
+  // Tabs
+  tabsWrapper: {
+    backgroundColor: '#0f2438',
+    borderBottomWidth: 1,
+    borderBottomColor: '#1a3b5d',
   },
-  actionBtn: {
-    flex: 1, backgroundColor: '#1a3b5d', paddingVertical: 8,
-    borderRadius: 6, alignItems: 'center', flexDirection: 'row', justifyContent: 'center',
+  tabsContent: { paddingHorizontal: 8, paddingVertical: 8, gap: 6 },
+  tab: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    backgroundColor: '#1a3b5d',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    gap: 6,
+    maxWidth: 200,
   },
-  actionText: { color: '#d4af37', fontSize: 12, fontWeight: 'bold' },
+  tabActive: {
+    backgroundColor: '#d4af37',
+    borderColor: '#fff',
+  },
+  tabIcon: { fontSize: 14 },
+  tabLabel: {
+    color: '#d4af37',
+    fontSize: 12,
+    fontWeight: 'bold',
+    writingDirection: 'rtl',
+    maxWidth: 150,
+  },
+  tabLabelActive: { color: '#0a1628' },
 
+  // Quick Actions
+  quickActions: {
+    flexDirection: 'row',
+    gap: 8,
+    padding: 8,
+    backgroundColor: '#0f2438',
+  },
+  quickBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: '#1a3b5d',
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  quickBtnText: { color: '#d4af37', fontSize: 12, fontWeight: 'bold' },
+
+  // Scroll
   scroll: { flex: 1 },
   scrollContent: { padding: 10 },
 
+  // Section Card
   sectionCard: {
-    backgroundColor: '#1a3b5d', borderRadius: 10, marginBottom: 8,
-    overflow: 'hidden', borderLeftWidth: 4, borderLeftColor: '#f39c12',
+    backgroundColor: '#1a3b5d',
+    borderRadius: 12,
+    marginBottom: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#2c5070',
   },
   sectionHeader: {
-    flexDirection: 'row', alignItems: 'center',
-    padding: 12, justifyContent: 'space-between',
-  },
-  sectionHeaderOpen: {
-    borderBottomWidth: 1, borderBottomColor: '#2c5070',
-  },
-  sectionHeaderLeft: {
-    flexDirection: 'row', alignItems: 'center', flex: 1,
-  },
-  sectionIcon: { fontSize: 22, marginRight: 10 },
-  sectionTitle: { color: '#fff', fontSize: 15, fontWeight: 'bold', textAlign: 'right' },
-  sectionMeta: { color: '#a0a0a0', fontSize: 11, marginTop: 4, textAlign: 'right' },
-
-  sectionContent: { padding: 12, backgroundColor: '#0a1628' },
-  sectionText: {
-    color: '#e8e8e8', fontSize: 11,
-    fontFamily: 'monospace', lineHeight: 18,
-  },
-
-  bottomActions: {
-    flexDirection: 'row', gap: 8, padding: 10,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
     backgroundColor: '#0f2438',
-    borderTopWidth: 1, borderTopColor: '#1a3b5d',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: '#d4af37',
+    gap: 10,
+  },
+  sectionIcon: { fontSize: 22 },
+  sectionTitle: {
+    flex: 1,
+    color: '#d4af37',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
+  sectionBody: {
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  closeSectionBtn: {
+    paddingVertical: 10,
+    backgroundColor: '#0f2438',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#2c5070',
+  },
+  closeSectionText: { color: '#d4af37', fontSize: 12, fontWeight: 'bold' },
+
+  // Empty
+  emptyState: { padding: 40, alignItems: 'center' },
+  emptyText: { color: '#666', fontSize: 14 },
+
+  // Bottom
+  bottomActions: {
+    flexDirection: 'row',
+    gap: 8,
+    padding: 10,
+    backgroundColor: '#0f2438',
+    borderTopWidth: 1,
+    borderTopColor: '#1a3b5d',
   },
   bottomBtn: {
-    flex: 1, paddingVertical: 12, borderRadius: 8,
-    flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row-reverse',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
   bottomBtnText: { color: '#fff', fontSize: 14, fontWeight: 'bold' },
 });
