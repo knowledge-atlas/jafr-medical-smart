@@ -4,6 +4,7 @@
 
 export type ReportBlock =
   | { type: 'heading'; level: 1 | 2 | 3; text: string; icon?: string }
+  | { type: 'subheading'; text: string }
   | { type: 'paragraph'; text: string }
   | { type: 'table'; headers: string[]; rows: string[][] }
   | { type: 'box'; title?: string; rows: Array<[string, string]> }
@@ -130,13 +131,20 @@ function parseBlocksFromText(text: string): ReportBlock[] {
     }
 
     // ═══ Heading (with #) ═══
-    if (/^#{1,3}\s/.test(trimmed)) {
-      const level = (trimmed.match(/^#+/) || ['#'])[0].length as 1 | 2 | 3;
-      blocks.push({
-        type: 'heading',
-        level: Math.min(level, 3) as 1 | 2 | 3,
-        text: trimmed.replace(/^#+\s*/, ''),
-      });
+    if (/^#{1,6}\s/.test(trimmed)) {
+      const level = (trimmed.match(/^#+/) || ['#'])[0].length;
+      if (level >= 4) {
+        blocks.push({
+          type: 'subheading',
+          text: trimmed.replace(/^#+\s*/, ''),
+        });
+      } else {
+        blocks.push({
+          type: 'heading',
+          level: Math.min(level, 3) as 1 | 2 | 3,
+          text: trimmed.replace(/^#+\s*/, ''),
+        });
+      }
       i++;
       continue;
     }

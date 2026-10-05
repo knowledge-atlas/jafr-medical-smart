@@ -8,6 +8,7 @@ import * as Clipboard from 'expo-clipboard';
 import { buildReport } from '../engine/reportBuilder';
 import { medicalFilter } from '../domain/services/MedicalFilter';
 import { parseReportToBlocks, ReportSection } from '../utils/reportBlocksParser';
+import { reorganizeReport } from '../utils/reportReorganizer';
 import BlockRenderer from '../components/report/BlockRenderer';
 
 export default function TraditionalReportScreen({ route, navigation }: any) {
@@ -47,7 +48,10 @@ export default function TraditionalReportScreen({ route, navigation }: any) {
       const filtered = medicalFilter.filter(raw);
       setFullText(filtered.text);
 
-      const parsed = parseReportToBlocks(filtered.text);
+      // ═══ إعادة الهندسة البصرية ═══
+      const reorganized = reorganizeReport(filtered.text);
+
+      const parsed = parseReportToBlocks(reorganized);
       setSections(parsed);
 
       // فتح القسم الأول فقط افتراضياً

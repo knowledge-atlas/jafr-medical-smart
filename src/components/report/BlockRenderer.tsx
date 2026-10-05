@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { ReportBlock } from '../../utils/reportBlocksParser';
 
 interface Props {
@@ -11,6 +11,8 @@ export default function BlockRenderer({ block, index }: Props) {
   switch (block.type) {
     case 'heading':
       return <HeadingBlock block={block} />;
+    case 'subheading':
+      return <SubheadingBlock block={block} />;
     case 'paragraph':
       return <ParagraphBlock block={block} />;
     case 'table':
@@ -52,6 +54,18 @@ function HeadingBlock({ block }: { block: Extract<ReportBlock, { type: 'heading'
 }
 
 // ═══════════════════════════════════════════════════════════
+// Subheading — عناوين فرعية بارزة
+// ═══════════════════════════════════════════════════════════
+function SubheadingBlock({ block }: { block: Extract<ReportBlock, { type: 'subheading' }> }) {
+  return (
+    <View style={styles.subheadingWrapper}>
+      <View style={styles.subheadingAccent} />
+      <Text style={styles.subheadingText}>{block.text}</Text>
+    </View>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
 // Paragraph
 // ═══════════════════════════════════════════════════════════
 function ParagraphBlock({ block }: { block: Extract<ReportBlock, { type: 'paragraph' }> }) {
@@ -66,36 +80,63 @@ function ParagraphBlock({ block }: { block: Extract<ReportBlock, { type: 'paragr
 // Table
 // ═══════════════════════════════════════════════════════════
 function TableBlock({ block }: { block: Extract<ReportBlock, { type: 'table' }> }) {
+  const colCount = Math.max(block.headers.length, 1);
+
+  // نسب الأعمدة:
+  // - جدول 2 أعمدة: المفتاح 1، التفصيل 2.5
+  // - جدول 3 أعمدة: الأول 1، الباقي 1.5
+  // - جدول 4+ أعمدة: متساوية
+  const getFlex = (index: number): number => {
+    if (colCount === 2) {
+      return index === 0 ? 1 : 2.5;
+    }
+    if (colCount === 3) {
+      return index === 0 ? 1 : 1.5;
+    }
+    return 1;
+  };
+
   return (
     <View style={styles.tableWrapper}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.table}>
-          {/* Header */}
-          <View style={[styles.tableRow, styles.tableHeaderRow]}>
-            {block.headers.map((h, i) => (
-              <View key={i} style={[styles.tableCell, styles.tableHeaderCell]}>
-                <Text style={styles.tableHeaderText}>{h}</Text>
-              </View>
-            ))}
-          </View>
-          {/* Body */}
-          {block.rows.map((row, ri) => (
+      <View style={styles.table}>
+        {/* Header */}
+        <View style={[styles.tableRow, styles.tableHeaderRow]}>
+          {block.headers.map((h, i) => (
             <View
-              key={ri}
+              key={i}
               style={[
-                styles.tableRow,
-                ri % 2 === 1 && styles.tableRowAlternate,
+                styles.tableCell,
+                styles.tableHeaderCell,
+                { flex: getFlex(i) },
               ]}
             >
-              {row.map((cell, ci) => (
-                <View key={ci} style={styles.tableCell}>
-                  <Text style={styles.tableCellText}>{cell}</Text>
-                </View>
-              ))}
+              <Text style={styles.tableHeaderText}>{h}</Text>
             </View>
           ))}
         </View>
-      </ScrollView>
+        {/* Body */}
+        {block.rows.map((row, ri) => (
+          <View
+            key={ri}
+            style={[
+              styles.tableRow,
+              ri % 2 === 1 && styles.tableRowAlternate,
+            ]}
+          >
+            {row.map((cell, ci) => (
+              <View
+                key={ci}
+                style={[
+                  styles.tableCell,
+                  { flex: getFlex(ci) },
+                ]}
+              >
+                <Text style={styles.tableCellText}>{cell}</Text>
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -191,7 +232,11 @@ const styles = StyleSheet.create({
   },
 
   // Heading
-  heading: { marginBottom: 6 },
+  heading: {
+    marginBottom: 6,
+    direction: 'rtl',
+    width: '100%',
+  },
   headingText: {
     color: '#d4af37',
     fontWeight: 'bold',
@@ -209,54 +254,91 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
 
+  // Subheading
+  subheadingWrapper: {
+    marginTop: 14,
+    marginBottom: 6,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    width: '100%',
+    direction: 'rtl',
+  },
+  subheadingAccent: {
+    width: 4,
+    height: 22,
+    backgroundColor: '#d4af37',
+    borderRadius: 2,
+    marginLeft: 8,
+  },
+  subheadingText: {
+    flex: 1,
+    color: '#d4af37',
+    fontSize: 15,
+    fontWeight: 'bold',
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
+
   // Paragraph
-  paragraphWrapper: { marginBottom: 10 },
+  paragraphWrapper: {
+    marginBottom: 10,
+    direction: 'rtl',
+  },
   paragraph: {
     color: '#e8e8e8',
     fontSize: 15,
     lineHeight: 26,
     textAlign: 'right',
     writingDirection: 'rtl',
+    direction: 'rtl',
   },
 
   // Table
-  tableWrapper: { marginVertical: 10 },
+  tableWrapper: {
+    marginVertical: 10,
+    direction: 'rtl',
+    width: '100%',
+  },
   table: {
     borderWidth: 1,
     borderColor: '#d4af37',
     borderRadius: 8,
     overflow: 'hidden',
     backgroundColor: '#0a1628',
-    minWidth: '100%',
+    width: '100%',
   },
   tableRow: {
     flexDirection: 'row-reverse',
     borderBottomWidth: 1,
     borderBottomColor: '#2c5070',
+    alignItems: 'stretch',
   },
   tableRowAlternate: { backgroundColor: '#0f2438' },
   tableHeaderRow: { backgroundColor: '#1a3b5d' },
   tableCell: {
-    flex: 1,
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
     borderLeftWidth: 1,
     borderLeftColor: '#2c5070',
-    minWidth: 90,
+    justifyContent: 'center',
+    minWidth: 70,
   },
   tableHeaderCell: { backgroundColor: '#1a3b5d' },
   tableHeaderText: {
     color: '#d4af37',
     fontWeight: 'bold',
-    fontSize: 13,
+    fontSize: 12,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
   tableCellText: {
     color: '#e8e8e8',
-    fontSize: 13,
-    lineHeight: 22,
+    fontSize: 12,
+    lineHeight: 20,
     textAlign: 'right',
     writingDirection: 'rtl',
+    flexWrap: 'wrap',
+    flexShrink: 1,
   },
 
   // Box
@@ -267,6 +349,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginVertical: 8,
     overflow: 'hidden',
+    direction: 'rtl',
+    width: '100%',
   },
   boxHeader: {
     backgroundColor: '#1a3b5d',
@@ -321,6 +405,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a3b5d',
     borderRadius: 8,
     overflow: 'hidden',
+    direction: 'rtl',
+    width: '100%',
   },
   quoteBar: {
     width: 4,
@@ -338,12 +424,17 @@ const styles = StyleSheet.create({
   },
 
   // Bullets
-  bulletsWrapper: { marginVertical: 8 },
+  bulletsWrapper: {
+    marginVertical: 8,
+    direction: 'rtl',
+  },
   bulletRow: {
     flexDirection: 'row-reverse',
     alignItems: 'flex-start',
-    marginVertical: 4,
+    marginVertical: 6,
     paddingHorizontal: 4,
+    direction: 'rtl',
+    width: '100%',
   },
   bulletDot: {
     width: 6,
@@ -360,6 +451,8 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     textAlign: 'right',
     writingDirection: 'rtl',
+    direction: 'rtl',
+    flexWrap: 'wrap',
   },
 
   // Magic Square
