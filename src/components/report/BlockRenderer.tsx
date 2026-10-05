@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, I18nManager } from 'react-native';
 import { ReportBlock } from '../../utils/reportBlocksParser';
 
 interface Props {
@@ -7,7 +7,16 @@ interface Props {
   index: number;
 }
 
-export default function BlockRenderer({ block, index }: Props) {
+// ═══════════════════════════════════════════════════════════
+// RTL Helpers — تعمل بشكل صحيح في كل الحالات
+// ═══════════════════════════════════════════════════════════
+// • عند isRTL=true  (forceRTL مُطبَّق) → 'row' يُعكَس تلقائياً → RTL ✅
+// • عند isRTL=false (بدون forceRTL)   → نحتاج 'row-reverse' يدوياً
+const RTL_ROW: 'row' | 'row-reverse' = I18nManager.isRTL ? 'row' : 'row-reverse';
+// للمربع السحري: يجب أن يظل رقمياً LTR دائماً (4 9 2 / 3 5 7 / 8 1 6)
+const LTR_ROW: 'row' | 'row-reverse' = I18nManager.isRTL ? 'row-reverse' : 'row';
+
+export default function BlockRenderer({ block }: Props) {
   switch (block.type) {
     case 'heading':
       return <HeadingBlock block={block} />;
@@ -54,7 +63,7 @@ function HeadingBlock({ block }: { block: Extract<ReportBlock, { type: 'heading'
 }
 
 // ═══════════════════════════════════════════════════════════
-// Subheading — عناوين فرعية بارزة
+// Subheading
 // ═══════════════════════════════════════════════════════════
 function SubheadingBlock({ block }: { block: Extract<ReportBlock, { type: 'subheading' }> }) {
   return (
@@ -77,15 +86,11 @@ function ParagraphBlock({ block }: { block: Extract<ReportBlock, { type: 'paragr
 }
 
 // ═══════════════════════════════════════════════════════════
-// Table
+// Table — النسب: 2 cols → 1:2.5 | 3 cols → 1:1.5:1.5 | 4+ → متساوية
 // ═══════════════════════════════════════════════════════════
 function TableBlock({ block }: { block: Extract<ReportBlock, { type: 'table' }> }) {
   const colCount = Math.max(block.headers.length, 1);
 
-  // نسب الأعمدة:
-  // - جدول 2 أعمدة: المفتاح 1، التفصيل 2.5
-  // - جدول 3 أعمدة: الأول 1، الباقي 1.5
-  // - جدول 4+ أعمدة: متساوية
   const getFlex = (index: number): number => {
     if (colCount === 2) {
       return index === 0 ? 1 : 2.5;
@@ -142,7 +147,7 @@ function TableBlock({ block }: { block: Extract<ReportBlock, { type: 'table' }> 
 }
 
 // ═══════════════════════════════════════════════════════════
-// Box (Executive sections)
+// Box
 // ═══════════════════════════════════════════════════════════
 function BoxBlock({ block }: { block: Extract<ReportBlock, { type: 'box' }> }) {
   return (
@@ -197,7 +202,7 @@ function BulletsBlock({ block }: { block: Extract<ReportBlock, { type: 'bullets'
 }
 
 // ═══════════════════════════════════════════════════════════
-// Magic Square
+// Magic Square — يبقى LTR دائماً (رسم رقمي تقليدي)
 // ═══════════════════════════════════════════════════════════
 function MagicSquareBlock({ block }: { block: Extract<ReportBlock, { type: 'magicSquare' }> }) {
   return (
@@ -214,9 +219,7 @@ function MagicSquareBlock({ block }: { block: Extract<ReportBlock, { type: 'magi
           </View>
         ))}
       </View>
-      <Text style={styles.magicNote}>
-        كل صف وعمود وقطر = 15
-      </Text>
+      <Text style={styles.magicNote}>كل صف وعمود وقطر = 15</Text>
     </View>
   );
 }
@@ -234,7 +237,6 @@ const styles = StyleSheet.create({
   // Heading
   heading: {
     marginBottom: 6,
-    direction: 'rtl',
     width: '100%',
   },
   headingText: {
@@ -258,17 +260,16 @@ const styles = StyleSheet.create({
   subheadingWrapper: {
     marginTop: 14,
     marginBottom: 6,
-    flexDirection: 'row-reverse',
+    flexDirection: RTL_ROW,
     alignItems: 'center',
     width: '100%',
-    direction: 'rtl',
   },
   subheadingAccent: {
     width: 4,
     height: 22,
     backgroundColor: '#d4af37',
     borderRadius: 2,
-    marginLeft: 8,
+    marginEnd: 8,
   },
   subheadingText: {
     flex: 1,
@@ -282,7 +283,6 @@ const styles = StyleSheet.create({
   // Paragraph
   paragraphWrapper: {
     marginBottom: 10,
-    direction: 'rtl',
   },
   paragraph: {
     color: '#e8e8e8',
@@ -290,13 +290,11 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     textAlign: 'right',
     writingDirection: 'rtl',
-    direction: 'rtl',
   },
 
   // Table
   tableWrapper: {
     marginVertical: 10,
-    direction: 'rtl',
     width: '100%',
   },
   table: {
@@ -308,7 +306,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   tableRow: {
-    flexDirection: 'row-reverse',
+    flexDirection: RTL_ROW,
     borderBottomWidth: 1,
     borderBottomColor: '#2c5070',
     alignItems: 'stretch',
@@ -318,10 +316,11 @@ const styles = StyleSheet.create({
   tableCell: {
     paddingVertical: 10,
     paddingHorizontal: 8,
-    borderLeftWidth: 1,
-    borderLeftColor: '#2c5070',
+    borderStartWidth: 1,
+    borderStartColor: '#2c5070',
     justifyContent: 'center',
-    minWidth: 70,
+    minWidth: 0,
+    flexShrink: 1,
   },
   tableHeaderCell: { backgroundColor: '#1a3b5d' },
   tableHeaderText: {
@@ -338,7 +337,6 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     writingDirection: 'rtl',
     flexWrap: 'wrap',
-    flexShrink: 1,
   },
 
   // Box
@@ -349,7 +347,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginVertical: 8,
     overflow: 'hidden',
-    direction: 'rtl',
     width: '100%',
   },
   boxHeader: {
@@ -367,7 +364,7 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
   },
   boxRow: {
-    flexDirection: 'row-reverse',
+    flexDirection: RTL_ROW,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
@@ -381,6 +378,7 @@ const styles = StyleSheet.create({
     minWidth: 90,
     textAlign: 'right',
     writingDirection: 'rtl',
+    marginEnd: 8,
   },
   boxValue: {
     flex: 1,
@@ -400,12 +398,11 @@ const styles = StyleSheet.create({
 
   // Quote
   quote: {
-    flexDirection: 'row-reverse',
+    flexDirection: RTL_ROW,
     marginVertical: 10,
     backgroundColor: '#1a3b5d',
     borderRadius: 8,
     overflow: 'hidden',
-    direction: 'rtl',
     width: '100%',
   },
   quoteBar: {
@@ -426,14 +423,12 @@ const styles = StyleSheet.create({
   // Bullets
   bulletsWrapper: {
     marginVertical: 8,
-    direction: 'rtl',
   },
   bulletRow: {
-    flexDirection: 'row-reverse',
+    flexDirection: RTL_ROW,
     alignItems: 'flex-start',
     marginVertical: 6,
     paddingHorizontal: 4,
-    direction: 'rtl',
     width: '100%',
   },
   bulletDot: {
@@ -442,7 +437,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: '#d4af37',
     marginTop: 8,
-    marginLeft: 8,
+    marginEnd: 8,
   },
   bulletText: {
     flex: 1,
@@ -451,7 +446,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     textAlign: 'right',
     writingDirection: 'rtl',
-    direction: 'rtl',
     flexWrap: 'wrap',
   },
 
@@ -468,6 +462,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 12,
+    writingDirection: 'rtl',
   },
   magicSquare: {
     borderWidth: 2,
@@ -476,7 +471,7 @@ const styles = StyleSheet.create({
     padding: 4,
     backgroundColor: '#0a1628',
   },
-  magicRow: { flexDirection: 'row' },
+  magicRow: { flexDirection: LTR_ROW },
   magicCell: {
     width: 60,
     height: 60,
@@ -496,5 +491,6 @@ const styles = StyleSheet.create({
     color: '#a0a0a0',
     fontSize: 12,
     marginTop: 10,
+    writingDirection: 'rtl',
   },
 });

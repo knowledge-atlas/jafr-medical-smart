@@ -12,4 +12,8 @@ if (!I18nManager.isRTL) {
   console.log('✅ RTL forced — أعد تشغيل التطبيق كاملاً');
 }
 
+// 🔍 مؤشر تشخيصي — سيظهر في console عند كل إقلاع
+console.log('🔍 RTL DEBUG: I18nManager.isRTL =', I18nManager.isRTL);
+console.log('🔍 RTL DEBUG: I18nManager.doLeftAndRightSwapInRTL =', I18nManager.doLeftAndRightSwapInRTL);
+
 registerRootComponent(App);
