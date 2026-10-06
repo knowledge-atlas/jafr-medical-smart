@@ -32,7 +32,15 @@ export default function ExternalKnowledgeScreen({ navigation }: any) {
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Summary */}
-        <View style={styles.summaryCard}>
+        
+        <TouchableOpacity
+          style={{ flexDirection: 'row-reverse', backgroundColor: '#d4af37', paddingVertical: 14, paddingHorizontal: 20, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 14, gap: 8 }}
+          onPress={() => navigation.navigate('ImportExternal')}
+        >
+          <Ionicons name="cloud-upload-outline" size={20} color="#fff" />
+          <Text style={{ color: '#fff', fontSize: 15, fontWeight: 'bold' }}> استيراد من الجهاز</Text>
+        </TouchableOpacity>
+<View style={styles.summaryCard}>
           <Text style={styles.summaryNum}>{stats.total}</Text>
           <Text style={styles.summaryLabel}>كيان خارجي مُدمج</Text>
           {stats.generatedAt && (

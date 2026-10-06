@@ -33,6 +33,7 @@ import ErrorLogScreen from './src/screens/ErrorLogScreen';
 import HealthScreen from './src/screens/HealthScreen';
 import OnboardingScreen, { ONBOARDING_STORAGE_KEY } from './src/screens/OnboardingScreen';
 import ExternalKnowledgeScreen from './src/screens/ExternalKnowledgeScreen';
+import ImportExternalScreen from './src/screens/ImportExternalScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
 
 const Stack = createStackNavigator();
@@ -184,6 +185,7 @@ export default function App() {
         <Stack.Screen name="ErrorLog" component={ErrorLogScreen} options={{ title: '🔴 سجل الأخطاء' }} />
         <Stack.Screen name="Health" component={HealthScreen} options={{ title: '📊 صحة التطبيق' }} />
         <Stack.Screen name="ExternalKnowledge" component={ExternalKnowledgeScreen} options={{ title: '📚 المعرفة الخارجية' }} />
+        <Stack.Screen name="ImportExternal" component={ImportExternalScreen} options={{ title: '📥 استيراد ملف' }} />
       </Stack.Navigator>
       </NavigationContainer>
     </ErrorBoundary>
