@@ -1,0 +1,41 @@
+{
+  "generatedAt": "2026-10-06T23:08:57.188Z",
+  "version": "2.0.0",
+  "name": "jafr-medical-smart",
+  "counts": {
+    "screens": 27,
+    "components": 4,
+    "engines": 8,
+    "products": 9,
+    "aiFiles": 24,
+    "dataFiles": 44,
+    "tests": 34,
+    "testSuites": 0
+  },
+  "size": {
+    "linesOfCode": 24534,
+    "srcFiles": 171
+  },
+  "tests": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0
+  },
+  "lastCommit": {
+    "hash": "3dcc6d6",
+    "message": "v2.11.0 Phase 1: Provenance Engine + Evidence Levels A/B/C/D/E",
+    "date": "2026-10-07T02:06:08+03:00"
+  },
+  "knowledge": {
+    "externalEntities": 16,
+    "externalByType": {
+      "planet": 11,
+      "letter": 1,
+      "root": 1,
+      "element": 1,
+      "sign": 2
+    },
+    "generatedAt": "2026-10-06T00:36:22.634Z"
+  }
+}

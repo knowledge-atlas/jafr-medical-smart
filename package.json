@@ -44,7 +44,9 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "stats": "node tools/stats.mjs",
+    "stats:check": "node tools/stats.mjs && cat project-stats.json | head -40"
   },
   "private": true,
   "description": "نظام الجفر الطبي الذكي — ميزان المرآة الذكي"
