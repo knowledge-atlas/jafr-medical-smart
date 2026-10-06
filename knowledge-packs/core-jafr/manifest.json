@@ -1,0 +1,42 @@
+{
+  "$schema": "https://knowledgeatlas.dev/schema/pack-v1.json",
+  "id": "core-jafr",
+  "name": "Core Jafr Knowledge Pack",
+  "nameAr": "حزمة المعرفة الجفرية الأساسية",
+  "version": "1.0.0",
+  "releasedAt": "2026-10-06T23:10:35.004Z",
+  "description": "Knowledge package for the KnowledgeAtlas Sovereign engine. Includes roots, planets, signs, houses, elements, letters, remedies, and jafr methodology.",
+  "license": {
+    "type": "Proprietary",
+    "copyrightHolder": "Mohammed Saeed",
+    "terms": "All rights reserved. For use within KnowledgeAtlas Sovereign platform.",
+    "contact": "mohammedsaeed95@gmail.com"
+  },
+  "source": {
+    "name": "Imam al-Buni tradition + scholarly references",
+    "provenance": "Combines classical Arabic symbolist knowledge with structured methodology.",
+    "disclaimer": "Symbolic interpretation only — not medical, legal, or financial advice."
+  },
+  "contents": {
+    "dataFiles": 43,
+    "tsFiles": 28,
+    "jsonFiles": 15,
+    "externalEntities": 16,
+    "externalByType": {}
+  },
+  "integrity": {
+    "algorithm": "sha256",
+    "hash": "e9e674875e1f85ff6bd6fdbce590420d0d18c4062d21ea9018fafa413e04927c",
+    "checksumsFile": "checksums.txt"
+  },
+  "compatibility": {
+    "engineVersion": "^2.0.0",
+    "appVersion": "^2.11.0",
+    "minSchemaVersion": "1.0.0"
+  },
+  "files": {
+    "checksums": "checksums.txt",
+    "externalEntities": "external-entities.json",
+    "dataDir": "data/"
+  }
+}

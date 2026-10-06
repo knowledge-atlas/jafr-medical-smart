@@ -1,0 +1,56 @@
+[
+  {
+    "sourceRootId": 1,
+    "weaknessId": "W_ROOT_1",
+    "weaknessName": "نقطة ضعف الجذر 1",
+    "content": "نقطة ضعف الجذر 1"
+  },
+  {
+    "sourceRootId": 2,
+    "weaknessId": "W_ROOT_2",
+    "weaknessName": "نقطة ضعف الجذر 2",
+    "content": "نقطة ضعف الجذر 2"
+  },
+  {
+    "sourceRootId": 3,
+    "weaknessId": "W_ROOT_3",
+    "weaknessName": "نقطة ضعف الجذر 3",
+    "content": "نقطة ضعف الجذر 3"
+  },
+  {
+    "sourceRootId": 4,
+    "weaknessId": "W_ROOT_4",
+    "weaknessName": "نقطة ضعف الجذر 4",
+    "content": "نقطة ضعف الجذر 4"
+  },
+  {
+    "sourceRootId": 5,
+    "weaknessId": "W_ROOT_5",
+    "weaknessName": "نقطة ضعف الجذر 5",
+    "content": "نقطة ضعف الجذر 5"
+  },
+  {
+    "sourceRootId": 6,
+    "weaknessId": "W_ROOT_6",
+    "weaknessName": "نقطة ضعف الجذر 6",
+    "content": "نقطة ضعف الجذر 6"
+  },
+  {
+    "sourceRootId": 7,
+    "weaknessId": "W_ROOT_7",
+    "weaknessName": "نقطة ضعف الجذر 7",
+    "content": "نقطة ضعف الجذر 7"
+  },
+  {
+    "sourceRootId": 8,
+    "weaknessId": "W_ROOT_8",
+    "weaknessName": "نقطة ضعف الجذر 8",
+    "content": "نقطة ضعف الجذر 8"
+  },
+  {
+    "sourceRootId": 9,
+    "weaknessId": "W_ROOT_9",
+    "weaknessName": "نقطة ضعف الجذر 9",
+    "content": "نقطة ضعف الجذر 9"
+  }
+]

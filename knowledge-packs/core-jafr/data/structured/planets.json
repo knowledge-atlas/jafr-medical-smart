@@ -1,0 +1,112 @@
+[
+  {
+    "id": "الشمس",
+    "name": "الشمس",
+    "number": 1,
+    "text": "كوكب الشمس",
+    "fullDescription": "كوكب الشمس",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "الشمس"
+    }
+  },
+  {
+    "id": "القمر",
+    "name": "القمر",
+    "number": 2,
+    "text": "كوكب القمر",
+    "fullDescription": "كوكب القمر",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "القمر"
+    }
+  },
+  {
+    "id": "عطارد",
+    "name": "عطارد",
+    "number": 3,
+    "text": "كوكب عطارد",
+    "fullDescription": "كوكب عطارد",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "عطارد"
+    }
+  },
+  {
+    "id": "الزهرة",
+    "name": "الزهرة",
+    "number": 4,
+    "text": "كوكب الزهرة",
+    "fullDescription": "كوكب الزهرة",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "الزهرة"
+    }
+  },
+  {
+    "id": "المريخ",
+    "name": "المريخ",
+    "number": 5,
+    "text": "كوكب المريخ",
+    "fullDescription": "كوكب المريخ",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "المريخ"
+    }
+  },
+  {
+    "id": "المشتري",
+    "name": "المشتري",
+    "number": 6,
+    "text": "كوكب المشتري",
+    "fullDescription": "كوكب المشتري",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "المشتري"
+    }
+  },
+  {
+    "id": "زحل",
+    "name": "زحل",
+    "number": 7,
+    "text": "كوكب زحل",
+    "fullDescription": "كوكب زحل",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "زحل"
+    }
+  },
+  {
+    "id": "أورانوس",
+    "name": "أورانوس",
+    "number": 8,
+    "text": "كوكب أورانوس",
+    "fullDescription": "كوكب أورانوس",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "أورانوس"
+    }
+  },
+  {
+    "id": "نبتون",
+    "name": "نبتون",
+    "number": 9,
+    "text": "كوكب نبتون",
+    "fullDescription": "كوكب نبتون",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "نبتون"
+    }
+  },
+  {
+    "id": "بلوتو",
+    "name": "بلوتو",
+    "number": 10,
+    "text": "كوكب بلوتو",
+    "fullDescription": "كوكب بلوتو",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "بلوتو"
+    }
+  }
+]

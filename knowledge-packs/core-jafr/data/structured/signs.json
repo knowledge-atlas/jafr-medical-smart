@@ -1,0 +1,134 @@
+[
+  {
+    "id": 1,
+    "name": "الحمل",
+    "number": 1,
+    "text": "برج الحمل",
+    "fullDescription": "برج الحمل",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "الحمل"
+    }
+  },
+  {
+    "id": 2,
+    "name": "الثور",
+    "number": 2,
+    "text": "برج الثور",
+    "fullDescription": "برج الثور",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "الثور"
+    }
+  },
+  {
+    "id": 3,
+    "name": "الجوزاء",
+    "number": 3,
+    "text": "برج الجوزاء",
+    "fullDescription": "برج الجوزاء",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "الجوزاء"
+    }
+  },
+  {
+    "id": 4,
+    "name": "السرطان",
+    "number": 4,
+    "text": "برج السرطان",
+    "fullDescription": "برج السرطان",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "السرطان"
+    }
+  },
+  {
+    "id": 5,
+    "name": "الأسد",
+    "number": 5,
+    "text": "برج الأسد",
+    "fullDescription": "برج الأسد",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "الأسد"
+    }
+  },
+  {
+    "id": 6,
+    "name": "العذراء",
+    "number": 6,
+    "text": "برج العذراء",
+    "fullDescription": "برج العذراء",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "العذراء"
+    }
+  },
+  {
+    "id": 7,
+    "name": "الميزان",
+    "number": 7,
+    "text": "برج الميزان",
+    "fullDescription": "برج الميزان",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "الميزان"
+    }
+  },
+  {
+    "id": 8,
+    "name": "العقرب",
+    "number": 8,
+    "text": "برج العقرب",
+    "fullDescription": "برج العقرب",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "العقرب"
+    }
+  },
+  {
+    "id": 9,
+    "name": "القوس",
+    "number": 9,
+    "text": "برج القوس",
+    "fullDescription": "برج القوس",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "القوس"
+    }
+  },
+  {
+    "id": 10,
+    "name": "الجدي",
+    "number": 10,
+    "text": "برج الجدي",
+    "fullDescription": "برج الجدي",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "الجدي"
+    }
+  },
+  {
+    "id": 11,
+    "name": "الدلو",
+    "number": 11,
+    "text": "برج الدلو",
+    "fullDescription": "برج الدلو",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "الدلو"
+    }
+  },
+  {
+    "id": 12,
+    "name": "الحوت",
+    "number": 12,
+    "text": "برج الحوت",
+    "fullDescription": "برج الحوت",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "الحوت"
+    }
+  }
+]

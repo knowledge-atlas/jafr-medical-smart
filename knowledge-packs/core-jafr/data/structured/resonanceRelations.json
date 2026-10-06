@@ -1,0 +1,362 @@
+[
+  {
+    "sourceRootId": 1,
+    "targetRootId": 1,
+    "classification": "root-network",
+    "description": "رنين الجذر 1 مع الجذر 1",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 1,
+    "targetRootId": 2,
+    "classification": "root-network",
+    "description": "رنين الجذر 1 مع الجذر 2",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 1,
+    "targetRootId": 3,
+    "classification": "root-network",
+    "description": "رنين الجذر 1 مع الجذر 3",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 1,
+    "targetRootId": 4,
+    "classification": "root-network",
+    "description": "رنين الجذر 1 مع الجذر 4",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 1,
+    "targetRootId": 5,
+    "classification": "root-network",
+    "description": "رنين الجذر 1 مع الجذر 5",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 1,
+    "targetRootId": 6,
+    "classification": "root-network",
+    "description": "رنين الجذر 1 مع الجذر 6",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 1,
+    "targetRootId": 7,
+    "classification": "root-network",
+    "description": "رنين الجذر 1 مع الجذر 7",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 1,
+    "targetRootId": 8,
+    "classification": "root-network",
+    "description": "رنين الجذر 1 مع الجذر 8",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 1,
+    "targetRootId": 9,
+    "classification": "root-network",
+    "description": "رنين الجذر 1 مع الجذر 9",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 2,
+    "targetRootId": 2,
+    "classification": "root-network",
+    "description": "رنين الجذر 2 مع الجذر 2",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 2,
+    "targetRootId": 3,
+    "classification": "root-network",
+    "description": "رنين الجذر 2 مع الجذر 3",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 2,
+    "targetRootId": 4,
+    "classification": "root-network",
+    "description": "رنين الجذر 2 مع الجذر 4",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 2,
+    "targetRootId": 5,
+    "classification": "root-network",
+    "description": "رنين الجذر 2 مع الجذر 5",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 2,
+    "targetRootId": 6,
+    "classification": "root-network",
+    "description": "رنين الجذر 2 مع الجذر 6",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 2,
+    "targetRootId": 7,
+    "classification": "root-network",
+    "description": "رنين الجذر 2 مع الجذر 7",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 2,
+    "targetRootId": 8,
+    "classification": "root-network",
+    "description": "رنين الجذر 2 مع الجذر 8",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 2,
+    "targetRootId": 9,
+    "classification": "root-network",
+    "description": "رنين الجذر 2 مع الجذر 9",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 3,
+    "targetRootId": 3,
+    "classification": "root-network",
+    "description": "رنين الجذر 3 مع الجذر 3",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 3,
+    "targetRootId": 4,
+    "classification": "root-network",
+    "description": "رنين الجذر 3 مع الجذر 4",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 3,
+    "targetRootId": 5,
+    "classification": "root-network",
+    "description": "رنين الجذر 3 مع الجذر 5",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 3,
+    "targetRootId": 6,
+    "classification": "root-network",
+    "description": "رنين الجذر 3 مع الجذر 6",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 3,
+    "targetRootId": 7,
+    "classification": "root-network",
+    "description": "رنين الجذر 3 مع الجذر 7",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 3,
+    "targetRootId": 8,
+    "classification": "root-network",
+    "description": "رنين الجذر 3 مع الجذر 8",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 3,
+    "targetRootId": 9,
+    "classification": "root-network",
+    "description": "رنين الجذر 3 مع الجذر 9",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 4,
+    "targetRootId": 4,
+    "classification": "root-network",
+    "description": "رنين الجذر 4 مع الجذر 4",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 4,
+    "targetRootId": 5,
+    "classification": "root-network",
+    "description": "رنين الجذر 4 مع الجذر 5",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 4,
+    "targetRootId": 6,
+    "classification": "root-network",
+    "description": "رنين الجذر 4 مع الجذر 6",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 4,
+    "targetRootId": 7,
+    "classification": "root-network",
+    "description": "رنين الجذر 4 مع الجذر 7",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 4,
+    "targetRootId": 8,
+    "classification": "root-network",
+    "description": "رنين الجذر 4 مع الجذر 8",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 4,
+    "targetRootId": 9,
+    "classification": "root-network",
+    "description": "رنين الجذر 4 مع الجذر 9",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 5,
+    "targetRootId": 5,
+    "classification": "root-network",
+    "description": "رنين الجذر 5 مع الجذر 5",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 5,
+    "targetRootId": 6,
+    "classification": "root-network",
+    "description": "رنين الجذر 5 مع الجذر 6",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 5,
+    "targetRootId": 7,
+    "classification": "root-network",
+    "description": "رنين الجذر 5 مع الجذر 7",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 5,
+    "targetRootId": 8,
+    "classification": "root-network",
+    "description": "رنين الجذر 5 مع الجذر 8",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 5,
+    "targetRootId": 9,
+    "classification": "root-network",
+    "description": "رنين الجذر 5 مع الجذر 9",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 6,
+    "targetRootId": 6,
+    "classification": "root-network",
+    "description": "رنين الجذر 6 مع الجذر 6",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 6,
+    "targetRootId": 7,
+    "classification": "root-network",
+    "description": "رنين الجذر 6 مع الجذر 7",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 6,
+    "targetRootId": 8,
+    "classification": "root-network",
+    "description": "رنين الجذر 6 مع الجذر 8",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 6,
+    "targetRootId": 9,
+    "classification": "root-network",
+    "description": "رنين الجذر 6 مع الجذر 9",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 7,
+    "targetRootId": 7,
+    "classification": "root-network",
+    "description": "رنين الجذر 7 مع الجذر 7",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 7,
+    "targetRootId": 8,
+    "classification": "root-network",
+    "description": "رنين الجذر 7 مع الجذر 8",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 7,
+    "targetRootId": 9,
+    "classification": "root-network",
+    "description": "رنين الجذر 7 مع الجذر 9",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 8,
+    "targetRootId": 8,
+    "classification": "root-network",
+    "description": "رنين الجذر 8 مع الجذر 8",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 8,
+    "targetRootId": 9,
+    "classification": "root-network",
+    "description": "رنين الجذر 8 مع الجذر 9",
+    "compatibleWith": [],
+    "conflictsWith": []
+  },
+  {
+    "sourceRootId": 9,
+    "targetRootId": 9,
+    "classification": "root-network",
+    "description": "رنين الجذر 9 مع الجذر 9",
+    "compatibleWith": [],
+    "conflictsWith": []
+  }
+]

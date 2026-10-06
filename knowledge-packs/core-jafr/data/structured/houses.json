@@ -1,0 +1,134 @@
+[
+  {
+    "id": 1,
+    "name": "البيت الأول",
+    "number": 1,
+    "text": "البيت الأول",
+    "fullDescription": "البيت الأول",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "البيت الأول"
+    }
+  },
+  {
+    "id": 2,
+    "name": "البيت الثاني",
+    "number": 2,
+    "text": "البيت الثاني",
+    "fullDescription": "البيت الثاني",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "البيت الثاني"
+    }
+  },
+  {
+    "id": 3,
+    "name": "البيت الثالث",
+    "number": 3,
+    "text": "البيت الثالث",
+    "fullDescription": "البيت الثالث",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "البيت الثالث"
+    }
+  },
+  {
+    "id": 4,
+    "name": "البيت الرابع",
+    "number": 4,
+    "text": "البيت الرابع",
+    "fullDescription": "البيت الرابع",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "البيت الرابع"
+    }
+  },
+  {
+    "id": 5,
+    "name": "البيت الخامس",
+    "number": 5,
+    "text": "البيت الخامس",
+    "fullDescription": "البيت الخامس",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "البيت الخامس"
+    }
+  },
+  {
+    "id": 6,
+    "name": "البيت السادس",
+    "number": 6,
+    "text": "البيت السادس",
+    "fullDescription": "البيت السادس",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "البيت السادس"
+    }
+  },
+  {
+    "id": 7,
+    "name": "البيت السابع",
+    "number": 7,
+    "text": "البيت السابع",
+    "fullDescription": "البيت السابع",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "البيت السابع"
+    }
+  },
+  {
+    "id": 8,
+    "name": "البيت الثامن",
+    "number": 8,
+    "text": "البيت الثامن",
+    "fullDescription": "البيت الثامن",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "البيت الثامن"
+    }
+  },
+  {
+    "id": 9,
+    "name": "البيت التاسع",
+    "number": 9,
+    "text": "البيت التاسع",
+    "fullDescription": "البيت التاسع",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "البيت التاسع"
+    }
+  },
+  {
+    "id": 10,
+    "name": "البيت العاشر",
+    "number": 10,
+    "text": "البيت العاشر",
+    "fullDescription": "البيت العاشر",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "البيت العاشر"
+    }
+  },
+  {
+    "id": 11,
+    "name": "البيت الحادي عشر",
+    "number": 11,
+    "text": "البيت الحادي عشر",
+    "fullDescription": "البيت الحادي عشر",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "البيت الحادي عشر"
+    }
+  },
+  {
+    "id": 12,
+    "name": "البيت الثاني عشر",
+    "number": 12,
+    "text": "البيت الثاني عشر",
+    "fullDescription": "البيت الثاني عشر",
+    "sourceFile": "master.txt",
+    "semantic": {
+      "identity": "البيت الثاني عشر"
+    }
+  }
+]
