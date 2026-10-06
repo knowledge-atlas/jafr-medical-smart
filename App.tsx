@@ -7,6 +7,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { consentStorage } from './src/utils/consentStorage';
+import { analytics } from './src/utils/analytics';
 
 import HomeScreen from './src/screens/HomeScreen';
 import ReportScreen from './src/screens/ReportScreen';
@@ -28,6 +29,7 @@ import TraditionalReportScreen from './src/screens/TraditionalReportScreen';
 import TraditionalTabScreen from './src/screens/TraditionalTabScreen';
 import ReflectiveReportScreen from './src/screens/ReflectiveReportScreen';
 import ErrorLogScreen from './src/screens/ErrorLogScreen';
+import HealthScreen from './src/screens/HealthScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
 
 const Stack = createStackNavigator();
@@ -85,6 +87,7 @@ export default function App() {
       const t0 = Date.now();
       console.log('⏱️ START bootstrap');
 
+      await analytics.trackLaunch();
       const stored = await consentStorage.get();
       console.log(`⏱️ consent check: ${Date.now() - t0}ms`);
       setConsented(stored === 'accepted');
@@ -168,6 +171,7 @@ export default function App() {
         <Stack.Screen name="TraditionalReport" component={TraditionalReportScreen} options={{ title: '📜 التقرير التقليدي' }} />
         <Stack.Screen name="ReflectiveReport" component={ReflectiveReportScreen} options={{ title: '🧠 الملف النفسي' }} />
         <Stack.Screen name="ErrorLog" component={ErrorLogScreen} options={{ title: '🔴 سجل الأخطاء' }} />
+        <Stack.Screen name="Health" component={HealthScreen} options={{ title: '📊 صحة التطبيق' }} />
       </Stack.Navigator>
       </NavigationContainer>
     </ErrorBoundary>
