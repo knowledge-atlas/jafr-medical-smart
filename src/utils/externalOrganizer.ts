@@ -1,5 +1,6 @@
 import { UserEntity, externalStorage } from './externalStorage';
 import { AnalysisSignature } from './externalMatcher';
+import { splitIntoTableBlocks } from './smartFormatter';
 
 function normAr(t: string): string {
   if (!t) return '';
@@ -179,22 +180,26 @@ export function buildOrganizedBlocks(
       const truncated = totalLen > maxChars;
       const body = truncated ? e.fullText.slice(0, maxChars) : e.fullText;
 
-      const rows: [string, string][] = [
+      // ═══ رأس معلومات الشاهد ═══
+      const metaRows: [string, string][] = [
         ['المصدر', e.sourceFile],
         ['النوع', e.entityType],
       ];
-
       if (truncated) {
-        rows.push(['حجم النص', `${totalLen.toLocaleString()} حرف (معروض ${maxChars})`]);
+        metaRows.push(['حجم النص', `${totalLen.toLocaleString()} حرف (معروض ${maxChars})`]);
       }
-
-      rows.push(['', body]);
 
       blocks.push({
         type: 'box',
         title: `📄 ${i + 1}. ${e.titleAr}`,
-        rows,
+        rows: metaRows,
       });
+
+      // ═══ المحتوى — يُكتشف ويُعرض كجداول + نصوص ═══
+      const contentBlocks = splitIntoTableBlocks(body);
+      for (const cb of contentBlocks) {
+        blocks.push(cb);
+      }
     }
 
     if (group.entities.length > maxPerGroup) {
