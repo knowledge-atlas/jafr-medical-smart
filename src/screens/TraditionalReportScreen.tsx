@@ -12,7 +12,9 @@ import { reorganizeReport } from '../utils/reportReorganizer';
 import BlockRenderer from '../components/report/BlockRenderer';
 import { analytics } from '../utils/analytics';
 import { calculate } from '../engine/calculator';
-import { buildEvidence, buildSignatureFromAnalysis } from '../utils/analysisEnricher';
+import { buildSignatureFromAnalysis } from '../utils/analysisEnricher';
+import { organizeExternalByAnalysis, buildOrganizedBlocks } from '../utils/externalOrganizer';
+import { externalStorage } from '../utils/externalStorage';
 
 export default function TraditionalReportScreen({ route, navigation }: any) {
   const { name } = route.params || {};
@@ -58,9 +60,10 @@ export default function TraditionalReportScreen({ route, navigation }: any) {
 
       await analytics.trackReport();
       const parsed = parseReportToBlocks(reorganized);
-      setSections(parsed);
 
-      // ═══ الشواهد الخارجية ═══
+      // ═══ الموسوعة الخارجية — منظّمة حسب أبعاد التحليل ═══
+      let allSections = [...parsed];
+
       try {
         const calc = calculate(name);
         if (!('error' in calc)) {
@@ -74,17 +77,38 @@ export default function TraditionalReportScreen({ route, navigation }: any) {
               house: typeof calc.internal?.house === 'number' ? calc.internal.house : undefined,
             },
           });
-          const evidence = await buildEvidence(sig);
-          setEvidenceBlocks(evidence.blocks);
-          setEvidenceCount(evidence.count);
+
+          const externalEntities = await externalStorage.getAll();
+          console.log(`🔍 [External] كيانات مخزّنة: ${externalEntities.length}`);
+
+          if (externalEntities.length > 0) {
+            const groups = organizeExternalByAnalysis(sig, externalEntities);
+            console.log(`🔍 [External] مجموعات منظّمة: ${groups.length}`);
+
+            const total = groups.reduce((acc, g) => acc + g.entities.length, 0);
+            setEvidenceCount(total);
+
+            if (total > 0) {
+              const blocks = buildOrganizedBlocks(groups, { maxCharsPerEntity: 2500, maxPerGroup: 8 });
+              allSections.push({
+                id: 'external_evidence',
+                title: `🌐 الموسوعة الخارجية (${total})`,
+                icon: '🌐',
+                blocks,
+              } as any);
+              console.log(`✅ [External] قسم مُضاف — ${total} كيان في ${groups.length} مجموعات`);
+            }
+          }
         }
       } catch (evErr) {
-        console.warn('⚠️ فشل تحميل الشواهد:', evErr);
+        console.warn('⚠️ [External] فشل:', evErr);
       }
+
+      setSections(allSections);
 
       // فتح القسم الأول فقط افتراضياً
       const initialOpen = new Set<string>();
-      if (parsed.length > 0) initialOpen.add(parsed[0].id);
+      if (allSections.length > 0) initialOpen.add(allSections[0].id);
       setOpenIds(initialOpen);
     } catch (e: any) {
       setError(e?.message ?? 'فشل التوليد');
@@ -231,23 +255,6 @@ export default function TraditionalReportScreen({ route, navigation }: any) {
             </View>
           );
         })}
-
-        {/* ═══ الشواهد الخارجية ═══ */}
-        {evidenceBlocks.length > 0 && (
-          <View style={styles.sectionCard}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionIcon}>🌐</Text>
-              <Text style={styles.sectionTitle}>
-                شواهد خارجية — من مصادرك ({evidenceCount})
-              </Text>
-            </View>
-            <View style={styles.sectionBody}>
-              {evidenceBlocks.map((block, bi) => (
-                <BlockRenderer key={`ev_${bi}`} block={block} index={bi} />
-              ))}
-            </View>
-          </View>
-        )}
 
         {sections.length === 0 && (
           <View style={styles.emptyState}>
