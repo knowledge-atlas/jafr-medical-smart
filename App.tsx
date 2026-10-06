@@ -27,6 +27,8 @@ import ConsentScreen from './src/screens/ConsentScreen';
 import TraditionalReportScreen from './src/screens/TraditionalReportScreen';
 import TraditionalTabScreen from './src/screens/TraditionalTabScreen';
 import ReflectiveReportScreen from './src/screens/ReflectiveReportScreen';
+import ErrorLogScreen from './src/screens/ErrorLogScreen';
+import ErrorBoundary from './src/components/ErrorBoundary';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -143,7 +145,8 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
+    <ErrorBoundary>
+      <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
           headerStyle: { backgroundColor: '#1a3b5d' },
@@ -164,8 +167,10 @@ export default function App() {
         <Stack.Screen name="EntityDetail" component={EntityDetailScreen} options={{ title: 'تفاصيل الكيان' }} />
         <Stack.Screen name="TraditionalReport" component={TraditionalReportScreen} options={{ title: '📜 التقرير التقليدي' }} />
         <Stack.Screen name="ReflectiveReport" component={ReflectiveReportScreen} options={{ title: '🧠 الملف النفسي' }} />
+        <Stack.Screen name="ErrorLog" component={ErrorLogScreen} options={{ title: '🔴 سجل الأخطاء' }} />
       </Stack.Navigator>
-    </NavigationContainer>
+      </NavigationContainer>
+    </ErrorBoundary>
   );
 }
 
