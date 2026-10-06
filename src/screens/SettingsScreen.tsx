@@ -300,6 +300,14 @@ const saveKey = async (which: 'gemini' | 'openai') => {
           <Text style={{ color: '#d4af37', fontSize: 15, fontWeight: 'bold', writingDirection: 'rtl' }}>📊 صحة التطبيق</Text>
           <Text style={{ color: '#666', fontSize: 18 }}>←</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={{ flexDirection: 'row-reverse', padding: 14, marginHorizontal: 10, marginVertical: 6, backgroundColor: '#0f2438', borderRadius: 10, borderWidth: 1, borderColor: '#2c5070', alignItems: 'center', justifyContent: 'space-between' }}
+          onPress={() => navigation.navigate('ExternalKnowledge')}
+        >
+          <Text style={{ color: '#d4af37', fontSize: 15, fontWeight: 'bold', writingDirection: 'rtl' }}>📚 المعرفة الخارجية</Text>
+          <Text style={{ color: '#666', fontSize: 18 }}>←</Text>
+        </TouchableOpacity>
 </ScrollView>
   );
 }

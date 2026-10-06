@@ -32,6 +32,7 @@ import ReflectiveReportScreen from './src/screens/ReflectiveReportScreen';
 import ErrorLogScreen from './src/screens/ErrorLogScreen';
 import HealthScreen from './src/screens/HealthScreen';
 import OnboardingScreen, { ONBOARDING_STORAGE_KEY } from './src/screens/OnboardingScreen';
+import ExternalKnowledgeScreen from './src/screens/ExternalKnowledgeScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
 
 const Stack = createStackNavigator();
@@ -182,6 +183,7 @@ export default function App() {
         <Stack.Screen name="ReflectiveReport" component={ReflectiveReportScreen} options={{ title: '🧠 الملف النفسي' }} />
         <Stack.Screen name="ErrorLog" component={ErrorLogScreen} options={{ title: '🔴 سجل الأخطاء' }} />
         <Stack.Screen name="Health" component={HealthScreen} options={{ title: '📊 صحة التطبيق' }} />
+        <Stack.Screen name="ExternalKnowledge" component={ExternalKnowledgeScreen} options={{ title: '📚 المعرفة الخارجية' }} />
       </Stack.Navigator>
       </NavigationContainer>
     </ErrorBoundary>

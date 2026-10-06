@@ -3,7 +3,7 @@
 // يقرأ src/data/external/entities.json ويحوّلها إلى KnowledgeEntity
 // ═══════════════════════════════════════════════════════════
 
-let externalEntitiesCache: any[] | null = null;
+let externalEntitiesCache: ExternalFile | null = null;
 
 export interface ExternalFile {
   generatedAt: string;
@@ -13,20 +13,11 @@ export interface ExternalFile {
 }
 
 export function loadExternalFile(): ExternalFile | null {
-  if (externalEntitiesCache) {
-    return {
-      generatedAt: 'cached',
-      total: externalEntitiesCache.length,
-      byType: {},
-      entities: externalEntitiesCache,
-    };
-  }
-
   try {
     // dynamic require — Metro يحزم الملف مع الـbundle
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const data = require('../../data/external/entities.json');
-    externalEntitiesCache = data?.entities ?? [];
+    externalEntitiesCache = data;
     return data;
   } catch {
     // الملف غير موجود — طبيعي في أول تشغيل
