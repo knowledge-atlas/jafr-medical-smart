@@ -102,10 +102,77 @@ export function parseJsonContent(raw: string, sourceFile: string): UserEntity[] 
 // ═══════════════════════════════════════════════════════════
 // parseTextContent — يقسم نصاً عادياً إلى فقرات
 // ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// detectTitle — استخراج عنوان ذكي من أول سطر
+// ═══════════════════════════════════════════════════════════
+function detectTitle(chunk: string): { title: string; entityType: string; entityNumber?: number } {
+  const lines = chunk.split('\n').map((l) => l.trim()).filter(Boolean);
+  const first = lines[0] || '';
+
+  // 1) Markdown heading: ## الجذر 7 — الاسم
+  const mdMatch = first.match(/^#{1,6}\s+(.+)$/);
+  if (mdMatch) {
+    const h = mdMatch[1].trim();
+    return { title: h, entityType: classifyType(h), entityNumber: extractNumber(h) };
+  }
+
+  // 2) "كيان جذره 7"
+  const kyanMatch = first.match(/كيان\s+جذر(?:ه|ُه)?\s+(\d)/);
+  if (kyanMatch) {
+    const n = parseInt(kyanMatch[1], 10);
+    return { title: `الجذر ${n} — تحليل الكيان`, entityType: 'root', entityNumber: n };
+  }
+
+  // 3) "الجذر N" في أول 80 حرف
+  const rootMatch = first.match(/الجذر\s+(\d)/);
+  if (rootMatch && first.length <= 100) {
+    const n = parseInt(rootMatch[1], 10);
+    return { title: `الجذر ${n}`, entityType: 'root', entityNumber: n };
+  }
+
+  // 4) "الكوكب: X" أو "البرج: X"
+  const planetMatch = first.match(/الكوكب[:：]\s*(.+)$/);
+  if (planetMatch) {
+    return { title: `الكوكب: ${planetMatch[1].trim()}`, entityType: 'planet' };
+  }
+  const signMatch = first.match(/البرج[:：]\s*(.+)$/);
+  if (signMatch) {
+    return { title: `البرج: ${signMatch[1].trim()}`, entityType: 'sign' };
+  }
+
+  // 5) عنوان قصير (≤ 80 حرف، بلا نقطة نهاية)
+  if (first.length >= 3 && first.length <= 80 && !/[.!؟]$/.test(first) && lines.length > 1) {
+    return { title: first, entityType: classifyType(first), entityNumber: extractNumber(first) };
+  }
+
+  // 6) fallback — أول 60 حرف
+  const short = first.slice(0, 60).trim();
+  return { title: short || 'مقتطف', entityType: 'custom' };
+}
+
+function classifyType(text: string): string {
+  if (/الجذر|كيان جذره/.test(text)) return 'root';
+  if (/كوكب|الكوكب/.test(text)) return 'planet';
+  if (/برج|البرج/.test(text)) return 'sign';
+  if (/بيت|البيت/.test(text)) return 'house';
+  if (/طبع|الطبع/.test(text)) return 'element';
+  if (/حرف|الحرف/.test(text)) return 'letter';
+  if (/رنين/.test(text)) return 'resonance';
+  if (/ترياق/.test(text)) return 'remedy';
+  if (/طبي|طب/.test(text)) return 'medical';
+  if (/باقي|البواقي/.test(text)) return 'remainder';
+  if (/وفق|الوفق/.test(text)) return 'wafq';
+  return 'custom';
+}
+
+function extractNumber(text: string): number | undefined {
+  const m = text.match(/(?:الجذر|جذره|رقم)\s*(\d)/);
+  return m ? parseInt(m[1], 10) : undefined;
+}
+
 export function parseTextContent(raw: string, sourceFile: string): UserEntity[] {
   if (!raw || raw.trim().length < 30) return [];
 
-  // اقسم على سطرين فارغين أو ثلاث
   const chunks = raw
     .split(/\n\s*\n\s*\n|\n\s*\n/)
     .map((c) => c.trim())
@@ -113,18 +180,13 @@ export function parseTextContent(raw: string, sourceFile: string): UserEntity[] 
 
   const now = new Date().toISOString();
   return chunks.map((chunk, i) => {
-    // أول سطر = عنوان مرشح
-    const firstLine = chunk.split('\n')[0].trim();
-    const titleAr = firstLine.length >= 3 && firstLine.length <= 80
-      ? firstLine.replace(/^[#*\-\s]+/, '')
-      : `مقتطف ${i + 1} من ${sourceFile}`;
+    const detected = detectTitle(chunk);
 
     const keywords: string[] = [];
-    // استخرج كلمات عربية طولها >= 4
     const words = normAr(chunk).split(/\s+/);
     const seen = new Set<string>();
     for (const w of words) {
-      if (w.length >= 4 && !seen.has(w) && keywords.length < 30) {
+      if (w.length >= 4 && !seen.has(w) && keywords.length < 40) {
         seen.add(w);
         keywords.push(w);
       }
@@ -132,8 +194,9 @@ export function parseTextContent(raw: string, sourceFile: string): UserEntity[] 
 
     return {
       id: `usr_txt_${shortHash(`${sourceFile}_${i}_${chunk.slice(0, 60)}`)}`,
-      entityType: 'custom',
-      titleAr,
+      entityType: detected.entityType,
+      entityNumber: detected.entityNumber,
+      titleAr: detected.title,
       fullText: chunk,
       keywords,
       sourceFile,
