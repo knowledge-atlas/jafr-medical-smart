@@ -1,0 +1,43 @@
+{
+  "_comment": "أضف مصادرك هنا. انظر README.custom.md للأمثلة.",
+  "rateLimitMs": 800,
+  "sources": [
+    {
+      "id": "my-first-source",
+      "type": "wikipedia",
+      "enabled": false,
+      "description": "مثال: مقالة عربية عن موضوع يهمّك",
+      "queries": [
+        {
+          "entityType": "medical",
+          "entityNumber": 1,
+          "titleAr": "الطب النبوي",
+          "searchTerm": "الطب النبوي",
+          "lens": "custom",
+          "lensLabel": "مخصص",
+          "keywords": [
+            "طب",
+            "نبوي",
+            "علاج"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "source_1791246832003",
+      "type": "wikipedia",
+      "enabled": true,
+      "description": "",
+      "queries": [
+        {
+          "entityType": "medical",
+          "titleAr": "",
+          "searchTerm": "",
+          "lens": "custom",
+          "lensLabel": "مخصص",
+          "keywords": []
+        }
+      ]
+    }
+  ]
+}

@@ -10,8 +10,23 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
 
 async function loadConfig() {
-  const raw = await fs.readFile(path.join(__dirname, 'sources.json'), 'utf-8');
-  return JSON.parse(raw);
+  const mainRaw = await fs.readFile(path.join(__dirname, 'sources.json'), 'utf-8');
+  const main = JSON.parse(mainRaw);
+
+  let custom = { sources: [], rateLimitMs: main.rateLimitMs };
+  try {
+    const customRaw = await fs.readFile(path.join(__dirname, 'sources.custom.json'), 'utf-8');
+    custom = JSON.parse(customRaw);
+  } catch { /* لا يوجد ملف مخصص */ }
+
+  return {
+    outputFile: main.outputFile,
+    rateLimitMs: custom.rateLimitMs ?? main.rateLimitMs,
+    sources: [
+      ...(main.sources ?? []),
+      ...(custom.sources ?? []).filter((s) => s.enabled !== false),
+    ],
+  };
 }
 
 async function loadExisting(outputFile) {

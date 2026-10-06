@@ -1,87 +1,55 @@
 {
   "outputFile": "src/data/external/entities.json",
-  "rateLimitMs": 800,
+  "rateLimitMs": 700,
   "sources": [
     {
-      "id": "wiki-demo",
+      "id": "wiki-falaki",
       "type": "wikipedia",
       "enabled": true,
+      "description": "العدسة الفلكية العامة",
       "queries": [
-        {
-          "entityType": "planet",
-          "entityNumber": 6,
-          "titleAr": "زحل",
-          "searchTerm": "زحل",
-          "keywords": [
-            "زحل",
-            "كوكب",
-            "فلك"
-          ]
-        },
-        {
-          "entityType": "sign",
-          "entityNumber": 1,
-          "titleAr": "برج الحمل",
-          "searchTerm": "الحمل (كوكبة)",
-          "keywords": [
-            "حمل",
-            "برج",
-            "فلك"
-          ]
-        },
-        {
-          "entityType": "sign",
-          "entityNumber": 2,
-          "titleAr": "برج الثور",
-          "searchTerm": "الثور (كوكبة)",
-          "keywords": [
-            "ثور",
-            "برج",
-            "فلك"
-          ]
-        },
-        {
-          "entityType": "planet",
-          "entityNumber": 4,
-          "titleAr": "المريخ",
-          "searchTerm": "المريخ",
-          "keywords": [
-            "مريخ",
-            "كوكب",
-            "فلك"
-          ]
-        },
-        {
-          "entityType": "planet",
-          "entityNumber": 5,
-          "titleAr": "المشتري",
-          "searchTerm": "المشتري",
-          "keywords": [
-            "مشتري",
-            "كوكب",
-            "فلك"
-          ]
-        },
-        {
-          "entityType": "planet",
-          "entityNumber": 2,
-          "titleAr": "القمر",
-          "searchTerm": "القمر",
-          "keywords": [
-            "قمر",
-            "فلك"
-          ]
-        },
-        {
-          "entityType": "planet",
-          "entityNumber": 1,
-          "titleAr": "الشمس",
-          "searchTerm": "الشمس",
-          "keywords": [
-            "شمس",
-            "فلك"
-          ]
-        }
+        { "entityType": "planet", "entityNumber": 6, "titleAr": "زحل (فلكي)", "searchTerm": "زحل", "lens": "falaki", "lensLabel": "فلكي", "keywords": ["زحل", "كوكب", "فلك"] },
+        { "entityType": "planet", "entityNumber": 4, "titleAr": "المريخ (فلكي)", "searchTerm": "المريخ", "lens": "falaki", "lensLabel": "فلكي", "keywords": ["مريخ", "كوكب", "فلك"] },
+        { "entityType": "planet", "entityNumber": 5, "titleAr": "المشتري (فلكي)", "searchTerm": "المشتري", "lens": "falaki", "lensLabel": "فلكي", "keywords": ["مشتري", "كوكب", "فلك"] },
+        { "entityType": "planet", "entityNumber": 2, "titleAr": "القمر (فلكي)", "searchTerm": "القمر", "lens": "falaki", "lensLabel": "فلكي", "keywords": ["قمر", "فلك"] },
+        { "entityType": "planet", "entityNumber": 1, "titleAr": "الشمس (فلكي)", "searchTerm": "الشمس", "lens": "falaki", "lensLabel": "فلكي", "keywords": ["شمس", "فلك"] }
+      ]
+    },
+    {
+      "id": "wiki-huruf",
+      "type": "wikipedia",
+      "enabled": true,
+      "description": "العدسة الرمزية — علم الحروف والجفر",
+      "queries": [
+        { "entityType": "letter", "entityNumber": 1, "titleAr": "علم الحروف (رمزي)", "searchTerm": "علم الحروف", "lens": "ramzi", "lensLabel": "رمزي", "keywords": ["حروف", "جفر", "سيمياء"] },
+        { "entityType": "root", "entityNumber": 0, "titleAr": "الجفر (رمزي)", "searchTerm": "الجفر (علوم)", "lens": "ramzi", "lensLabel": "رمزي", "keywords": ["جفر", "حروف", "بوني"] },
+        { "entityType": "root", "entityNumber": 0, "titleAr": "السيمياء (رمزي)", "searchTerm": "السيمياء", "lens": "ramzi", "lensLabel": "رمزي", "keywords": ["سيمياء", "رمز", "حروف"] }
+      ]
+    },
+    {
+      "id": "wiki-lughawi",
+      "type": "wikipedia",
+      "enabled": true,
+      "description": "العدسة اللغوية — المعنى في اللغة",
+      "queries": [
+        { "entityType": "planet", "entityNumber": 6, "titleAr": "زحل (لغة)", "searchTerm": "زحل (لغة)", "lens": "lughawi", "lensLabel": "لغوي", "keywords": ["زحل"] },
+        { "entityType": "planet", "entityNumber": 4, "titleAr": "المريخ (لغة)", "searchTerm": "مريخ (لغة)", "lens": "lughawi", "lensLabel": "لغوي", "keywords": ["مريخ"] },
+        { "entityType": "element", "entityNumber": 1, "titleAr": "النار (لغة)", "searchTerm": "نار", "lens": "lughawi", "lensLabel": "لغوي", "keywords": ["نار"] },
+        { "entityType": "element", "entityNumber": 2, "titleAr": "الماء (لغة)", "searchTerm": "ماء", "lens": "lughawi", "lensLabel": "لغوي", "keywords": ["ماء"] },
+        { "entityType": "element", "entityNumber": 3, "titleAr": "الهواء (لغة)", "searchTerm": "هواء", "lens": "lughawi", "lensLabel": "لغوي", "keywords": ["هواء"] },
+        { "entityType": "element", "entityNumber": 4, "titleAr": "التراب (لغة)", "searchTerm": "تراب", "lens": "lughawi", "lensLabel": "لغوي", "keywords": ["تراب"] }
+      ]
+    },
+    {
+      "id": "wiki-tarikhi",
+      "type": "wikipedia",
+      "enabled": true,
+      "description": "العدسة التاريخية — الجذور الحضارية",
+      "queries": [
+        { "entityType": "planet", "entityNumber": 6, "titleAr": "زحل في الحضارات", "searchTerm": "زحل (إله)", "lens": "tarikhi", "lensLabel": "تاريخي", "keywords": ["زحل", "إله", "بابل"] },
+        { "entityType": "planet", "entityNumber": 4, "titleAr": "المريخ في الحضارات", "searchTerm": "مارس (إله)", "lens": "tarikhi", "lensLabel": "تاريخي", "keywords": ["مريخ", "مارس", "إله"] },
+        { "entityType": "sign", "entityNumber": 1, "titleAr": "الحمل (تاريخي)", "searchTerm": "الحمل (كوكبة)", "lens": "tarikhi", "lensLabel": "تاريخي", "keywords": ["حمل", "كوكبة"] },
+        { "entityType": "sign", "entityNumber": 2, "titleAr": "الثور (تاريخي)", "searchTerm": "الثور (كوكبة)", "lens": "tarikhi", "lensLabel": "تاريخي", "keywords": ["ثور", "كوكبة"] }
       ]
     }
   ]

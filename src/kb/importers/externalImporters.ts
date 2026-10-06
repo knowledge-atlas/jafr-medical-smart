@@ -91,3 +91,50 @@ export function importExternalToKB(KnowledgeBase: any): number {
     return 0;
   }
 }
+
+
+// ═══════════════════════════════════════════════════════════
+// groupVariantsByEntity — يجمع الشروح المختلفة لنفس الكيان
+// ═══════════════════════════════════════════════════════════
+export interface EntityVariant {
+  sourceId: string;
+  lens: string;
+  lensLabel: string;
+  title: string;
+  fullText: string;
+  url?: string;
+}
+
+export interface EntityGroup {
+  key: string;
+  entityType: string;
+  entityNumber?: number;
+  variants: EntityVariant[];
+}
+
+export function groupVariantsByEntity(): EntityGroup[] {
+  const entities = getExternalEntities();
+  const groups = new Map<string, EntityGroup>();
+
+  for (const e of entities) {
+    const key = `${e.entityType}::${e.entityNumber ?? 'na'}`;
+    if (!groups.has(key)) {
+      groups.set(key, {
+        key,
+        entityType: e.entityType,
+        entityNumber: e.entityNumber,
+        variants: [],
+      });
+    }
+    groups.get(key)!.variants.push({
+      sourceId: e.metadata?.sourceId ?? 'unknown',
+      lens: e.metadata?.lens ?? 'general',
+      lensLabel: e.metadata?.lensLabel ?? 'عام',
+      title: e.titleAr,
+      fullText: e.fullText,
+      url: e.metadata?.url,
+    });
+  }
+
+  return Array.from(groups.values());
+}
