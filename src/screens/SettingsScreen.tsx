@@ -13,7 +13,7 @@ import { KnowledgeBase, importAll } from '../kb';
 
 type Provider = 'none' | 'demo' | 'gemini' | 'openai';
 
-export default function SettingsScreen() {
+export default function SettingsScreen({ navigation }: any) {
   const [provider, setProvider] = useState<Provider>('none');
   const [geminiKey, setGeminiKey] = useState('');
   const [openaiKey, setOpenaiKey] = useState('');
