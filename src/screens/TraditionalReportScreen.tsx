@@ -123,9 +123,8 @@ export default function TraditionalReportScreen({ route, navigation }: any) {
       {/* ═══ Header ═══ */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Text style={styles.headerEmoji}>📜</Text>
-          <View>
-            <Text style={styles.headerTitle}>التقرير التقليدي الشامل</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitle}>التقرير التقليدي الشامل 📜</Text>
             <Text style={styles.headerSubtitle}>
               {name} · {sections.length} قسم · {fullText.length.toLocaleString()} حرف
             </Text>
@@ -258,7 +257,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: '#d4af37',
   },
-  headerLeft: { flexDirection: 'row-reverse', alignItems: 'center', gap: 10 },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', width: '100%' },
   headerEmoji: { fontSize: 28 },
   headerTitle: {
     color: '#d4af37',

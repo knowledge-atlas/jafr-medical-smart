@@ -80,7 +80,7 @@ export default function AssistantScreen() {
     try {
       const route = routeAssistantText(text.trim(), hasLLM);
 
-      // ─── حالة 1: يوجد اسم → التقرير التأملي العلمي ───
+      // ─── حالة 1: يوجد اسم ← التقرير التأملي العلمي ───
       if (route.name) {
         const analysis = analyzeName.execute({ name: route.name });
 
@@ -112,7 +112,7 @@ export default function AssistantScreen() {
           setMessages(prev => [...prev, aiMsg]);
         }
       }
-      // ─── حالة 2: لا اسم → محادثة عامة ───
+      // ─── حالة 2: لا اسم ← محادثة عامة ───
       else if (hasLLM) {
         const result = await hybridEngine.process({
           question: text.trim(),

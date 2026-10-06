@@ -22,7 +22,7 @@ function detectMode(text: string): ContextMode {
  * - kb: البحث المحلي فقط (احتياطي)
  *
  * @param text سؤال المستخدم
- * @param hasLLM هل LLM مفعّل؟ إذا نعم، كل الأسئلة → hybrid
+ * @param hasLLM هل LLM مفعّل؟ إذا نعم، كل الأسئلة ← hybrid
  */
 export function routeAssistantText(
   text: string,

@@ -139,7 +139,7 @@ export default function HomeScreen({ navigation }: any) {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>📂 آخر التقارير</Text>
             <TouchableOpacity onPress={() => navigation.navigate('History')}>
-              <Text style={styles.sectionLink}>الكل →</Text>
+              <Text style={styles.sectionLink}>الكل ←</Text>
             </TouchableOpacity>
           </View>
           {recent.map((r, i) => (

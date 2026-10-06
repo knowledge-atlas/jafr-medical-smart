@@ -86,7 +86,7 @@ export default function EntityDetailScreen({ route, navigation }: any) {
           <Text style={styles.sectionTitle}>🔗 علاقات صادرة ({relations.from.length})</Text>
           {relations.from.map((r, i) => (
             <Text key={i} style={styles.relationText}>
-              → {r.relationType} → {r.targetEntityId}
+              ← {r.relationType} ← {r.targetEntityId}
             </Text>
           ))}
         </View>
@@ -97,7 +97,7 @@ export default function EntityDetailScreen({ route, navigation }: any) {
           <Text style={styles.sectionTitle}>⬅️ علاقات واردة ({relations.to.length})</Text>
           {relations.to.map((r, i) => (
             <Text key={i} style={styles.relationText}>
-              {r.sourceEntityId} → {r.relationType}
+              {r.sourceEntityId} ← {r.relationType}
             </Text>
           ))}
         </View>

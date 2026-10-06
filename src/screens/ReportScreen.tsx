@@ -406,13 +406,13 @@ const markdownStyles = {
   },
   thead: {
     backgroundColor: '#1a3b5d',
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
   },
   tbody: {
     flexDirection: 'column',
   },
   tr: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     borderBottomWidth: 1,
     borderBottomColor: '#2c5070',
     alignItems: 'stretch',
@@ -425,8 +425,8 @@ const markdownStyles = {
     textAlign: 'right' as const,
     writingDirection: 'rtl' as const,
     fontSize: 13,
-    borderRightWidth: 1,
-    borderRightColor: '#2c5070',
+    borderLeftWidth: 1,
+    borderLeftColor: '#2c5070',
   },
   td: {
     flex: 1,
@@ -435,7 +435,7 @@ const markdownStyles = {
     textAlign: 'right' as const,
     writingDirection: 'rtl' as const,
     fontSize: 13,
-    borderRightWidth: 1,
-    borderRightColor: '#2c5070',
+    borderLeftWidth: 1,
+    borderLeftColor: '#2c5070',
   },
 };

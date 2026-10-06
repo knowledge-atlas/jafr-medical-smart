@@ -4,16 +4,20 @@ import { registerRootComponent } from 'expo';
 import App from './App';
 
 // ═══════════════════════════════════════════════════════════
-// فرض RTL على التطبيق بالكامل
+// RTL Strategy — Hard-Coded
 // ═══════════════════════════════════════════════════════════
-I18nManager.allowRTL(true);
-if (!I18nManager.isRTL) {
-  I18nManager.forceRTL(true);
-  console.log('✅ RTL forced — أعد تشغيل التطبيق كاملاً');
+// لا نستخدم forceRTL لأنه:
+// 1) غير موثوق في Expo Go
+// 2) يسبب انعكاساً مزدوجاً في APK
+// بدلاً من ذلك، نفرض RTL يدوياً في كل مكون (row-reverse + textAlign: right).
+I18nManager.allowRTL(false);
+
+if (I18nManager.isRTL) {
+  // إذا كانت الطبقة الأصلية RTL، نجبرها LTR حتى لا تعكس ستايلنا اليدوي
+  I18nManager.forceRTL(false);
+  console.log('🔧 forceRTL(false) — إعادة تشغيل مطلوبة');
 }
 
-// 🔍 مؤشر تشخيصي — سيظهر في console عند كل إقلاع
-console.log('🔍 RTL DEBUG: I18nManager.isRTL =', I18nManager.isRTL);
-console.log('🔍 RTL DEBUG: I18nManager.doLeftAndRightSwapInRTL =', I18nManager.doLeftAndRightSwapInRTL);
+console.log('🔍 RTL DEBUG: isRTL =', I18nManager.isRTL);
 
 registerRootComponent(App);

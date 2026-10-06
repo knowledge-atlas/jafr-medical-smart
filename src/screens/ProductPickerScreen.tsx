@@ -66,8 +66,7 @@ const PRODUCTS: ProductCard[] = [
     subtitle: '12 محوراً انعكاسياً متكاملاً',
     icon: 'person-circle',
     color: '#1abc9c',
-    route: 'Report',
-    badge: '🧠 داخل التقرير',
+    route: 'ReflectiveReport',
   },
   {
     id: 'traditional',
@@ -85,7 +84,7 @@ export default function ProductPickerScreen({ navigation, route }: any) {
 
   const openProduct = (product: ProductCard) => {
     // ─── المنتجات التي تحتاج التقرير العميق (تحويل كامل) ───
-    if (product.id === 'psychology' || product.id === 'deep-dive') {
+    if (product.id === 'deep-dive') {
       if (!analysis) {
         navigation.navigate('Home');
         return;
@@ -154,7 +153,7 @@ export default function ProductPickerScreen({ navigation, route }: any) {
 
             <View style={styles.cardFooter}>
               <Text style={[styles.cardAction, { color: product.color }]}>
-                افتح →
+                ← افتح
               </Text>
             </View>
           </TouchableOpacity>

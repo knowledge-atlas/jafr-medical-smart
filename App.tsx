@@ -26,6 +26,7 @@ import CompareScreen from './src/screens/CompareScreen';
 import ConsentScreen from './src/screens/ConsentScreen';
 import TraditionalReportScreen from './src/screens/TraditionalReportScreen';
 import TraditionalTabScreen from './src/screens/TraditionalTabScreen';
+import ReflectiveReportScreen from './src/screens/ReflectiveReportScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -44,26 +45,30 @@ function MainTabs() {
           height: 62,
           paddingBottom: 8,
           paddingTop: 4,
+          flexDirection: 'row-reverse',
+        },
+        tabBarItemStyle: {
+          flexDirection: 'column',
         },
         tabBarActiveTintColor: '#d4af37',
         tabBarInactiveTintColor: '#666',
         tabBarLabelStyle: { fontSize: 10, fontWeight: 'bold' },
       }}
     >
-      <Tab.Screen name="HomeTab" component={HomeScreen}
-        options={{ title: 'الرئيسية', tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} /> }} />
-      <Tab.Screen name="SearchTab" component={SearchScreen}
-        options={{ title: 'البحث', tabBarIcon: ({ color, size }) => <Ionicons name="search" size={size} color={color} /> }} />
-      <Tab.Screen name="AssistantTab" component={AssistantScreen}
-        options={{ title: 'المساعد', tabBarIcon: ({ color, size }) => <Ionicons name="chatbubbles" size={size} color={color} /> }} />
-      <Tab.Screen name="TraditionalTab" component={TraditionalTabScreen}
-        options={{ title: 'التقليدي', tabBarIcon: ({ color, size }) => <Ionicons name="document-text" size={size} color={color} /> }} />
-      <Tab.Screen name="CompareTab" component={CompareScreen}
-        options={{ title: 'المقارنة', tabBarIcon: ({ color, size }) => <Ionicons name="git-compare" size={size} color={color} /> }} />
-      <Tab.Screen name="MedicalTab" component={MedicalScreen}
-        options={{ title: 'الطبية', tabBarIcon: ({ color, size }) => <Ionicons name="medkit" size={size} color={color} /> }} />
       <Tab.Screen name="SettingsTab" component={SettingsScreen}
         options={{ title: 'الإعدادات', tabBarIcon: ({ color, size }) => <Ionicons name="settings" size={size} color={color} /> }} />
+      <Tab.Screen name="MedicalTab" component={MedicalScreen}
+        options={{ title: 'الطبية', tabBarIcon: ({ color, size }) => <Ionicons name="medkit" size={size} color={color} /> }} />
+      <Tab.Screen name="CompareTab" component={CompareScreen}
+        options={{ title: 'المقارنة', tabBarIcon: ({ color, size }) => <Ionicons name="git-compare" size={size} color={color} /> }} />
+      <Tab.Screen name="TraditionalTab" component={TraditionalTabScreen}
+        options={{ title: 'التقليدي', tabBarIcon: ({ color, size }) => <Ionicons name="document-text" size={size} color={color} /> }} />
+      <Tab.Screen name="AssistantTab" component={AssistantScreen}
+        options={{ title: 'المساعد', tabBarIcon: ({ color, size }) => <Ionicons name="chatbubbles" size={size} color={color} /> }} />
+      <Tab.Screen name="SearchTab" component={SearchScreen}
+        options={{ title: 'البحث', tabBarIcon: ({ color, size }) => <Ionicons name="search" size={size} color={color} /> }} />
+      <Tab.Screen name="HomeTab" component={HomeScreen}
+        options={{ title: 'الرئيسية', tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} /> }} />
     </Tab.Navigator>
   );
 }
@@ -158,6 +163,7 @@ export default function App() {
         <Stack.Screen name="History" component={HistoryScreen} options={{ title: 'السجل' }} />
         <Stack.Screen name="EntityDetail" component={EntityDetailScreen} options={{ title: 'تفاصيل الكيان' }} />
         <Stack.Screen name="TraditionalReport" component={TraditionalReportScreen} options={{ title: '📜 التقرير التقليدي' }} />
+        <Stack.Screen name="ReflectiveReport" component={ReflectiveReportScreen} options={{ title: '🧠 الملف النفسي' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
