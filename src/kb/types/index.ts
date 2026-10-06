@@ -1,3 +1,5 @@
+import type { ProvenanceRecord, EvidenceLevel } from '../../domain/provenance/types';
+
 // ================================================================
 // أنواع قاعدة المعرفة
 // ================================================================
@@ -21,7 +23,11 @@ export type EntityType =
 export type SourceType = 'internal' | 'external';
 
 export interface KnowledgeEntity {
-  id: string;                       // مثال: "root_1"
+  id: string;
+  /** مستوى الدليل: A/B/C/D/E */
+  evidenceLevel?: EvidenceLevel;
+  /** تتبع المصدر الكامل */
+  provenance?: ProvenanceRecord;                       // مثال: "root_1"
   entityType: EntityType;
   entityNumber?: number;             // 1-9، 1-10، ...
   title: string;                     // الاسم المختصر
