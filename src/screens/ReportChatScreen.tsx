@@ -7,6 +7,7 @@ import { reportChat } from '../ai/ReportChat';
 import { llmBridge } from '../ai';
 import { LLMBridgeAdapter } from '../ai/LLMBridgeAdapter';
 import { ChatMessage } from '../ai/ReportChat';
+import { analytics } from '../utils/analytics';
 
 const SUGGESTED_QUESTIONS = [
   'اشرح لي جذري ببساطة',
@@ -50,6 +51,7 @@ export default function ReportChatScreen({ navigation }: any) {
   }, []);
 
   const send = async (text: string) => {
+    await analytics.trackAiChat();
     if (!text.trim() || loading) return;
     setInput('');
     setLoading(true);

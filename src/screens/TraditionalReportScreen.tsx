@@ -10,6 +10,7 @@ import { medicalFilter } from '../domain/services/MedicalFilter';
 import { parseReportToBlocks, ReportSection } from '../utils/reportBlocksParser';
 import { reorganizeReport } from '../utils/reportReorganizer';
 import BlockRenderer from '../components/report/BlockRenderer';
+import { analytics } from '../utils/analytics';
 
 export default function TraditionalReportScreen({ route, navigation }: any) {
   const { name } = route.params || {};
@@ -23,7 +24,7 @@ export default function TraditionalReportScreen({ route, navigation }: any) {
     generateReport();
   }, [name]);
 
-  const generateReport = () => {
+  const generateReport = async () => {
     if (!name) {
       setError('لم يتم استلام الاسم');
       setLoading(false);
@@ -51,6 +52,7 @@ export default function TraditionalReportScreen({ route, navigation }: any) {
       // ═══ إعادة الهندسة البصرية ═══
       const reorganized = reorganizeReport(filtered.text);
 
+      await analytics.trackReport();
       const parsed = parseReportToBlocks(reorganized);
       setSections(parsed);
 

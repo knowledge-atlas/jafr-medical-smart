@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { consentStorage } from './src/utils/consentStorage';
 import { analytics } from './src/utils/analytics';
+import { importExternalToKB } from './src/kb/importers/externalImporters';
 
 import HomeScreen from './src/screens/HomeScreen';
 import ReportScreen from './src/screens/ReportScreen';
@@ -30,6 +31,7 @@ import TraditionalTabScreen from './src/screens/TraditionalTabScreen';
 import ReflectiveReportScreen from './src/screens/ReflectiveReportScreen';
 import ErrorLogScreen from './src/screens/ErrorLogScreen';
 import HealthScreen from './src/screens/HealthScreen';
+import OnboardingScreen, { ONBOARDING_STORAGE_KEY } from './src/screens/OnboardingScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
 
 const Stack = createStackNavigator();
@@ -79,6 +81,7 @@ function MainTabs() {
 
 export default function App() {
   const [consented, setConsented] = useState<boolean | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
   const [kbReady, setKbReady] = useState(false);
 
   // ═══ 1) فحص حالة الموافقة + بدء التهيئة الخفيفة ═══
@@ -88,6 +91,8 @@ export default function App() {
       console.log('⏱️ START bootstrap');
 
       await analytics.trackLaunch();
+      const ob = await AsyncStorage.getItem(ONBOARDING_STORAGE_KEY);
+      setShowOnboarding(ob !== 'true');
       const stored = await consentStorage.get();
       console.log(`⏱️ consent check: ${Date.now() - t0}ms`);
       setConsented(stored === 'accepted');
@@ -105,6 +110,7 @@ export default function App() {
           if (stats.totalEntities === 0) {
             const tImp = Date.now();
             await importAll();
+            importExternalToKB(KnowledgeBase);
             console.log(`⏱️ KB importAll: ${Date.now() - tImp}ms`);
           }
           setKbReady(true);
@@ -129,7 +135,11 @@ export default function App() {
     setConsented(false);
   }, []);
 
-  if (consented === null) {
+  if (showOnboarding === true) {
+    return <OnboardingScreen onDone={() => setShowOnboarding(false)} />;
+  }
+
+  if (consented === null || showOnboarding === null) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#d4af37" />

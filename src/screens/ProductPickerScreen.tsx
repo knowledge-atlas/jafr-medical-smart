@@ -5,6 +5,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { analysisToLegacyReport } from '../application/di';
 import { DeepDiveReport } from '../products/DeepDiveReport';
+import { analytics } from '../utils/analytics';
 import { reportChat } from '../ai/ReportChat';
 import { ContextMode } from '../ai/ContextAwarePrompter';
 
@@ -82,7 +83,9 @@ const PRODUCTS: ProductCard[] = [
 export default function ProductPickerScreen({ navigation, route }: any) {
   const { analysis, name, mode } = route.params || {};
 
-  const openProduct = (product: ProductCard) => {
+  const openProduct = async (product: ProductCard) => {
+    await analytics.trackProduct(product.id);
+    if (product.id === 'deep-dive' || product.id === 'psychology') await analytics.trackReport();
     // ─── المنتجات التي تحتاج التقرير العميق (تحويل كامل) ───
     if (product.id === 'deep-dive') {
       if (!analysis) {

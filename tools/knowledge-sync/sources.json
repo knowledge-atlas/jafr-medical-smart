@@ -1,0 +1,88 @@
+{
+  "outputFile": "src/data/external/entities.json",
+  "rateLimitMs": 800,
+  "sources": [
+    {
+      "id": "wiki-demo",
+      "type": "wikipedia",
+      "enabled": true,
+      "queries": [
+        {
+          "entityType": "planet",
+          "entityNumber": 6,
+          "titleAr": "زحل",
+          "searchTerm": "زحل",
+          "keywords": [
+            "زحل",
+            "كوكب",
+            "فلك"
+          ]
+        },
+        {
+          "entityType": "sign",
+          "entityNumber": 1,
+          "titleAr": "برج الحمل",
+          "searchTerm": "الحمل (كوكبة)",
+          "keywords": [
+            "حمل",
+            "برج",
+            "فلك"
+          ]
+        },
+        {
+          "entityType": "sign",
+          "entityNumber": 2,
+          "titleAr": "برج الثور",
+          "searchTerm": "الثور (كوكبة)",
+          "keywords": [
+            "ثور",
+            "برج",
+            "فلك"
+          ]
+        },
+        {
+          "entityType": "planet",
+          "entityNumber": 4,
+          "titleAr": "المريخ",
+          "searchTerm": "المريخ",
+          "keywords": [
+            "مريخ",
+            "كوكب",
+            "فلك"
+          ]
+        },
+        {
+          "entityType": "planet",
+          "entityNumber": 5,
+          "titleAr": "المشتري",
+          "searchTerm": "المشتري",
+          "keywords": [
+            "مشتري",
+            "كوكب",
+            "فلك"
+          ]
+        },
+        {
+          "entityType": "planet",
+          "entityNumber": 2,
+          "titleAr": "القمر",
+          "searchTerm": "القمر",
+          "keywords": [
+            "قمر",
+            "فلك"
+          ]
+        },
+        {
+          "entityType": "planet",
+          "entityNumber": 1,
+          "titleAr": "الشمس",
+          "searchTerm": "الشمس",
+          "keywords": [
+            "شمس",
+            "فلك"
+          ]
+        }
+      ]
+    }
+  ]
+}
