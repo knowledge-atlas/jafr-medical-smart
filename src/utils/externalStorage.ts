@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { EvidenceLevel } from '../domain/provenance/types';
 
 const KEY = 'user_external_entities_v1';
 
@@ -13,6 +14,7 @@ export interface SourceInfo {
 
 export interface UserEntity {
   id: string;
+  evidenceLevel?: EvidenceLevel;
   entityType: string;
   entityNumber?: number;
   titleAr: string;

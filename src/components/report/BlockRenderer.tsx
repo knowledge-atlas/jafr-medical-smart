@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { ReportBlock } from '../../utils/reportBlocksParser';
+import ProvenanceBadge from './ProvenanceBadge';
+import type { EvidenceLevel } from '../../domain/provenance/types';
 
 // ═══════════════════════════════════════════════════════════
 // Strip Markdown bold/italic markers — لأن BlockRenderer لا يفهمها
@@ -121,7 +123,12 @@ function BoxBlock({ block }: { block: Extract<ReportBlock, { type: 'box' }> }) {
     <View style={styles.box}>
       {block.title && (
         <View style={styles.boxHeader}>
-          <Text style={styles.boxTitle}>{stripMd(block.title)}</Text>
+          <View style={{ flexDirection: 'row-reverse', alignItems: 'center', gap: 8, flex: 1 }}>
+            {(block as any).evidenceLevel ? (
+              <ProvenanceBadge level={(block as any).evidenceLevel as EvidenceLevel} compact />
+            ) : null}
+            <Text style={styles.boxTitle}>{stripMd(block.title)}</Text>
+          </View>
         </View>
       )}
       {block.rows.map(([key, value], i) => (

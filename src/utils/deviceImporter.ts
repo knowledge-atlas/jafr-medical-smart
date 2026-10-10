@@ -85,6 +85,7 @@ export function parseJsonContent(raw: string, sourceFile: string): UserEntity[] 
     out.push({
       id,
       entityType,
+      evidenceLevel: classifyEvidenceLevel(entityType, sourceFile),
       entityNumber: typeof it.entityNumber === 'number' ? it.entityNumber : undefined,
       titleAr: titleAr || `مقتطف من ${sourceFile}`,
       fullText,
@@ -193,6 +194,7 @@ export function parseTextContent(raw: string, sourceFile: string): UserEntity[] 
     }
 
     return {
+      evidenceLevel: classifyEvidenceLevel('custom', sourceFile),
       id: `usr_txt_${shortHash(`${sourceFile}_${i}_${chunk.slice(0, 60)}`)}`,
       entityType: detected.entityType,
       entityNumber: detected.entityNumber,
@@ -208,6 +210,26 @@ export function parseTextContent(raw: string, sourceFile: string): UserEntity[] 
 // ═══════════════════════════════════════════════════════════
 // autoParse — يكتشف النوع ويحلل
 // ═══════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════
+// classifyEvidenceLevel — يصنّف كل كيان مستورد تلقائياً
+// ═══════════════════════════════════════════════════════════
+function classifyEvidenceLevel(entityType: string, sourceFile: string): 'A' | 'B' | 'C' | 'D' | 'E' {
+  const sf = sourceFile.toLowerCase();
+
+  // Wikipedia أو ملفات علمية → B (تاريخي)
+  if (sf.includes('wiki') || sf.includes('wikipedia')) return 'B';
+
+  // ملفات تراثية (بوني، موسوعة، جفر) → C (تراثي)
+  if (sf.includes('buni') || sf.includes('jafr') || sf.includes('encyclopedia')) return 'C';
+
+  // ملفات طبية → E (فرضي)
+  if (entityType === 'medical' || entityType === 'remedy') return 'E';
+
+  // الافتراضي: C (تراثي — نحن نتعامل مع مصادر تراثية)
+  return 'C';
+}
+
 export function autoParse(raw: string, sourceFile: string): {
   entities: UserEntity[];
   format: 'json' | 'text';

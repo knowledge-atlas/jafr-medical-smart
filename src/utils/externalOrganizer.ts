@@ -192,6 +192,7 @@ export function buildOrganizedBlocks(
       blocks.push({
         type: 'box',
         title: `📄 ${i + 1}. ${e.titleAr}`,
+        evidenceLevel: (e as any).evidenceLevel,
         rows: metaRows,
       });
 
