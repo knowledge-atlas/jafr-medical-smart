@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -57,30 +57,36 @@ function MainTabs() {
           paddingTop: 4,
           flexDirection: 'row-reverse',
         },
-        tabBarItemStyle: {
-          flexDirection: 'column',
-        },
+        tabBarItemStyle: { flexDirection: 'column' },
         tabBarActiveTintColor: '#d4af37',
         tabBarInactiveTintColor: '#666',
         tabBarLabelStyle: { fontSize: 10, fontWeight: 'bold' },
       }}
     >
-      <Tab.Screen name="SettingsTab" component={SettingsScreen}
-        options={{ title: 'الإعدادات', tabBarIcon: ({ color, size }) => <Ionicons name="settings" size={size} color={color} /> }} />
-      {FLAGS.MEDICAL_MODULE && (
-        <Tab.Screen name="MedicalTab" component={MedicalScreen}
-          options={{ title: 'الطبية', tabBarIcon: ({ color, size }) => <Ionicons name="medkit" size={size} color={color} /> }} />
-      )}
-      <Tab.Screen name="CompareTab" component={CompareScreen}
-        options={{ title: 'المقارنة', tabBarIcon: ({ color, size }) => <Ionicons name="git-compare" size={size} color={color} /> }} />
-      <Tab.Screen name="TraditionalTab" component={TraditionalTabScreen}
-        options={{ title: 'التقليدي', tabBarIcon: ({ color, size }) => <Ionicons name="document-text" size={size} color={color} /> }} />
-      <Tab.Screen name="AssistantTab" component={AssistantScreen}
-        options={{ title: 'المساعد', tabBarIcon: ({ color, size }) => <Ionicons name="chatbubbles" size={size} color={color} /> }} />
-      <Tab.Screen name="SearchTab" component={SearchScreen}
-        options={{ title: 'البحث', tabBarIcon: ({ color, size }) => <Ionicons name="search" size={size} color={color} /> }} />
-      <Tab.Screen name="HomeTab" component={HomeScreen}
-        options={{ title: 'الرئيسية', tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} /> }} />
+      <Tab.Screen
+        name="HomeTab"
+        component={HomeScreen}
+        options={{
+          title: 'تحليل',
+          tabBarIcon: ({ color, size }) => <Ionicons name="analytics-outline" size={size} color={color} />,
+        }}
+      />
+      <Tab.Screen
+        name="LibraryTab"
+        component={SearchScreen}
+        options={{
+          title: 'مكتبة',
+          tabBarIcon: ({ color, size }) => <Ionicons name="library-outline" size={size} color={color} />,
+        }}
+      />
+      <Tab.Screen
+        name="ResultsTab"
+        component={HistoryScreen}
+        options={{
+          title: 'نتائجي',
+          tabBarIcon: ({ color, size }) => <Ionicons name="albums-outline" size={size} color={color} />,
+        }}
+      />
     </Tab.Navigator>
   );
 }
@@ -167,12 +173,20 @@ export default function App() {
     <ErrorBoundary>
       <NavigationContainer>
       <Stack.Navigator
-        screenOptions={{
+        screenOptions={({ navigation }) => ({
           headerStyle: { backgroundColor: '#1a3b5d' },
           headerTintColor: '#ffffff',
           headerTitleStyle: { fontWeight: 'bold' },
           headerTitleAlign: 'center',
-        }}
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Settings')}
+              style={{ paddingHorizontal: 12 }}
+            >
+              <Ionicons name="settings-outline" size={22} color="#d4af37" />
+            </TouchableOpacity>
+          ),
+        })}
       >
         <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
         <Stack.Screen name="Report" component={ReportScreen} options={{ title: 'التقرير' }} />
@@ -183,6 +197,10 @@ export default function App() {
         <Stack.Screen name="Temporal" component={TemporalScreen} options={{ title: 'التقويم الزمني' }} />
         <Stack.Screen name="Remedy" component={RemedyScreen} options={{ title: 'متتبع الالتزام' }} />
         <Stack.Screen name="History" component={HistoryScreen} options={{ title: 'السجل' }} />
+        <Stack.Screen name="Assistant" component={AssistantScreen} options={{ title: 'المساعد' }} />
+        <Stack.Screen name="TraditionalTab" component={TraditionalTabScreen} options={{ title: 'التقليدي' }} />
+        <Stack.Screen name="Compare" component={CompareScreen} options={{ title: 'المقارنة' }} />
+        <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'الإعدادات' }} />
         <Stack.Screen name="EntityDetail" component={EntityDetailScreen} options={{ title: 'تفاصيل الكيان' }} />
         <Stack.Screen name="TraditionalReport" component={TraditionalReportScreen} options={{ title: '📜 التقرير التقليدي' }} />
         <Stack.Screen name="ReflectiveReport" component={ReflectiveReportScreen} options={{ title: '🧠 الملف النفسي' }} />
