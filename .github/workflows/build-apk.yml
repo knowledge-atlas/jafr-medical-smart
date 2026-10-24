@@ -1,7 +1,7 @@
 name: Build APK
 on:
   push:
-    branches: [main]
+    branches: [main, invest-v3.1.0]
   workflow_dispatch:
 
 jobs:
