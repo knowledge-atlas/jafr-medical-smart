@@ -11,6 +11,7 @@ import { analytics } from './src/utils/analytics';
 import { FLAGS } from './src/config/featureFlags';
 import ComingSoonScreen from './src/screens/ComingSoonScreen';
 import AboutScreen from './src/screens/AboutScreen';
+import LegalScreen from './src/screens/LegalScreen';
 import { importExternalToKB } from './src/kb/importers/externalImporters';
 
 import HomeScreen from './src/screens/HomeScreen';
@@ -210,6 +211,7 @@ export default function App() {
         <Stack.Screen name="ExternalKnowledge" component={ExternalKnowledgeScreen} options={{ title: '📚 المعرفة الخارجية' }} />
         <Stack.Screen name="ComingSoon" component={ComingSoonScreen} options={{ title: '🔮 قريباً' }} />
         <Stack.Screen name="About" component={AboutScreen} options={{ title: 'عن التطبيق' }} />
+        <Stack.Screen name="Legal" component={LegalScreen} options={{ title: 'وثائق قانونية' }} />
         <Stack.Screen name="ImportExternal" component={ImportExternalScreen} options={{ title: '📥 استيراد ملف' }} />
       </Stack.Navigator>
       </NavigationContainer>

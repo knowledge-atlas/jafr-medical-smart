@@ -55,6 +55,23 @@ export default function AboutScreen({ navigation }: any) {
         </Text>
       </View>
 
+      {/* روابط قانونية */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>📄 وثائق قانونية</Text>
+        <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Legal', { doc: 'privacy' })}>
+          <Ionicons name="shield-checkmark-outline" size={18} color="#d4af37" />
+          <Text style={styles.linkText}> سياسة الخصوصية</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Legal', { doc: 'terms' })}>
+          <Ionicons name="document-text-outline" size={18} color="#d4af37" />
+          <Text style={styles.linkText}> شروط الخدمة</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Legal', { doc: 'license' })}>
+          <Ionicons name="lock-closed-outline" size={18} color="#d4af37" />
+          <Text style={styles.linkText}> الترخيص</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* معلومات تقنية */}
       <View style={styles.techBox}>
         <Text style={styles.techTitle}>🔧 معلومات تقنية</Text>
@@ -107,6 +124,9 @@ const styles = StyleSheet.create({
   warningBox: { backgroundColor: '#2c1a1a', borderRadius: 10, padding: 14, marginBottom: 14, borderWidth: 1, borderColor: '#e67e22' },
   warningTitle: { color: '#e67e22', fontSize: 14, fontWeight: 'bold', marginBottom: 8, textAlign: 'right', writingDirection: 'rtl' },
   warningBody: { color: '#e8e8e8', fontSize: 12, lineHeight: 20, textAlign: 'right', writingDirection: 'rtl' },
+
+  linkRow: { flexDirection: 'row-reverse', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#1a3b5d', gap: 8 },
+  linkText: { color: '#e8e8e8', fontSize: 13, writingDirection: 'rtl' },
 
   techBox: { backgroundColor: '#0f2438', borderRadius: 10, padding: 14, borderWidth: 1, borderColor: '#2c5070' },
   techTitle: { color: '#d4af37', fontSize: 14, fontWeight: 'bold', marginBottom: 10, textAlign: 'right', writingDirection: 'rtl' },
