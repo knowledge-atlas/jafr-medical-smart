@@ -25,7 +25,7 @@ Offline-first analytical system: deep reports, resonance, optional AI
 
 **العربية:**
 
-### 🌟 مرحباً بك في KnowledgeAtlas Sovereign
+### 🌟 مرحباً بك في الجفر الطبي الذكي — الأنوَمي
 
 نظام تشغيل معرفي سيادي يحوّل بيانات موسوعية تراثية إلى **تحليلاً عميقاً** يعمل بدون إنترنت.
 
@@ -82,7 +82,7 @@ Offline-first analytical system: deep reports, resonance, optional AI
 
 **English:**
 
-### 🌟 Welcome to KnowledgeAtlas Sovereign
+### 🌟 Welcome to الجفر الطبي الذكي — الأنوَمي
 
 A sovereign knowledge operating system that transforms traditional encyclopedia data into **deep analysis** that works without internet.
 
@@ -132,7 +132,7 @@ jafr, name analysis, astrology, numerology, self-development, personality analys
 
 ## 🎨 Feature Graphic (1024×500)
 
-**المقترح:** شعار التطبيق + عنوان "KnowledgeAtlas Sovereign" + خلفية ذهبية/كحلية
+**المقترح:** شعار التطبيق + عنوان "الجفر الطبي الذكي — الأنوَمي" + خلفية ذهبية/كحلية
 
 ---
 
@@ -198,7 +198,7 @@ Offline-first analytical system: deep reports, resonance, optional AI
 
 **العربية:**
 
-### 🌟 مرحباً بك في KnowledgeAtlas Sovereign
+### 🌟 مرحباً بك في الجفر الطبي الذكي — الأنوَمي
 
 نظام تشغيل معرفي سيادي يحوّل بيانات موسوعية تراثية إلى **تحليلاً عميقاً** يعمل بدون إنترنت.
 
@@ -255,7 +255,7 @@ Offline-first analytical system: deep reports, resonance, optional AI
 
 **English:**
 
-### 🌟 Welcome to KnowledgeAtlas Sovereign
+### 🌟 Welcome to الجفر الطبي الذكي — الأنوَمي
 
 A sovereign knowledge operating system that transforms traditional encyclopedia data into **deep analysis** that works without internet.
 
@@ -305,7 +305,7 @@ jafr, name analysis, astrology, numerology, self-development, personality analys
 
 ## 🎨 Feature Graphic (1024×500)
 
-**المقترح:** شعار التطبيق + عنوان "KnowledgeAtlas Sovereign" + خلفية ذهبية/كحلية
+**المقترح:** شعار التطبيق + عنوان "الجفر الطبي الذكي — الأنوَمي" + خلفية ذهبية/كحلية
 
 ---
 

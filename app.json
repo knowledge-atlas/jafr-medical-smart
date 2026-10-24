@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "الجفر الطبي الذكي",
-    "slug": "jafr-medical-smart",
+    "name": "الجفر الطبي الذكي — الأنوَمي",
+    "slug": "jafr-ahnomy",
     "version": "3.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,12 +13,12 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.jafr.medical.smart.v3",
+      "bundleIdentifier": "com.ahnomy.jafr",
       "buildNumber": "3"
     },
     "android": {
-      "package": "com.jafr.medical.smart.v3",
-      "versionCode": 3,
+      "package": "com.ahnomy.jafr",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0a1628"
@@ -43,7 +43,11 @@
     "extra": {
       "eas": {
         "projectId": "2ec2fcee-238f-4cdc-8ae5-b6e24a2037d6"
-      }
-    }
+      },
+      "ownerName": "محمد الاهنومي",
+      "ownerNameEn": "Mohammed Al-Ahnomy",
+      "brandShort": "الجفر الطبي الذكي"
+    },
+    "owner": "محمد الاهنومي"
   }
 }

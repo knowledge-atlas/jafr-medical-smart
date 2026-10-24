@@ -161,14 +161,14 @@ export default function HomeScreen({ navigation }: any) {
       <View style={styles.shortcutsRow}>
         <TouchableOpacity
           style={styles.shortcut}
-          onPress={() => navigation.navigate('Main', { screen: 'SearchTab' })}
+          onPress={() => navigation.navigate('Main', { screen: 'LibraryTab' })}
         >
           <Text style={styles.shortcutIcon}>📖</Text>
           <Text style={styles.shortcutLabel}>البحث</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.shortcut}
-          onPress={() => navigation.navigate('Main', { screen: 'CompareTab' })}
+          onPress={() => navigation.navigate('Compare')}
         >
           <Text style={styles.shortcutIcon}>💞</Text>
           <Text style={styles.shortcutLabel}>قارن</Text>
@@ -182,7 +182,7 @@ export default function HomeScreen({ navigation }: any) {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.shortcut}
-          onPress={() => navigation.navigate('Main', { screen: 'SettingsTab' })}
+          onPress={() => navigation.navigate('Settings')}
         >
           <Text style={styles.shortcutIcon}>⚙️</Text>
           <Text style={styles.shortcutLabel}>الإعدادات</Text>
