@@ -8,6 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { consentStorage } from './src/utils/consentStorage';
 import { analytics } from './src/utils/analytics';
+import { FLAGS } from './src/config/featureFlags';
+import ComingSoonScreen from './src/screens/ComingSoonScreen';
 import { importExternalToKB } from './src/kb/importers/externalImporters';
 
 import HomeScreen from './src/screens/HomeScreen';
@@ -65,8 +67,10 @@ function MainTabs() {
     >
       <Tab.Screen name="SettingsTab" component={SettingsScreen}
         options={{ title: 'الإعدادات', tabBarIcon: ({ color, size }) => <Ionicons name="settings" size={size} color={color} /> }} />
-      <Tab.Screen name="MedicalTab" component={MedicalScreen}
-        options={{ title: 'الطبية', tabBarIcon: ({ color, size }) => <Ionicons name="medkit" size={size} color={color} /> }} />
+      {FLAGS.MEDICAL_MODULE && (
+        <Tab.Screen name="MedicalTab" component={MedicalScreen}
+          options={{ title: 'الطبية', tabBarIcon: ({ color, size }) => <Ionicons name="medkit" size={size} color={color} /> }} />
+      )}
       <Tab.Screen name="CompareTab" component={CompareScreen}
         options={{ title: 'المقارنة', tabBarIcon: ({ color, size }) => <Ionicons name="git-compare" size={size} color={color} /> }} />
       <Tab.Screen name="TraditionalTab" component={TraditionalTabScreen}
@@ -185,6 +189,7 @@ export default function App() {
         <Stack.Screen name="ErrorLog" component={ErrorLogScreen} options={{ title: '🔴 سجل الأخطاء' }} />
         <Stack.Screen name="Health" component={HealthScreen} options={{ title: '📊 صحة التطبيق' }} />
         <Stack.Screen name="ExternalKnowledge" component={ExternalKnowledgeScreen} options={{ title: '📚 المعرفة الخارجية' }} />
+        <Stack.Screen name="ComingSoon" component={ComingSoonScreen} options={{ title: '🔮 قريباً' }} />
         <Stack.Screen name="ImportExternal" component={ImportExternalScreen} options={{ title: '📥 استيراد ملف' }} />
       </Stack.Navigator>
       </NavigationContainer>
