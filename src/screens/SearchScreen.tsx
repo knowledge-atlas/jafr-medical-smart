@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { KnowledgeBase } from '../kb';
 import { SearchResult, EntityType, SourceType } from '../kb/types';
+import { FLAGS } from '../config/featureFlags';
 
 const ENTITY_LABELS: Record<string, string> = {
   root: '🔷 جذور',
@@ -61,7 +62,14 @@ export default function SearchScreen({ navigation }: any) {
         options.entityTypes = [filter];
       }
       const res = KnowledgeBase.searchQuery(q, options);
-      setResults(res);
+      // فلترة المحتوى الطبي إذا كان معطلاً
+      const filtered = FLAGS.MEDICAL_MODULE
+        ? res
+        : res.filter((r: any) => {
+            const et = r.entity?.entityType ?? r.entityType;
+            return et !== 'medical' && et !== 'remedy';
+          });
+      setResults(filtered);
       setHasSearched(true);
     } finally {
       setLoading(false);

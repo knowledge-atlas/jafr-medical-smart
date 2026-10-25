@@ -18,7 +18,10 @@ export default function ReportScreen({ route, navigation }: any) {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    if (report) autoSave();
+    // لا نحفظ تلقائياً إذا كان التقرير مفتوحاً من السجل
+    if (report && !readOnly && !reportId) {
+      void autoSave();
+    }
   }, []);
 
   const autoSave = async () => {

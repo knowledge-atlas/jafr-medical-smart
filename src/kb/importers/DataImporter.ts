@@ -3,6 +3,7 @@
 // ================================================================
 
 import { KnowledgeBase } from '../KnowledgeBase';
+import { FLAGS } from '../../config/featureFlags';
 import {
   importRoots, importPlanets, importSigns, importHouses,
   importElements, importLetters, importRemainders,
@@ -47,9 +48,9 @@ export const importAll = async (): Promise<void> => {
 
   // 3. الطب التكاملي
   console.log('   ⏳ الجذور الطبية...');
-  KnowledgeBase.importEntities(importMedicalRoots());
+  if (FLAGS.MEDICAL_MODULE) KnowledgeBase.importEntities(importMedicalRoots());
   console.log('   ⏳ البواقي الطبية...');
-  KnowledgeBase.importEntities(importMedicalRemainders());
+  if (FLAGS.MEDICAL_MODULE) KnowledgeBase.importEntities(importMedicalRemainders());
 
   // 4. ⭐ العلاقات (مهم!)
   console.log('   ⏳ العلاقات...');

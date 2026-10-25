@@ -42,6 +42,8 @@ export default function HistoryScreen({ navigation }: any) {
     navigation.navigate('Report', {
       report: report.report,
       name: report.name,
+      reportId: report.id,
+      readOnly: true,
     });
   };
 
