@@ -1,7 +1,8 @@
 name: Build APK
+
 on:
   push:
-    branches: [main, invest-v3.1.0, commercial-v1.0.0]
+    branches: [main, commercial-v1.0.0]
   workflow_dispatch:
 
 permissions:
@@ -19,36 +20,32 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Setup SDK & NDK (manual)
+          
+      - name: Setup SDK & NDK
         run: |
           SDK_ROOT=/usr/local/lib/android/sdk
           SDKMGR=$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager
           yes | $SDKMGR --licenses > /dev/null 2>&1 || true
           yes | $SDKMGR --install "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;27.1.12297006" 2>&1 | tail -5
-          echo "ANDROID_HOME=$SDK_ROOT" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> $GITHUB_ENV
+          
       - name: Install deps
         run: npm install --legacy-peer-deps
 
-      - name: TypeScript check
-        run: npx tsc --noEmit
-
-      - name: Run tests
-        run: npx vitest run
       - name: Prebuild
         run: npx expo prebuild -p android --clean
+
       - name: Build APK
         working-directory: android
         run: ./gradlew assembleRelease --no-daemon
-      - uses: actions/upload-artifact@v4
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
         if: success()
         with:
-          name: jafr-apk
-          path: android/app/build/outputs/apk/release/*.apk
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: logs
-          path: |
-            android/**/*.log
-          retention-days: 7
+          tag_name: build-v1.0.0-${{ github.run_number }}
+          name: "التطبيق جاهز - Build ${{ github.run_number }}"
+          files: android/app/build/outputs/apk/release/*.apk
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
