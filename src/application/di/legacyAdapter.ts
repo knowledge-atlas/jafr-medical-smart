@@ -1,3 +1,4 @@
+import { calculateAbjad } from '../../engine/abjad';
 import { AnalysisResult } from '../use-cases/AnalyzeNameUseCase';
 import { DeepDiveOutput } from '../../products/DeepDiveReport';
 
@@ -30,7 +31,7 @@ export function analysisToLegacyReport(
     internalSign: L.sign ?? '',
     internalElement: L.element ?? '',
     internalHouse: numOf(L.house) ?? 1,
-    calculation: { total: 0 },
+    calculation: { total: calculateAbjad((analysis as any).name ?? '').total },
     fullReport: deepDive.markdown,
     markdown: deepDive.markdown,
     productId: deepDive.meta.productId,

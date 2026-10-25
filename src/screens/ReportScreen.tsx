@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { freeTrial } from '../monetization/freeTrial';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity, Share,
   Alert, ActivityIndicator,
@@ -10,7 +11,8 @@ import ElementsRadarChart from '../components/ElementsRadarChart';
 import { computeElementBalance } from '../products/DeepDiveReport';
 
 export default function ReportScreen({ route, navigation }: any) {
-  const { report, name, layers } = route.params || {};
+  const { report, name, layers, reportId, readOnly } = route.params || {};
+  const savedReportId = (report as any)?.__reportId;
 
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -71,12 +73,25 @@ export default function ReportScreen({ route, navigation }: any) {
   };
 
   const deleteReport = () => {
-    Alert.alert('حذف التقرير', 'هل أنت متأكد؟', [
+    Alert.alert('حذف التقرير', 'هل أنت متأكد؟ لا يمكن التراجع.', [
       { text: 'إلغاء', style: 'cancel' },
       {
-        text: 'حذف',
+        text: 'حذف نهائي',
         style: 'destructive',
-        onPress: () => navigation.goBack(),
+        onPress: async () => {
+          try {
+            const rid = reportId ?? savedReportId;
+            if (rid) {
+              await reportsStorage.delete(rid);
+              Alert.alert('✅', 'تم الحذف');
+              navigation.goBack();
+            } else {
+              Alert.alert('تنبيه', 'لم يتم العثور على معرّف التقرير');
+            }
+          } catch (e: any) {
+            Alert.alert('خطأ', e?.message ?? 'فشل الحذف');
+          }
+        },
       },
     ]);
   };
@@ -109,11 +124,35 @@ export default function ReportScreen({ route, navigation }: any) {
           {saved && <Text style={styles.savedBadge}>💾 محفوظ</Text>}
         </View>
         <View style={styles.topBarActions}>
-          <TouchableOpacity style={styles.actionBtn} onPress={copyReport}>
-            <Text style={styles.actionBtnText}>📋 نسخ</Text>
+          <TouchableOpacity
+            style={[styles.actionBtn, { opacity: 0.6 }]}
+            onPress={() => {
+              Alert.alert(
+                '💎 النسخة الكاملة',
+                'النسخ متاح في النسخة الكاملة.\n\nالتجربة المجانية تقتصر على عرض 3 تقارير كاملة.',
+                [
+                  { text: 'حسناً', style: 'cancel' },
+                  { text: 'اعرف المزيد', onPress: () => navigation.navigate('Paywall') },
+                ]
+              );
+            }}
+          >
+            <Text style={styles.actionBtnText}>🔒 نسخ</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn} onPress={shareReport}>
-            <Text style={styles.actionBtnText}>📤 مشاركة</Text>
+          <TouchableOpacity
+            style={[styles.actionBtn, { opacity: 0.6 }]}
+            onPress={() => {
+              Alert.alert(
+                '💎 النسخة الكاملة',
+                'المشاركة متاحة في النسخة الكاملة.',
+                [
+                  { text: 'حسناً', style: 'cancel' },
+                  { text: 'اعرف المزيد', onPress: () => navigation.navigate('Paywall') },
+                ]
+              );
+            }}
+          >
+            <Text style={styles.actionBtnText}>🔒 مشاركة</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionBtn, styles.askBtn]}

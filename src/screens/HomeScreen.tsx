@@ -6,6 +6,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { reportsStorage, SavedReport } from '../storage/reportsStorage';
 import { analyzeName } from '../application/di';
+import { freeTrial } from '../monetization/freeTrial';
 import { ContextMode } from '../ai/ContextAwarePrompter';
 
 const MODES: Array<{ id: ContextMode; label: string; icon: string }> = [
@@ -42,16 +43,35 @@ export default function HomeScreen({ navigation }: any) {
     }
   };
 
-  const analyze = () => {
+  const analyze = async () => {
     if (!name.trim()) {
       Alert.alert('تنبيه', 'أدخل اسمك أولاً');
       return;
     }
+
+    // ═══ فحص التجربة المجانية ═══
+    const canAnalyze = await freeTrial.canAnalyze();
+    if (!canAnalyze) {
+      Alert.alert(
+        '✨ تجربتك المجانية انتهت',
+        'استخدمت 3 تحليلات مجانية كاملة.\n\nالنسخة الكاملة قادمة قريباً — تحليلات غير محدودة ونسخ ومشاركة.',
+        [
+          { text: 'حسناً', style: 'cancel' },
+          { text: 'اعرف المزيد', onPress: () => navigation.navigate('Paywall') },
+        ]
+      );
+      return;
+    }
+
     const analysis = analyzeName.execute({ name: name.trim() });
     if (analysis.status === 'abstained') {
       Alert.alert('تنبيه', analysis.report);
       return;
     }
+
+    // ═══ تسجيل الاستخدام ═══
+    await freeTrial.recordAnalysis();
+
     navigation.navigate('ProductPicker', {
       analysis,
       name: name.trim(),
@@ -78,8 +98,8 @@ export default function HomeScreen({ navigation }: any) {
       {/* ═══ Hero ═══ */}
       <View style={styles.hero}>
         <Text style={styles.heroEmoji}>🪞</Text>
-        <Text style={styles.heroTitle}>KnowledgeAtlas Sovereign</Text>
-        <Text style={styles.heroSubtitle}>ميزان المرآة الذكي · v1.0</Text>
+        <Text style={styles.heroTitle}>الجفر التراثي الذكي</Text>
+        <Text style={styles.heroSubtitle}>الجفر التراثي الذكي · v1.0.0</Text>
       </View>
 
       {/* ═══ Dashboard مصغّر ═══ */}
@@ -189,7 +209,7 @@ export default function HomeScreen({ navigation }: any) {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.footer}>© 2026 — KnowledgeAtlas Sovereign</Text>
+      <Text style={styles.footer}>© 2026 — الجفر التراثي الذكي</Text>
     </ScrollView>
   );
 }

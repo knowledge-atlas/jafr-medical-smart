@@ -8,21 +8,20 @@ export default function AboutScreen({ navigation }: any) {
       {/* Hero */}
       <View style={styles.hero}>
         <Text style={styles.heroIcon}>🔮</Text>
-        <Text style={styles.heroTitle}>الجفر الطبي الذكي</Text>
-        <Text style={styles.heroVersion}>الإصدار 3.1.0</Text>
+        <Text style={styles.heroTitle}>الجفر التراثي الذكي</Text>
+        <Text style={styles.heroVersion}>الإصدار 1.0.0</Text>
         <Text style={styles.heroTagline}>مرآة للتأمل الذاتي، لا قاضٍ</Text>
       </View>
 
       {/* بطاقة المطور */}
       <View style={styles.devCard}>
         <View style={styles.devHeader}>
-          <Ionicons name="person-circle-outline" size={32} color="#d4af37" />
-          <Text style={styles.devLabel}>جهة التطوير</Text>
+          <Ionicons name="mail-outline" size={32} color="#d4af37" />
+          <Text style={styles.devLabel}>للتواصل</Text>
         </View>
-        <Text style={styles.devName}>محمد الاهنومي</Text>
-        <Text style={styles.devRole}>مؤسس · مهندس المنتج</Text>
+        <Text style={styles.devEmail}>mohammedhnomi95@gmail.com</Text>
         <Text style={styles.devBio}>
-          تطبيق معرفي تراثي للتحليل الرمزي — تأمل ذاتي وليس تشخيصاً طبياً.
+          تطبيق معرفي تراثي للتحليل الرمزي — تأمل ذاتي وليس تشخيصاً.
         </Text>
       </View>
 
@@ -81,7 +80,7 @@ export default function AboutScreen({ navigation }: any) {
         </View>
         <View style={styles.techRow}>
           <Text style={styles.techLabel}>المعرف</Text>
-          <Text style={styles.techValue}>com.ahnomy.jafr</Text>
+          <Text style={styles.techValue}>com.ahnomy.heritage</Text>
         </View>
         <View style={styles.techRow}>
           <Text style={styles.techLabel}>المحرك</Text>
@@ -109,6 +108,7 @@ const styles = StyleSheet.create({
   devCard: { backgroundColor: '#0f2438', borderRadius: 14, padding: 20, marginBottom: 16, borderWidth: 2, borderColor: '#d4af37', alignItems: 'center' },
   devHeader: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, marginBottom: 12 },
   devLabel: { color: '#a0a0a0', fontSize: 12, fontWeight: 'bold' },
+  devEmail: { color: '#d4af37', fontSize: 15, fontWeight: 'bold', textAlign: 'center', marginBottom: 8, writingDirection: 'ltr' },
   devName: { color: '#d4af37', fontSize: 22, fontWeight: 'bold', textAlign: 'center', writingDirection: 'rtl', marginBottom: 4 },
   devRole: { color: '#e8e8e8', fontSize: 13, textAlign: 'center', writingDirection: 'rtl', marginBottom: 12 },
   devBio: { color: '#a0a0a0', fontSize: 12, textAlign: 'center', lineHeight: 20, writingDirection: 'rtl' },
