@@ -2,10 +2,31 @@ import { NameAnalysisLayers } from '../../application/use-cases/AnalyzeNameUseCa
 import { ResonanceEngine, resonanceEngine } from './ResonanceEngine';
 import { SchismEngine, schismEngine } from './SchismEngine';
 import { TemporalAnalyzer, temporalAnalyzer } from './TemporalAnalyzer';
-import {
-  MEDICAL_ROOTS,
-  MEDICAL_REMAINDERS,
+import {MEDICAL_REMAINDERS,
 } from '../../data/medicalRoots';
+
+
+// ═══════════════════════════════════════════════════════════
+// بيانات رمزية لكل جذر — بديل رمزي (لا محتوى طبي)
+// ═══════════════════════════════════════════════════════════
+const SYMBOLIC_ROOT_DATA: Record<number, {
+  letter: string;
+  letterValue: number;
+  meaning: string;
+  planet: string;
+  planetQuality: string;
+  planetField: string;
+}> = {
+  1: { letter: 'أ', letterValue: 1, meaning: 'البداية، الانفراد، القيادة', planet: 'الشمس', planetQuality: 'الهوية، الإشراق، القيادة', planetField: 'الذات، الظهور، الحياة' },
+  2: { letter: 'ب', letterValue: 2, meaning: 'الباب، الاحتواء، الوعاء', planet: 'القمر', planetQuality: 'الاحتواء، الشعور، الذاكرة', planetField: 'العاطفة، الحماية، الانتماء' },
+  3: { letter: 'ج', letterValue: 3, meaning: 'التجلي، الانتشار، البيان', planet: 'المشتري', planetQuality: 'التوسع، الحكمة، المعنى', planetField: 'المعرفة، السفر، التعليم' },
+  4: { letter: 'د', letterValue: 4, meaning: 'القاعدة، الثبات، البناء', planet: 'زحل', planetQuality: 'البناء، الحدود، المسؤولية', planetField: 'التنظيم، الهيكلة، التأسيس' },
+  5: { letter: 'ه', letterValue: 5, meaning: 'التنفس، الحرية، التجربة', planet: 'عطارد', planetQuality: 'التواصل، الحركة، التجربة', planetField: 'التعبير، التجارة، التعلم' },
+  6: { letter: 'و', letterValue: 6, meaning: 'الوصل، الرعاية، الوفاء', planet: 'الزهرة', planetQuality: 'الحب، الجمال، القيمة', planetField: 'العلاقات، الفن، الانسجام' },
+  7: { letter: 'ز', letterValue: 7, meaning: 'السر، العمق، البحث', planet: 'نبتون', planetQuality: 'الحدس، الروحانية، الغموض', planetField: 'الباطن، التأمل، البحث' },
+  8: { letter: 'ح', letterValue: 8, meaning: 'الحفظ، الاحتواء، السلطة الخفية', planet: 'زحل / بلوتو', planetQuality: 'السلطة، التمكين، التحول', planetField: 'الإدارة، النفوذ، البناء' },
+  9: { letter: 'ط', letterValue: 9, meaning: 'التمام، الإغلاق، الحكمة', planet: 'المريخ', planetQuality: 'الإكمال، الهدم البناء، الحسم', planetField: 'الحكمة، الإرث، الختم' },
+};
 
 export type AxisLevel = 'مرتفع' | 'متوسط' | 'منخفض';
 
@@ -324,16 +345,21 @@ const AXES: AxisDef[] = [
     title: 'الإيقاع الرمزي',
     icon: '🧬',
     compute: (ctx) => {
-      if (!ctx.rootNum || !MEDICAL_ROOTS[ctx.rootNum]) {
-        return { score: 0.5, narrative: 'لا توجد بيانات طبية.', insight: '-', layers: [] };
-      }
-      const m = MEDICAL_ROOTS[ctx.rootNum] as any;
-      return {
-        score: 0.78,
-        narrative: `الناقل العصبي: **${m.neurotransmitter ?? 'غير محدد'}** · الغدة: **${m.gland ?? 'غير محدد'}**`,
-        insight: `هرمون رئيسي: ${m.hormone ?? '—'}`,
-        layers: ['root', 'medical'],
-      };
+      if (!ctx.rootNum) {
+      return { score: 0, narrative: 'بيانات غير كافية', insight: '', layers: ['root'] };
+    }
+    const sym8 = SYMBOLIC_ROOT_DATA[ctx.rootNum] ?? null;
+    if (!sym8) {
+      return { score: 0, narrative: 'بيانات غير كافية', insight: '', layers: ['root'] };
+    }
+    return {
+      score: 0.75,
+      narrative: `رمزك الجذري: الحرف **${sym8.letter}** · القيمة العددية **${sym8.letterValue}**
+
+الدلالة الرمزية: **${sym8.meaning}**`,
+      insight: `تأمل في الحرف "${sym8.letter}" — كيف يظهر "${sym8.meaning}" في حياتك اليومية؟`,
+      layers: ['root'],
+    };
     },
   },
   {
@@ -341,14 +367,15 @@ const AXES: AxisDef[] = [
     title: 'المركز الرمزي',
     icon: '💊',
     compute: (ctx) => {
-      if (!ctx.rootNum) return { score: 0.5, narrative: 'لا يوجد جذر.', insight: '-', layers: [] };
-      const r = MEDICAL_REMAINDERS[ctx.rootNum] as any;
-      if (!r) return { score: 0.5, narrative: 'لا يوجد باقي طبي.', insight: '-', layers: [] };
+      if (!ctx.rootNum || !SYMBOLIC_ROOT_DATA[ctx.rootNum]) {
+        return { score: 0.5, narrative: 'بيانات غير كافية.', insight: '-', layers: [] };
+      }
+      const sym9 = SYMBOLIC_ROOT_DATA[ctx.rootNum];
       return {
         score: 0.75,
-        narrative: `منطقة الحيوية: **${r.organ ?? r.vitalPoint ?? 'غير محدد'}**`,
-        insight: `الأعراض: ${r.symptoms ?? '—'}`,
-        layers: ['root', 'medical'],
+        narrative: `كوكبك المركزي: **${sym9.planet}**\n\nطاقته: **${sym9.planetQuality}**\n\nمجاله: **${sym9.planetField}**`,
+        insight: `تأمل كيف تظهر طاقة "${sym9.planetQuality}" عبر "${sym9.planetField}" في مسارك.`,
+        layers: ['root'],
       };
     },
   },

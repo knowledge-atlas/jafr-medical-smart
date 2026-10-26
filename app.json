@@ -20,7 +20,7 @@
       "package": "com.ahnomy.heritage",
       "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#0a1628"
       },
       "permissions": []
@@ -51,6 +51,11 @@
       "brandAr": "الجفر التراثي الذكي",
       "tagline": "اعرف ملامح طبعك وأنماط من حولك — عبر قراءة رمزية تراثية لاسمك"
     },
-    "owner": "mohammedhnomi95"
+    "owner": "mohammedhnomi95",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0a1628"
+    }
   }
 }

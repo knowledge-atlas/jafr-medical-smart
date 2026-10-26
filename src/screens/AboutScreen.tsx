@@ -69,9 +69,36 @@ export default function AboutScreen({ navigation }: any) {
           <Ionicons name="lock-closed-outline" size={18} color="#d4af37" />
           <Text style={styles.linkText}> الترخيص</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.linkRow} onPress={() => navigation.navigate('Legal', { doc: 'ai' })}>
+          <Ionicons name="warning-outline" size={18} color="#e67e22" />
+          <Text style={[styles.linkText, { color: '#e67e22' }]}> الإفصاح عن AI</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* معلومات تقنية */}
+      
+      {/* ═══ إفصاح عن المحتوى المُولَّد بالذكاء الاصطناعي (AI Disclosure) ═══ */}
+      <View style={styles.aiBox}>
+        <Text style={styles.aiTitle}>⚠️ تنويه شفاف — المحتوى والذكاء الاصطناعي</Text>
+        <Text style={styles.aiBody}>
+          <Text style={styles.aiBold}>التحليلات الأساسية</Text>
+          {' '}(الجذر، الكوكب، البرج، البيت، الطبع، الأبجد) تُحسب{' '}
+          <Text style={styles.aiBold}>بشكل حتمي</Text>
+          {' '}من نصوص تراثية ثابتة، ولا تُولَّد بالذكاء الاصطناعي.
+        </Text>
+        <Text style={styles.aiBody}>
+          <Text style={styles.aiBold}>التحليلات الموسعة والتفسيرات النصية</Text>
+          {' '}(مثل المساعد الذكي وبعض الشروحات) قد تُولَّد{' '}
+          <Text style={styles.aiBold}>بمساعدة نماذج لغوية (LLMs)</Text>
+          {' '}— فقط عند تفعيل AI من الإعدادات يدوياً، وبمفتاح API الخاص بالمستخدم.
+        </Text>
+        <Text style={styles.aiBody}>
+          جميع المحتويات{' '}
+          <Text style={styles.aiBold}>للتأمل الثقافي والترفيهي</Text>
+          {' '}(Lifestyle/Entertainment)، وليست حقائق علمية، ولا تمثل نصيحة طبية أو نفسية أو مالية.
+        </Text>
+      </View>
+
+{/* معلومات تقنية */}
       <View style={styles.techBox}>
         <Text style={styles.techTitle}>🔧 معلومات تقنية</Text>
         <View style={styles.techRow}>
@@ -128,6 +155,34 @@ const styles = StyleSheet.create({
   linkRow: { flexDirection: 'row-reverse', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#1a3b5d', gap: 8 },
   linkText: { color: '#e8e8e8', fontSize: 13, writingDirection: 'rtl' },
 
+  aiBox: {
+    backgroundColor: '#1a1a2c',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 14,
+    borderWidth: 2,
+    borderColor: '#e67e22',
+  },
+  aiTitle: {
+    color: '#e67e22',
+    fontSize: 15,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
+  aiBody: {
+    color: '#e8e8e8',
+    fontSize: 13,
+    lineHeight: 22,
+    marginVertical: 4,
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
+  aiBold: {
+    color: '#d4af37',
+    fontWeight: 'bold',
+  },
   techBox: { backgroundColor: '#0f2438', borderRadius: 10, padding: 14, borderWidth: 1, borderColor: '#2c5070' },
   techTitle: { color: '#d4af37', fontSize: 14, fontWeight: 'bold', marginBottom: 10, textAlign: 'right', writingDirection: 'rtl' },
   techRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#1a3b5d' },

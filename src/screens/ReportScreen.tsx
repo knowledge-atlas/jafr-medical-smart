@@ -273,6 +273,46 @@ const styles = StyleSheet.create({
 // Custom Rules — لعرض الجداول والقوائم
 // ═══════════════════════════════════════════════════════════
 const markdownRules = {
+  // ═══ Bullet list: force RTL — bullet on right ═══
+  list_item: (node: any, children: any, parent: any, styles: any) => (
+    <View
+      key={node.key}
+      style={{
+        flexDirection: 'row-reverse',
+        alignItems: 'flex-start',
+        marginBottom: 8,
+        width: '100%',
+      }}
+    >
+      {children}
+    </View>
+  ),
+  bullet_list_icon: (node: any, children: any, parent: any, styles: any) => (
+    <Text
+      key={node.key}
+      style={{
+        color: '#d4af37',
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginRight: 10,
+        marginLeft: 0,
+      }}
+    >
+      {node.content || '•'}
+    </Text>
+  ),
+  bullet_list_content: (node: any, children: any, parent: any, styles: any) => (
+    <View
+      key={node.key}
+      style={{
+        flex: 1,
+        flexDirection: 'column',
+      }}
+    >
+      {children}
+    </View>
+  ),
+  // ═══ Original rules ═══
   table: (node: any, children: any, parent: any, styles: any) => (
     <View key={node.key} style={styles.table}>
       {children}
@@ -398,11 +438,23 @@ const markdownStyles = {
     marginLeft: 0,
     marginRight: 8,
   },
-  list_item: {
-    marginBottom: 6,
-    textAlign: 'right' as const,
+  bullet_list_icon: {
+    color: '#d4af37',
+    fontSize: 18,
+    fontWeight: 'bold' as const,
+    marginLeft: 0,
+    marginRight: 10,
     writingDirection: 'rtl' as const,
-    direction: 'rtl' as const,
+  },
+  bullet_list_content: {
+    flex: 1,
+    flexDirection: 'column' as const,
+  },
+  list_item: {
+    flexDirection: 'row-reverse' as const,
+    marginBottom: 6,
+    alignItems: 'flex-start' as const,
+    writingDirection: 'rtl' as const,
   },
   blockquote: {
     borderLeftWidth: 0,

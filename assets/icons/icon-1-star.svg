@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%">
+      <stop offset="0%" stop-color="#1a3b5d"/>
+      <stop offset="100%" stop-color="#0a1628"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f5d76e"/>
+      <stop offset="50%" stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#a8841a"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)" rx="112"/>
+  <circle cx="256" cy="256" r="220" fill="none" stroke="url(#gold)" stroke-width="6"/>
+  <polygon points="256,80 296,200 420,200 320,272 356,392 256,320 156,392 192,272 92,200 216,200"
+           fill="none" stroke="url(#gold)" stroke-width="4" opacity="0.5"/>
+  <circle cx="256" cy="256" r="130" fill="#0f2438" stroke="url(#gold)" stroke-width="3"/>
+  <text x="256" y="335" font-family="serif" font-size="220" font-weight="900"
+        text-anchor="middle" fill="url(#gold)">ج</text>
+</svg>

@@ -12,6 +12,12 @@ import { llmBridge } from '../ai';
 import { consentStorage } from '../utils/consentStorage';
 import { KnowledgeBase, importAll } from '../kb';
 
+import { errorLogger } from '../utils/errorLogger';
+import { externalStorage } from '../utils/externalStorage';
+import { reportsStorage } from '../storage/reportsStorage';
+import * as SecureStore from 'expo-secure-store';
+import { Ionicons } from '@expo/vector-icons';
+
 type Provider = 'none' | 'demo' | 'gemini' | 'openai';
 
 export default function SettingsScreen({ navigation }: any) {
@@ -138,6 +144,46 @@ const saveKey = async (which: 'gemini' | 'openai') => {
     const result = await llmBridge.testConnection(which);
     setTesting(false);
     Alert.alert(result.ok ? '✅' : '❌', result.message);
+  };
+
+
+  const handleDeleteAllData = () => {
+    Alert.alert(
+      '⚠️ حذف جميع البيانات',
+      'سيتم حذف:\n\n• جميع التقارير المحفوظة\n• مفاتيح API\n• المصادر الخارجية\n• سجل الأخطاء\n\n(لن تُحذف: الموافقة، وعداد التجربة المجانية)\n\nهل أنت متأكد؟',
+      [
+        { text: 'إلغاء', style: 'cancel' },
+        {
+          text: 'حذف نهائي',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // 1) حذف التقارير
+              try {
+                await (reportsStorage as any).clear?.() ?? (reportsStorage as any).clearAll?.() ?? Promise.resolve();
+              } catch {}
+
+              // 2) حذف المصادر الخارجية
+              await externalStorage.clear();
+
+              // 3) حذف سجل الأخطاء
+              await errorLogger.clear();
+
+              // 4) حذف مفاتيح API من SecureStore
+              try {
+                await SecureStore.deleteItemAsync('gemini_api_key');
+                await SecureStore.deleteItemAsync('openai_api_key');
+                await SecureStore.deleteItemAsync('llm_provider');
+              } catch {}
+
+              Alert.alert('✅', 'تم حذف جميع البيانات بنجاح');
+            } catch (e: any) {
+              Alert.alert('خطأ', e?.message ?? 'فشل الحذف');
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -287,7 +333,7 @@ const saveKey = async (which: 'gemini' | 'openai') => {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>ℹ️ حول التطبيق</Text>
         <Text style={styles.description}>
-          نظام الجفر الطبي الذكي — الإصدار 3.0{'\n'}
+          الجفر التراثي الذكي — الإصدار 1.0.0{'\n'}
           محرك استدلال معرفي مبني على قاعدة بيانات داخلية.{'\n'}
           جميع النصوص الأصلية محفوظة كاملة بدون تعديل.{'\n'}
           المصادر مفصولة: 🟢 داخلية | 🟡 خارجية.
@@ -319,6 +365,36 @@ const saveKey = async (which: 'gemini' | 'openai') => {
         >
           <Text style={{ color: '#e74c3c', fontSize: 14, fontWeight: 'bold' }}>🔄 إعادة تعيين التجربة (للمطورين)</Text>
         </TouchableOpacity>
+
+        {/* ═══ Danger Zone — حذف البيانات ═══ */}
+        <View style={{ marginHorizontal: 10, marginTop: 24, marginBottom: 12 }}>
+          <Text style={{ color: '#e74c3c', fontSize: 12, fontWeight: 'bold', marginBottom: 8, textAlign: 'right', writingDirection: 'rtl' }}>
+            🗑️ منطقة الخطر
+          </Text>
+          <TouchableOpacity
+            style={{
+              flexDirection: 'row-reverse',
+              padding: 14,
+              backgroundColor: '#2c1a1a',
+              borderRadius: 10,
+              borderWidth: 2,
+              borderColor: '#e74c3c',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            }}
+            onPress={handleDeleteAllData}
+          >
+            <Ionicons name="trash" size={18} color="#e74c3c" />
+            <Text style={{ color: '#e74c3c', fontSize: 14, fontWeight: 'bold' }}>
+              حذف جميع بياناتي نهائياً
+            </Text>
+          </TouchableOpacity>
+          <Text style={{ color: '#666', fontSize: 10, marginTop: 6, textAlign: 'right', writingDirection: 'rtl' }}>
+            يحذف: التقارير، المفاتيح، المصادر، سجل الأخطاء فقط
+          </Text>
+        </View>
+
 </ScrollView>
   );
 }
