@@ -44,6 +44,19 @@ export const houseToSign: Record<number, string> = {
   12: 'الحوت',     // البيت 12 = الحوت
 };
 
+// ═══════════════════════════════════════════════════════════
+// خريطة عكسية: البرج → بيته الطبيعي (تطابق فلكي ثابت)
+// ═══════════════════════════════════════════════════════════
+const signToHouse: Record<string, number> = {
+  'الحمل': 1, 'الثور': 2, 'الجوزاء': 3, 'السرطان': 4,
+  'الأسد': 5, 'العذراء': 6, 'الميزان': 7, 'العقرب': 8,
+  'القوس': 9, 'الجدي': 10, 'الدلو': 11, 'الحوت': 12,
+  'حمل': 1, 'ثور': 2, 'جوزاء': 3, 'سرطان': 4,
+  'أسد': 5, 'عذراء': 6, 'ميزان': 7, 'عقرب': 8,
+  'قوس': 9, 'جدي': 10, 'دلو': 11, 'حوت': 12,
+};
+
+
 // البيت ← الكوكب الحاكم التقليدي (النظام السباعي)
 export const houseToRulingPlanet: Record<number, string> = {
   1: 'مريخ',      // الحمل
@@ -186,14 +199,15 @@ export const calculate = (name: string) => {
       internalElement = normalizeElementKey(jsonElement) as ElementType;
       internalPlanet = rootData.operational.planet || internalPlanet;
       internalSign = rootData.operational.sign || internalSign;
-      internalHouse = parseInt(rootData.operational.house, 10) || 1;
+      // البيت الداخلي يُشتق من البرج الداخلي (تطابق فلكي طبيعي)
+      internalHouse = signToHouse[internalSign] || remainders.on12;
       internalHouseName = houseNames[internalHouse] || '';
     } else {
-      internalHouse = remainders.on12;
+      internalHouse = signToHouse[internalSign] || remainders.on12;
       internalHouseName = houseNames[internalHouse] || '';
     }
   } catch (e) {
-    internalHouse = remainders.on12;
+    internalHouse = signToHouse[internalSign] || remainders.on12;
     internalHouseName = houseNames[internalHouse] || '';
   }
 
