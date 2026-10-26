@@ -34,7 +34,11 @@ jobs:
       - name: Prebuild
         run: npx expo prebuild -p android --clean
 
-      - name: Build APK
+      - name: Build AAB (Play Store)
+        working-directory: android
+        run: ./gradlew bundleRelease --no-daemon
+
+      - name: Build APK (Testing)
         working-directory: android
         run: ./gradlew assembleRelease --no-daemon
 
@@ -44,7 +48,9 @@ jobs:
         with:
           tag_name: build-v1.0.0-${{ github.run_number }}
           name: "التطبيق جاهز - Build ${{ github.run_number }}"
-          files: android/app/build/outputs/apk/release/*.apk
+          files: |
+            android/app/build/outputs/apk/release/*.apk
+            android/app/build/outputs/bundle/release/*.aab
           draft: false
           prerelease: true
         env:
