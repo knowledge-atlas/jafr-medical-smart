@@ -162,6 +162,22 @@ const computeSumElement = (total: number): ElementType => {
 // الدالة الرئيسية
 // ================================================================
 
+
+// ═══════════════════════════════════════════════════════════
+// الطبع الأساسي لكل جذر — مستخرج من نصوص الجذور الرسمية
+// ═══════════════════════════════════════════════════════════
+const ROOT_ELEMENT: Record<number, ElementType> = {
+  1: 'ناري',    // Root 1 - السيادي (اندفاع، بداية)
+  2: 'مائي',    // Root 2 - الدبلوماسي (احتواء، عمق)
+  3: 'هوائي',   // Root 3 - التعبير (تواصل، فكر)
+  4: 'ترابي',   // Root 4 - القاعدة (بناء، ثبات)
+  5: 'ناري',    // Root 5 - الحرية (تجربة، إبداع)
+  6: 'مائي',    // Root 6 - الرعاية (احتواء، وفاء)
+  7: 'مائي',    // Root 7 - البحث (عمق، حدس)
+  8: 'ترابي',   // Root 8 - التمكين (سلطة، بناء)
+  9: 'ناري',    // Root 9 - الاكتمال (حسم، ختم)
+};
+
 export const calculate = (name: string) => {
   const { letters, values, total, digitalRoot } = calculateAbjad(name);
   if (letters.length === 0) {
@@ -186,7 +202,7 @@ export const calculate = (name: string) => {
   // =====================================================
   // 3. الطبقة الداخلية (من الجذر / JSON)
   // =====================================================
-  let internalElement = computeSumElement(total); // افتراضي
+  let internalElement: ElementType = ROOT_ELEMENT[root] || computeSumElement(total);
   let internalPlanet = rootToPlanet[root] || 'شمس';
   let internalSign = planetToSign[internalPlanet] || 'الأسد';
   let internalHouse = 1;
@@ -195,8 +211,9 @@ export const calculate = (name: string) => {
   try {
     const rootData = getRootData(root);
     if (rootData?.operational) {
-      const jsonElement = rootData.operational.element || '';
-      internalElement = normalizeElementKey(jsonElement) as ElementType;
+      // الأولوية: خريطة الجذر الثابتة (أكثر دقة)
+      // ثم operational.element إذا موجود
+      internalElement = ROOT_ELEMENT[root] || normalizeElementKey(rootData.operational.element || '') as ElementType || internalElement;
       internalPlanet = rootData.operational.planet || internalPlanet;
       internalSign = rootData.operational.sign || internalSign;
       // البيت الداخلي يُشتق من البرج الداخلي (تطابق فلكي طبيعي)
