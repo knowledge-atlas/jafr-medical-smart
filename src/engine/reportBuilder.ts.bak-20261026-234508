@@ -25,28 +25,123 @@ import { REMEDIES_TYPES_FULL as FALLBACK_REMEDIES } from '../data/remedies';
 // ═══════════════════════════════════════════════════════════
 const fmtText = (text: string): string => {
   if (!text) return '';
-  return text
-    .replace(/الصفات الإيجابية الموسعة:/g, '\n### ✅ الصفات الإيجابية\n')
-    .replace(/الصفات الإيجابية:/g, '\n### ✅ الصفات الإيجابية\n')
-    .replace(/الصفات السلبية \/ الظل:/g, '\n### ⚠️ الصفات السلبية / الظل\n')
-    .replace(/الصفات السلبية:/g, '\n### ⚠️ الصفات السلبية\n')
-    .replace(/العمق الداخلي:/g, '\n### 🔍 العمق الداخلي\n')
-    .replace(/نقطة الانهيار:/g, '\n### 💥 نقطة الانهيار\n')
-    .replace(/الترياق والتوازن:/g, '\n### 💊 الترياق والتوازن\n')
-    .replace(/محرك الفشل:/g, '\n### 🚨 محرك الفشل\n')
-    .replace(/محرك الخلل:/g, '\n### 🚨 محرك الخلل\n')
-    .replace(/الوظيفة الأساسية:/g, '\n### 🚀 الوظيفة الأساسية\n')
-    .replace(/ما يظهر للناس:/g, '\n### 👁️ ما يظهر للناس\n')
-    .replace(/ما يخفيه في العمق:/g, '\n### 🌑 ما يخفيه في العمق\n')
-    .replace(/القوة الأساسية:/g, '\n### 💪 القوة الأساسية\n')
-    .replace(/نقطة الضعف البنيوية والظل:/g, '\n### 🎭 نقطة الضعف والظل\n')
-    .replace(/النص النهائي:/g, '\n### 📜 النص النهائي\n');
+  
+  let f = text;
+  
+  // المعالجة المسبقة: توحيد الموصلات
+  f = f.replace(/الظل و\s*الصفات السلبية الموسعة\s*:/g, 'الصفات السلبية / الظل:');
+  f = f.replace(/الظل و\s*\n*\s*الصفات السلبية الموسعة\s*:/g, 'الصفات السلبية / الظل:');
+  f = f.replace(/نقطة الانهيار \/\s*الظل\s*:/g, 'نقطة الانهيار / الظل:');
+  f = f.replace(/نقطة الانهيار \/\s*\n*\s*الظل\s*:/g, 'نقطة الانهيار / الظل:');
+  
+  // حذف الموصلات المتبقية
+  f = f.replace(/الظل و\s*\n*/g, '');
+  f = f.replace(/نقطة الانهيار \/\s*\n*/g, '');
+  
+  const subheadings = [
+    'الصفات السلبية / الظل',
+    'نقطة الانهيار / الظل',
+    'الصفات الإيجابية الموسعة',
+    'الصفات السلبية الموسعة',
+    'الظل الجفري',
+    'الحروف المنتمية له',
+    'الهوية العامة والمعنى البنيوي',
+    'القاعدة التشغيلية النهائية والقانون البنيوي الجامع',
+    'العلاقات والتوافقات والتصادمات البينية',
+    'نقطة الضعف البنيوية والظل',
+    'نقطة الضعف البنيوية',
+    'نمط التوتر والانهيار',
+    'الترياق والتوازن',
+    'البيئة الحاضنة',
+    'البيئة الضاغطة',
+    'نمط التفكير',
+    'ما يظهر للناس',
+    'ما يخفيه في العمق',
+    'ما تخفيه في الباطن',
+    'القوة الأساسية',
+    'نقطة الانهيار',
+    'محرك الفشل',
+    'محرك الخلل',
+    'الوظيفة الأساسية',
+    'الموقع داخل النظام',
+    'الهوية العامة',
+    'المعنى البنيوي',
+    'النص النهائي',
+    'الصفات الإيجابية',
+    'الصفات السلبية',
+    'العمق الداخلي',
+    'المفهوم',
+    'الوظيفة',
+    'الظل'
+  ];
+  
+  for (const kw of subheadings) {
+    if (f.includes('### 🎯 ' + kw)) continue;
+    f = f.split(kw + ':').join('\n\n### 🎯 ' + kw + '\n\n');
+  }
+  
+  return f.replace(/\n{4,}/g, '\n\n\n').trim();
 };
 
 const defBox = (text: string): string => {
   if (!text) return '';
-  const clean = text.trim().replace(/\n/g, '\n> ');
-  return `\n> ${clean}\n\n`;
+  const lines = text.trim().split('\n');
+  if (lines.length === 0) return '';
+  
+  const title = lines[0].replace(/【|】/g, '').trim();
+  const body = lines.slice(1).join('\n').trim();
+  
+  // إخراج كـ Box (بدون >) حتى يلتقطه reportBlocksParser
+  return `\n\n【 📘 ${title} 】\n\n${body}\n\n`;
+};
+
+
+// ═══════════════════════════════════════════════════════════
+// حساب القطبية والانحياز البنيوي — ديناميكي من الاسم
+// ═══════════════════════════════════════════════════════════
+const computePolarity = (root: number) => {
+  const isPositive = root % 2 === 1;
+  return {
+    label: isPositive ? 'موجبة' : 'سالبة',
+    direction: isPositive ? 'فاعلة دافعة' : 'مستقبلة مستوعبة',
+    description: isPositive
+      ? `الجذر ${root} فردي — قطبيته موجبة. تتحرك طاقته من المركز نحو المحيط: تبادر، تُعطي، تُقرّر، وتُهاجم. صاحب هذا الاسم يميل إلى الفعل المباشر والمبادرة السريعة.`
+      : `الجذر ${root} زوجي — قطبيته سالبة. تتحرك طاقته من المحيط نحو المركز: تستقبل، تحتوي، تنتظر، وتُقرّر بعد التأمل. صاحب هذا الاسم يميل إلى الاستيعاب والتفكير العميق قبل الحركة.`,
+    strength: isPositive ? 'اندفاع · إقدام · عطاء' : 'عمق · استيعاب · انتظار'
+  };
+};
+
+const computeBias = (root: number, acquired: string, internal: string) => {
+  const sameAsInternal = acquired === internal;
+  
+  const biasDescriptions: Record<string, { quality: string; add: string }> = {
+    'ناري': { quality: 'حرارة وجرأة', add: 'يمنح سرعة قرار، اندفاع، وحضوراً طاغياً فوق طبعه الأساسي' },
+    'مائي': { quality: 'عمق وحساسية', add: 'يمنح حدساً قوياً، تعاطفاً، وعمقاً عاطفياً فوق طبعه الأساسي' },
+    'هوائي': { quality: 'مرونة وتواصل', add: 'يمنح لغة اجتماعية، تكيفاً، وتنقلاً بين الأفكار فوق طبعه الأساسي' },
+    'ترابي': { quality: 'ثبات وصلابة', add: 'يمنح صبراً، بناءً متيناً، وثقة في النفس فوق طبعه الأساسي' }
+  };
+  
+  const b = biasDescriptions[acquired] || { quality: 'بصمة فردية', add: 'يمنح لوناً خاصاً' };
+  
+  return {
+    element: acquired,
+    quality: b.quality,
+    description: sameAsInternal
+      ? `الطبع المكتسب (${acquired}) يطابق طبع الجذر — وهذا يُضاعف بصمة "${b.quality}" لدى صاحب هذا الاسم. ${b.add}.`
+      : `الطبع المكتسب (${acquired}) يختلف عن طبع الجذر (${internal}) — وهذا يُدخل بصمة "${b.quality}" جديدة فوق الجذر ${root}. ${b.add}.`,
+    isReinforcing: sameAsInternal
+  };
+};
+
+const fmtBaawqi = (text: string): string => {
+  if (!text) return '';
+  const keys = ['الاسم الجفري', 'الجوهر', 'الظاهر', 'الباطن', 'القوة', 'الضعف', 'المقابل', 'البدل', 'الترياق', 'الرنين', 'الختم', 'مخرج الاتزان', 'النص النهائي'];
+  let f = text;
+  for (const kw of keys) {
+    const re = new RegExp('^\\s*' + kw + '\\s*:\\s*', 'gm');
+    f = f.replace(re, '\n\n### 🎯 ' + kw + '\n\n');
+  }
+  return f.replace(/\n{4,}/g, '\n\n\n').trim();
 };
 
 export const buildReport = (name: string, symptoms: string[] = []) => {
@@ -56,10 +151,13 @@ export const buildReport = (name: string, symptoms: string[] = []) => {
   }
 
   const root = calc.root;
+  const polarity = computePolarity(root);
+  const bias = computeBias(root, calc.acquiredElement, calc.internal?.element ?? '');
 
   const rawRootText = getRootFullText(root) || ROOTS_FULL_TEXT[root] || '';
-  const rootText = stripRootIntro(cleanRootText(rawRootText, root));
-  const rootTitle = extractTitle(rootText) || `الجذر ${root}`;
+  const cleanedRoot = cleanRootText(rawRootText, root);
+  const rootTitle = extractTitle(cleanedRoot) || `الجذر ${root}`;
+  const rootText = fmtText(stripRootIntro(cleanedRoot));
 
   const internalPlanetKey = normalizePlanetKey(calc.internal.planet);
   const internalElementKey = normalizeElementKey(calc.internal.element);
@@ -78,9 +176,9 @@ export const buildReport = (name: string, symptoms: string[] = []) => {
   const acquiredElementKey = normalizeElementKey(calc.acquiredElement);
   const acquiredElementText = fmtText(cleanGenericText(ELEMENTS_FULL_TEXT[acquiredElementKey] || ''));
 
-  const remainder9Text = cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on9] || '');
-  const remainder7Text = cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on7] || '');
-  const remainder28Text = cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on28] || '');
+  const remainder9Text = fmtBaawqi(cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on9] || ''));
+  const remainder7Text = fmtBaawqi(cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on7] || ''));
+  const remainder28Text = fmtBaawqi(cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on28] || ''));
 
   const resonanceRaw =
     getResonanceBetween(root, root) ||
@@ -209,7 +307,9 @@ ${internalHouseText}
 【 القسم الرابع: الطبقة الخارجية — الباقي على 12 】
 
 ◈ وصف الباقي على 12 (${calc.external.houseNumber}) — البيت الخارجي:
-${externalHouseText}
+${calc.external.houseNumber === calc.internal.house 
+  ? `(يتطابق مع البيت الداخلي رقم ${calc.internal.house} — راجع القسم الثالث للحصول على التفاصيل الكاملة)`
+  : externalHouseText}
 
 ───────────────────────────────────────────────────────────
 
@@ -258,15 +358,37 @@ ${resonanceText}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+### 🎯 ماذا يعني رنين الجذر مع نفسه؟
+
+عندما يرن الجذر مع نفسه (${root}+${root})، فهذا يعني أن صاحب الاسم يحمل مضاعفاً من طبعه الجذري. النتيجة:
+
+• نعمة مضاعفة: إذا استقام الجذر، تتضاعف قدرته على العطاء والاحتواء والتوازن.
+• نقمة مضاعفة: إذا اعوج الجذر، يتضاعف تعلقه وتردده وحاجته للآخر.
+• دعوة للوعي: الرنين مع النفس يكشف "النسخة المكثفة" من الجذر — وهي النسخة التي تحتاج أعظم وعي وحكمة لإدارتها.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 【 القسم الثامن: التراكيب الثنائية المستخلصة 】
 
-${Array.isArray(compounds) ? compounds.join('\n') : ''}
+${Array.isArray(compounds) && compounds.length > 0 
+  ? compounds.join('\n') 
+  : `لا توجد تراكيب ثنائية مطابقة لحروف "${name}" في النظام.\n\nالتراكيب الثنائية تتشكل عندما تنتج أزواج حروف الاسم تراكيب معروفة (مثل: بسم، نور، ماء). حروف "${name}" لا تُنتج أي تركيب معروف حالياً.`}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 【 القسم التاسع: القطبية وحركة الطاقة — Polarity 】
 
-${defBox(LAYER_DEFINITIONS.polarity)}
+📊 القطبية الفعلية لاسم "${name}": 【 ${polarity.label} — ${polarity.direction} 】
+
+${polarity.description}
+
+◈ القوة الحاملة للقطبية: ${polarity.strength}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📖 التعريف الموسوعي للقطبية:
+
+${LAYER_DEFINITIONS.polarity}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -275,6 +397,25 @@ ${symptoms.length > 0 ? `【 الأعراض المدخلة 】\n${symptoms.join(
 【 القسم العاشر: التوصية العامة 】
 
 ${remedyText}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+### 🎯 ماذا تفعل الآن؟ (خطوات عملية)
+
+1️⃣ ابدأ بتحديد حدودك الشخصية:
+   ضع قائمة بـ 3 أشياء تقول لها "لا" بانتظام. هذه هي حدودك التي تحميك من الاستنزاف.
+
+2️⃣ مارس قراراً واضحاً يومياً:
+   اتخذ قراراً واحداً صغيراً دون استشارة أحد. هذا يبني استقلالك العاطفي تدريجياً.
+
+3️⃣ تحرر من رهان رضا الآخرين:
+   ذكّر نفسك: "قيمتي لا تتوقف على تصفيق الناس".
+
+4️⃣ ابنِ مساحة داخلية آمنة:
+   خصص 10 دقائق يومياً للجلوس مع نفسك بلا هاتف ولا ضجيج.
+
+5️⃣ اعتنق المبدأ الذهبي للجذر ${root}:
+   الاحتواء الحقيقي يبدأ باحتواء الذات — فمن لا يحتوي نفسه لا يستطيع احتواء غيره.
 `;
 
   // ═══════════════════════════════════════════════════════════
@@ -286,7 +427,17 @@ ${remedyText}
 
 【 القسم الحادي عشر: الانحياز البنيوي — بصمة التفرد 】
 
-${defBox(LAYER_DEFINITIONS.bias)}
+📊 انحياز اسم "${name}": 【 ${bias.element} — ${bias.quality} 】
+
+${bias.description}
+
+◈ نوع الانحياز: ${bias.isReinforcing ? 'مُضاعِف (يشدّد الجذر)' : 'مُوسِّع (يضيف لوناً جديداً)'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📖 التعريف الموسوعي للانحياز:
+
+${LAYER_DEFINITIONS.bias}
 `;
 
   // ═══════════════════════════════════════════════════════════
@@ -298,7 +449,7 @@ ${defBox(LAYER_DEFINITIONS.bias)}
 
 【 القسم الثاني عشر: مبادئ التكوين والتكامل الشامل 】
 
-${defBox(LAYER_DEFINITIONS.integration)}
+${LAYER_DEFINITIONS.integration.replace('【 مبادئ التكوين والتكامل الشامل 】', '').trim()}
 `;
 
   // ═══════════════════════════════════════════════════════════

@@ -90,18 +90,27 @@ export default cleanGenericText;
 export const stripRootIntro = (text: string): string => {
   if (!text) return '';
   
-  const lines = text.split('\n');
-  if (lines.length === 0) return text;
+  let cleaned = text;
   
-  const startIndex = lines.findIndex(l => /^\s*1\s*[.:]/.test(l));
+  // 1) حذف قسم "## مدخل إلى..." حتى قبل "## 1."
+  const introPattern = /(?:#{1,3}\s*)?مدخل\s+إلى[\s\S]*?(?=(?:#{1,3}\s*)?[0-9]+\s*[.:]\s)/;
+  cleaned = cleaned.replace(introPattern, '');
   
-  if (startIndex < 0) {
-    const firstNonEmpty = lines.findIndex(l => l.trim().length > 0);
-    if (firstNonEmpty < 0) return '';
-    return lines.slice(firstNonEmpty).join('\n').trim();
+  // 2) إذا لم يتغير شيء، ابحث عن "1." واحتفظ بما قبلها (العنوان) وما بعدها
+  if (cleaned === text) {
+    const lines = text.split('\n');
+    const startIndex = lines.findIndex(l => /^(?:#{1,3}\s*)?1\s*[.:]/.test(l.trim()));
+    if (startIndex > 0) {
+      const titleIndex = lines.findIndex(l => /^#\s/.test(l.trim()));
+      if (titleIndex >= 0 && titleIndex < startIndex) {
+        cleaned = [...lines.slice(0, titleIndex + 1), '', ...lines.slice(startIndex)].join('\n');
+      } else {
+        cleaned = lines.slice(startIndex).join('\n');
+      }
+    }
   }
   
-  return lines.slice(startIndex).join('\n').trim();
+  return cleaned.trim().replace(/\n{3,}/g, '\n\n');
 };
 
 /**

@@ -26,31 +26,75 @@ import { REMEDIES_TYPES_FULL as FALLBACK_REMEDIES } from '../data/remedies';
 const fmtText = (text: string): string => {
   if (!text) return '';
   
+  let f = text;
+  
+  // توحيد الموصلات
+  f = f.replace(/الظل و\s*الصفات السلبية الموسعة\s*:/g, 'الصفات السلبية / الظل:');
+  f = f.replace(/الظل و\s*\n+\s*الصفات السلبية الموسعة\s*:/g, 'الصفات السلبية / الظل:');
+  f = f.replace(/نقطة الانهيار \/\s*\n*\s*الظل\s*:/g, 'نقطة الانهيار / الظل:');
+  // لا نحذف "نقطة الانهيار /" — نتركه يتحد مع "الظل"
+  
   const subheadings = [
-    'الوظيفة الأساسية', 'الصفات الإيجابية الموسعة', 'الصفات الإيجابية',
-    'الصفات السلبية الموسعة', 'الصفات السلبية', 'الظل الجفري', 'الظل',
-    'العمق الداخلي', 'نقطة الانهيار', 'الترياق والتوازن',
-    'محرك الفشل', 'محرك الخلل', 'ما يظهر للناس', 'ما يخفيه في العمق',
-    'القوة الأساسية', 'نقطة الضعف البنيوية والظل', 'النص النهائي',
-    'الهوية العامة والمعنى البنيوي', 'نمط التفكير', 'ما تخفيه في الباطن',
-    'الحروف المنتمية له', 'الهوية العامة', 'المعنى البنيوي',
-    'المفهوم', 'الوظيفة', 'الموقع داخل النظام',
-    'البيئة الحاضنة', 'البيئة الضاغطة'
+    'الصفات السلبية / الظل',
+    'نقطة الانهيار / الظل',
+    'الصفات الإيجابية الموسعة',
+    'الصفات السلبية الموسعة',
+    'الظل الجفري',
+    'الحروف المنتمية له',
+    'الهوية العامة والمعنى البنيوي',
+    'القاعدة التشغيلية النهائية والقانون البنيوي الجامع',
+    'العلاقات والتوافقات والتصادمات البينية',
+    'نقطة الضعف البنيوية والظل',
+    'نقطة الضعف البنيوية',
+    'نمط التوتر والانهيار',
+    'الترياق والتوازن',
+    'البيئة الحاضنة',
+    'البيئة الضاغطة',
+    'نمط التفكير',
+    'ما يظهر للناس',
+    'ما يخفيه في العمق',
+    'ما تخفيه في الباطن',
+    'ما يخفيه',
+    'ما تخفيه',
+    'القوة الأساسية',
+    'نقطة الانهيار',
+    'محرك الفشل',
+    'محرك الخلل',
+    'الأثر التشغيلي',
+    'النص النهائي الجاهز',
+    'النص النهائي',
+    'التفاصيل الكاملة والطبع',
+    'البيئة المناسبة',
+    'الوظيفة الأساسية',
+    'الموقع داخل النظام',
+    'الهوية العامة',
+    'المعنى البنيوي',
+    'الصفات الإيجابية',
+    'الصفات السلبية',
+    'العمق الداخلي',
+    'المفهوم',
+    'الوظيفة',
+    'الظل'
   ];
   
-  let formatted = text;
-  
   for (const kw of subheadings) {
-    formatted = formatted.split(kw + ':').join('\n\n### 🎯 ' + kw + '\n\n');
+    if (f.includes('### 🎯 ' + kw)) continue;
+    f = f.split(kw + ':').join('\n\n### 🎯 ' + kw + '\n\n');
   }
   
-  return formatted.replace(/\n{4,}/g, '\n\n\n').trim();
+  return f.replace(/\n{4,}/g, '\n\n\n').trim();
 };
 
 const defBox = (text: string): string => {
   if (!text) return '';
-  const clean = text.trim().replace(/\n/g, '\n> ');
-  return `\n> ${clean}\n\n`;
+  const lines = text.trim().split('\n');
+  if (lines.length === 0) return '';
+  
+  const title = lines[0].replace(/【|】/g, '').trim();
+  const body = lines.slice(1).join('\n').trim();
+  
+  // إخراج كـ Box (بدون >) حتى يلتقطه reportBlocksParser
+  return `\n\n【 📘 ${title} 】\n\n${body}\n\n`;
 };
 
 
@@ -91,6 +135,39 @@ const computeBias = (root: number, acquired: string, internal: string) => {
   };
 };
 
+const fmtBaawqi = (text: string): string => {
+  if (!text) return '';
+  const keys = [
+    'الاسم الجفري',
+    'الجوهر',
+    'الظاهر',
+    'الباطن',
+    'القوة',
+    'الضعف',
+    'الظل عند الإفراط',
+    'الظل',
+    'المقابل الجفري الذي يوازنه',
+    'المقابل',
+    'البدل',
+    'الترياق والعلاج',
+    'الترياق',
+    'الرنين والتوافق',
+    'الرنين',
+    'الختم',
+    'مخرج الاتزان',
+    'النص النهائي الجاهز',
+    'النص النهائي'
+  ];
+  let f = text;
+  for (const kw of keys) {
+    const re = new RegExp('(^|[\\n\\s])' + kw + '\\s*:\\s*', 'g');
+    f = f.replace(re, '\n\n### 🎯 ' + kw + '\n\n');
+  }
+  return f.replace(/\n{4,}/g, '\n\n\n').trim();
+};
+
+
+
 export const buildReport = (name: string, symptoms: string[] = []) => {
   const calc = calculate(name);
   if ('error' in calc) {
@@ -123,9 +200,9 @@ export const buildReport = (name: string, symptoms: string[] = []) => {
   const acquiredElementKey = normalizeElementKey(calc.acquiredElement);
   const acquiredElementText = fmtText(cleanGenericText(ELEMENTS_FULL_TEXT[acquiredElementKey] || ''));
 
-  const remainder9Text = cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on9] || '');
-  const remainder7Text = cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on7] || '');
-  const remainder28Text = cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on28] || '');
+  const remainder9Text = fmtBaawqi(cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on9] || ''));
+  const remainder7Text = fmtBaawqi(cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on7] || ''));
+  const remainder28Text = fmtBaawqi(cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on28] || ''));
 
   const resonanceRaw =
     getResonanceBetween(root, root) ||
@@ -254,7 +331,9 @@ ${internalHouseText}
 【 القسم الرابع: الطبقة الخارجية — الباقي على 12 】
 
 ◈ وصف الباقي على 12 (${calc.external.houseNumber}) — البيت الخارجي:
-${externalHouseText}
+${calc.external.houseNumber === calc.internal.house 
+  ? `(يتطابق مع البيت الداخلي رقم ${calc.internal.house} — راجع القسم الثالث للحصول على التفاصيل الكاملة)`
+  : externalHouseText}
 
 ───────────────────────────────────────────────────────────
 
@@ -303,9 +382,21 @@ ${resonanceText}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+### 🎯 ماذا يعني رنين الجذر مع نفسه؟
+
+عندما يرن الجذر مع نفسه (${root}+${root})، فهذا يعني أن صاحب الاسم يحمل مضاعفاً من طبعه الجذري. النتيجة:
+
+• نعمة مضاعفة: إذا استقام الجذر، تتضاعف قدرته على العطاء والاحتواء والتوازن.
+• نقمة مضاعفة: إذا اعوج الجذر، يتضاعف تعلقه وتردده وحاجته للآخر.
+• دعوة للوعي: الرنين مع النفس يكشف "النسخة المكثفة" من الجذر — وهي النسخة التي تحتاج أعظم وعي وحكمة لإدارتها.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 【 القسم الثامن: التراكيب الثنائية المستخلصة 】
 
-${Array.isArray(compounds) ? compounds.join('\n') : ''}
+${Array.isArray(compounds) && compounds.length > 0 
+  ? compounds.join('\n') 
+  : `لا توجد تراكيب ثنائية مطابقة لحروف "${name}" في النظام.\n\nالتراكيب الثنائية تتشكل عندما تنتج أزواج حروف الاسم تراكيب معروفة (مثل: بسم، نور، ماء). حروف "${name}" لا تُنتج أي تركيب معروف حالياً.`}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -330,6 +421,25 @@ ${symptoms.length > 0 ? `【 الأعراض المدخلة 】\n${symptoms.join(
 【 القسم العاشر: التوصية العامة 】
 
 ${remedyText}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+### 🎯 ماذا تفعل الآن؟ (خطوات عملية)
+
+1️⃣ ابدأ بتحديد حدودك الشخصية:
+   ضع قائمة بـ 3 أشياء تقول لها "لا" بانتظام. هذه هي حدودك التي تحميك من الاستنزاف.
+
+2️⃣ مارس قراراً واضحاً يومياً:
+   اتخذ قراراً واحداً صغيراً دون استشارة أحد. هذا يبني استقلالك العاطفي تدريجياً.
+
+3️⃣ تحرر من رهان رضا الآخرين:
+   ذكّر نفسك: "قيمتي لا تتوقف على تصفيق الناس".
+
+4️⃣ ابنِ مساحة داخلية آمنة:
+   خصص 10 دقائق يومياً للجلوس مع نفسك بلا هاتف ولا ضجيج.
+
+5️⃣ اعتنق المبدأ الذهبي للجذر ${root}:
+   الاحتواء الحقيقي يبدأ باحتواء الذات — فمن لا يحتوي نفسه لا يستطيع احتواء غيره.
 `;
 
   // ═══════════════════════════════════════════════════════════
@@ -363,7 +473,7 @@ ${LAYER_DEFINITIONS.bias}
 
 【 القسم الثاني عشر: مبادئ التكوين والتكامل الشامل 】
 
-${defBox(LAYER_DEFINITIONS.integration)}
+${LAYER_DEFINITIONS.integration.replace('【 مبادئ التكوين والتكامل الشامل 】', '').trim()}
 `;
 
   // ═══════════════════════════════════════════════════════════
