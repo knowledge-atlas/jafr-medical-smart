@@ -19,6 +19,78 @@ import { REMAINDERS_FULL_TEXT } from '../data/remainders';
 import { RESONANCE_FULL_TEXT } from '../data/resonance';
 import { REMEDIES_TYPES_FULL as FALLBACK_REMEDIES } from '../data/remedies';
 
+
+// ═══════════════════════════════════════════════════════════
+// محسنات العرض — فواصل بصرية للصفات والتعريفات
+// ═══════════════════════════════════════════════════════════
+const fmtText = (text: string): string => {
+  if (!text) return '';
+  
+  const subheadings = [
+    'الوظيفة الأساسية', 'الصفات الإيجابية الموسعة', 'الصفات الإيجابية',
+    'الصفات السلبية الموسعة', 'الصفات السلبية', 'الظل الجفري', 'الظل',
+    'العمق الداخلي', 'نقطة الانهيار', 'الترياق والتوازن',
+    'محرك الفشل', 'محرك الخلل', 'ما يظهر للناس', 'ما يخفيه في العمق',
+    'القوة الأساسية', 'نقطة الضعف البنيوية والظل', 'النص النهائي',
+    'الهوية العامة والمعنى البنيوي', 'نمط التفكير', 'ما تخفيه في الباطن',
+    'الحروف المنتمية له', 'الهوية العامة', 'المعنى البنيوي',
+    'المفهوم', 'الوظيفة', 'الموقع داخل النظام',
+    'البيئة الحاضنة', 'البيئة الضاغطة'
+  ];
+  
+  let formatted = text;
+  
+  for (const kw of subheadings) {
+    formatted = formatted.split(kw + ':').join('\n\n### 🎯 ' + kw + '\n\n');
+  }
+  
+  return formatted.replace(/\n{4,}/g, '\n\n\n').trim();
+};
+
+const defBox = (text: string): string => {
+  if (!text) return '';
+  const clean = text.trim().replace(/\n/g, '\n> ');
+  return `\n> ${clean}\n\n`;
+};
+
+
+// ═══════════════════════════════════════════════════════════
+// حساب القطبية والانحياز البنيوي — ديناميكي من الاسم
+// ═══════════════════════════════════════════════════════════
+const computePolarity = (root: number) => {
+  const isPositive = root % 2 === 1;
+  return {
+    label: isPositive ? 'موجبة' : 'سالبة',
+    direction: isPositive ? 'فاعلة دافعة' : 'مستقبلة مستوعبة',
+    description: isPositive
+      ? `الجذر ${root} فردي — قطبيته موجبة. تتحرك طاقته من المركز نحو المحيط: تبادر، تُعطي، تُقرّر، وتُهاجم. صاحب هذا الاسم يميل إلى الفعل المباشر والمبادرة السريعة.`
+      : `الجذر ${root} زوجي — قطبيته سالبة. تتحرك طاقته من المحيط نحو المركز: تستقبل، تحتوي، تنتظر، وتُقرّر بعد التأمل. صاحب هذا الاسم يميل إلى الاستيعاب والتفكير العميق قبل الحركة.`,
+    strength: isPositive ? 'اندفاع · إقدام · عطاء' : 'عمق · استيعاب · انتظار'
+  };
+};
+
+const computeBias = (root: number, acquired: string, internal: string) => {
+  const sameAsInternal = acquired === internal;
+  
+  const biasDescriptions: Record<string, { quality: string; add: string }> = {
+    'ناري': { quality: 'حرارة وجرأة', add: 'يمنح سرعة قرار، اندفاع، وحضوراً طاغياً فوق طبعه الأساسي' },
+    'مائي': { quality: 'عمق وحساسية', add: 'يمنح حدساً قوياً، تعاطفاً، وعمقاً عاطفياً فوق طبعه الأساسي' },
+    'هوائي': { quality: 'مرونة وتواصل', add: 'يمنح لغة اجتماعية، تكيفاً، وتنقلاً بين الأفكار فوق طبعه الأساسي' },
+    'ترابي': { quality: 'ثبات وصلابة', add: 'يمنح صبراً، بناءً متيناً، وثقة في النفس فوق طبعه الأساسي' }
+  };
+  
+  const b = biasDescriptions[acquired] || { quality: 'بصمة فردية', add: 'يمنح لوناً خاصاً' };
+  
+  return {
+    element: acquired,
+    quality: b.quality,
+    description: sameAsInternal
+      ? `الطبع المكتسب (${acquired}) يطابق طبع الجذر — وهذا يُضاعف بصمة "${b.quality}" لدى صاحب هذا الاسم. ${b.add}.`
+      : `الطبع المكتسب (${acquired}) يختلف عن طبع الجذر (${internal}) — وهذا يُدخل بصمة "${b.quality}" جديدة فوق الجذر ${root}. ${b.add}.`,
+    isReinforcing: sameAsInternal
+  };
+};
+
 export const buildReport = (name: string, symptoms: string[] = []) => {
   const calc = calculate(name);
   if ('error' in calc) {
@@ -26,27 +98,30 @@ export const buildReport = (name: string, symptoms: string[] = []) => {
   }
 
   const root = calc.root;
+  const polarity = computePolarity(root);
+  const bias = computeBias(root, calc.acquiredElement, calc.internal?.element ?? '');
 
   const rawRootText = getRootFullText(root) || ROOTS_FULL_TEXT[root] || '';
-  const rootText = stripRootIntro(cleanRootText(rawRootText, root));
-  const rootTitle = extractTitle(rootText) || `الجذر ${root}`;
+  const cleanedRoot = cleanRootText(rawRootText, root);
+  const rootTitle = extractTitle(cleanedRoot) || `الجذر ${root}`;
+  const rootText = fmtText(stripRootIntro(cleanedRoot));
 
   const internalPlanetKey = normalizePlanetKey(calc.internal.planet);
   const internalElementKey = normalizeElementKey(calc.internal.element);
-  const internalPlanetText = cleanGenericText(PLANETS_FULL_TEXT[internalPlanetKey] || '');
-  const internalSignText = cleanGenericText(SIGNS_FULL_TEXT[calc.internal.sign] || '');
-  const internalElementText = cleanGenericText(ELEMENTS_FULL_TEXT[internalElementKey] || '');
-  const internalHouseText = cleanGenericText(HOUSES_FULL_TEXT[calc.internal.house] || '');
+  const internalPlanetText = fmtText(cleanGenericText(PLANETS_FULL_TEXT[internalPlanetKey] || ''));
+  const internalSignText = fmtText(cleanGenericText(SIGNS_FULL_TEXT[calc.internal.sign] || ''));
+  const internalElementText = fmtText(cleanGenericText(ELEMENTS_FULL_TEXT[internalElementKey] || ''));
+  const internalHouseText = fmtText(cleanGenericText(HOUSES_FULL_TEXT[calc.internal.house] || ''));
 
   const externalPlanetKey = normalizePlanetKey(calc.external.planet);
   const externalElementKey = normalizeElementKey(calc.external.element);
-  const externalSignText = cleanGenericText(SIGNS_FULL_TEXT[calc.external.sign] || '');
-  const externalPlanetText = cleanGenericText(PLANETS_FULL_TEXT[externalPlanetKey] || '');
-  const externalElementText = cleanGenericText(ELEMENTS_FULL_TEXT[externalElementKey] || '');
-  const externalHouseText = cleanGenericText(HOUSES_FULL_TEXT[calc.external.houseNumber] || '');
+  const externalSignText = fmtText(cleanGenericText(SIGNS_FULL_TEXT[calc.external.sign] || ''));
+  const externalPlanetText = fmtText(cleanGenericText(PLANETS_FULL_TEXT[externalPlanetKey] || ''));
+  const externalElementText = fmtText(cleanGenericText(ELEMENTS_FULL_TEXT[externalElementKey] || ''));
+  const externalHouseText = fmtText(cleanGenericText(HOUSES_FULL_TEXT[calc.external.houseNumber] || ''));
 
   const acquiredElementKey = normalizeElementKey(calc.acquiredElement);
-  const acquiredElementText = cleanGenericText(ELEMENTS_FULL_TEXT[acquiredElementKey] || '');
+  const acquiredElementText = fmtText(cleanGenericText(ELEMENTS_FULL_TEXT[acquiredElementKey] || ''));
 
   const remainder9Text = cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on9] || '');
   const remainder7Text = cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on7] || '');
@@ -136,7 +211,7 @@ ${INTRO_PHILOSOPHY}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-${LAYER_DEFINITIONS.root}
+${defBox(LAYER_DEFINITIONS.root)}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -148,28 +223,28 @@ ${rootText}
 
 【 القسم الثالث: الطبقة الداخلية — تفاصيل الجذر 】
 
-${LAYER_DEFINITIONS.element}
+${defBox(LAYER_DEFINITIONS.element)}
 
 ◈ طبع الجذر (الداخلي): ${calc.internal.element}
 ${internalElementText}
 
 ───────────────────────────────────────────────────────────
 
-${LAYER_DEFINITIONS.planet}
+${defBox(LAYER_DEFINITIONS.planet)}
 
 ◈ الكوكب الداخلي: ${calc.internal.planet}
 ${internalPlanetText}
 
 ───────────────────────────────────────────────────────────
 
-${LAYER_DEFINITIONS.sign}
+${defBox(LAYER_DEFINITIONS.sign)}
 
 ◈ البرج الداخلي: ${calc.internal.sign}
 ${internalSignText}
 
 ───────────────────────────────────────────────────────────
 
-${LAYER_DEFINITIONS.house}
+${defBox(LAYER_DEFINITIONS.house)}
 
 ◈ البيت الداخلي: ${calc.internal.house} - ${calc.internal.houseName}
 ${internalHouseText}
@@ -236,6 +311,16 @@ ${Array.isArray(compounds) ? compounds.join('\n') : ''}
 
 【 القسم التاسع: القطبية وحركة الطاقة — Polarity 】
 
+📊 القطبية الفعلية لاسم "${name}": 【 ${polarity.label} — ${polarity.direction} 】
+
+${polarity.description}
+
+◈ القوة الحاملة للقطبية: ${polarity.strength}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📖 التعريف الموسوعي للقطبية:
+
 ${LAYER_DEFINITIONS.polarity}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -256,6 +341,16 @@ ${remedyText}
 
 【 القسم الحادي عشر: الانحياز البنيوي — بصمة التفرد 】
 
+📊 انحياز اسم "${name}": 【 ${bias.element} — ${bias.quality} 】
+
+${bias.description}
+
+◈ نوع الانحياز: ${bias.isReinforcing ? 'مُضاعِف (يشدّد الجذر)' : 'مُوسِّع (يضيف لوناً جديداً)'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📖 التعريف الموسوعي للانحياز:
+
 ${LAYER_DEFINITIONS.bias}
 `;
 
@@ -268,7 +363,7 @@ ${LAYER_DEFINITIONS.bias}
 
 【 القسم الثاني عشر: مبادئ التكوين والتكامل الشامل 】
 
-${LAYER_DEFINITIONS.integration}
+${defBox(LAYER_DEFINITIONS.integration)}
 `;
 
   // ═══════════════════════════════════════════════════════════

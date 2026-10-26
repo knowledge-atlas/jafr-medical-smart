@@ -19,6 +19,36 @@ import { REMAINDERS_FULL_TEXT } from '../data/remainders';
 import { RESONANCE_FULL_TEXT } from '../data/resonance';
 import { REMEDIES_TYPES_FULL as FALLBACK_REMEDIES } from '../data/remedies';
 
+
+// ═══════════════════════════════════════════════════════════
+// محسنات العرض — فواصل بصرية للصفات والتعريفات
+// ═══════════════════════════════════════════════════════════
+const fmtText = (text: string): string => {
+  if (!text) return '';
+  return text
+    .replace(/الصفات الإيجابية الموسعة:/g, '\n### ✅ الصفات الإيجابية\n')
+    .replace(/الصفات الإيجابية:/g, '\n### ✅ الصفات الإيجابية\n')
+    .replace(/الصفات السلبية \/ الظل:/g, '\n### ⚠️ الصفات السلبية / الظل\n')
+    .replace(/الصفات السلبية:/g, '\n### ⚠️ الصفات السلبية\n')
+    .replace(/العمق الداخلي:/g, '\n### 🔍 العمق الداخلي\n')
+    .replace(/نقطة الانهيار:/g, '\n### 💥 نقطة الانهيار\n')
+    .replace(/الترياق والتوازن:/g, '\n### 💊 الترياق والتوازن\n')
+    .replace(/محرك الفشل:/g, '\n### 🚨 محرك الفشل\n')
+    .replace(/محرك الخلل:/g, '\n### 🚨 محرك الخلل\n')
+    .replace(/الوظيفة الأساسية:/g, '\n### 🚀 الوظيفة الأساسية\n')
+    .replace(/ما يظهر للناس:/g, '\n### 👁️ ما يظهر للناس\n')
+    .replace(/ما يخفيه في العمق:/g, '\n### 🌑 ما يخفيه في العمق\n')
+    .replace(/القوة الأساسية:/g, '\n### 💪 القوة الأساسية\n')
+    .replace(/نقطة الضعف البنيوية والظل:/g, '\n### 🎭 نقطة الضعف والظل\n')
+    .replace(/النص النهائي:/g, '\n### 📜 النص النهائي\n');
+};
+
+const defBox = (text: string): string => {
+  if (!text) return '';
+  const clean = text.trim().replace(/\n/g, '\n> ');
+  return `\n> ${clean}\n\n`;
+};
+
 export const buildReport = (name: string, symptoms: string[] = []) => {
   const calc = calculate(name);
   if ('error' in calc) {
@@ -33,20 +63,20 @@ export const buildReport = (name: string, symptoms: string[] = []) => {
 
   const internalPlanetKey = normalizePlanetKey(calc.internal.planet);
   const internalElementKey = normalizeElementKey(calc.internal.element);
-  const internalPlanetText = cleanGenericText(PLANETS_FULL_TEXT[internalPlanetKey] || '');
-  const internalSignText = cleanGenericText(SIGNS_FULL_TEXT[calc.internal.sign] || '');
-  const internalElementText = cleanGenericText(ELEMENTS_FULL_TEXT[internalElementKey] || '');
-  const internalHouseText = cleanGenericText(HOUSES_FULL_TEXT[calc.internal.house] || '');
+  const internalPlanetText = fmtText(cleanGenericText(PLANETS_FULL_TEXT[internalPlanetKey] || ''));
+  const internalSignText = fmtText(cleanGenericText(SIGNS_FULL_TEXT[calc.internal.sign] || ''));
+  const internalElementText = fmtText(cleanGenericText(ELEMENTS_FULL_TEXT[internalElementKey] || ''));
+  const internalHouseText = fmtText(cleanGenericText(HOUSES_FULL_TEXT[calc.internal.house] || ''));
 
   const externalPlanetKey = normalizePlanetKey(calc.external.planet);
   const externalElementKey = normalizeElementKey(calc.external.element);
-  const externalSignText = cleanGenericText(SIGNS_FULL_TEXT[calc.external.sign] || '');
-  const externalPlanetText = cleanGenericText(PLANETS_FULL_TEXT[externalPlanetKey] || '');
-  const externalElementText = cleanGenericText(ELEMENTS_FULL_TEXT[externalElementKey] || '');
-  const externalHouseText = cleanGenericText(HOUSES_FULL_TEXT[calc.external.houseNumber] || '');
+  const externalSignText = fmtText(cleanGenericText(SIGNS_FULL_TEXT[calc.external.sign] || ''));
+  const externalPlanetText = fmtText(cleanGenericText(PLANETS_FULL_TEXT[externalPlanetKey] || ''));
+  const externalElementText = fmtText(cleanGenericText(ELEMENTS_FULL_TEXT[externalElementKey] || ''));
+  const externalHouseText = fmtText(cleanGenericText(HOUSES_FULL_TEXT[calc.external.houseNumber] || ''));
 
   const acquiredElementKey = normalizeElementKey(calc.acquiredElement);
-  const acquiredElementText = cleanGenericText(ELEMENTS_FULL_TEXT[acquiredElementKey] || '');
+  const acquiredElementText = fmtText(cleanGenericText(ELEMENTS_FULL_TEXT[acquiredElementKey] || ''));
 
   const remainder9Text = cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on9] || '');
   const remainder7Text = cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on7] || '');
@@ -87,9 +117,15 @@ export const buildReport = (name: string, symptoms: string[] = []) => {
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-【 القسم الأول: الملخص التنفيذي 】
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       📖 ديباجة النظام — الإطار المفاهيمي
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ${INTRO_PHILOSOPHY}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【 القسم الأول: الملخص التنفيذي 】
 
 
 ╭───────────────────────────────────────────────────────╮
@@ -130,6 +166,10 @@ ${INTRO_PHILOSOPHY}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+${defBox(LAYER_DEFINITIONS.root)}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 【 القسم الثاني: الجذر الحقيقي 】
 
 ${rootText}
@@ -138,20 +178,28 @@ ${rootText}
 
 【 القسم الثالث: الطبقة الداخلية — تفاصيل الجذر 】
 
+${defBox(LAYER_DEFINITIONS.element)}
+
 ◈ طبع الجذر (الداخلي): ${calc.internal.element}
 ${internalElementText}
 
 ───────────────────────────────────────────────────────────
+
+${defBox(LAYER_DEFINITIONS.planet)}
 
 ◈ الكوكب الداخلي: ${calc.internal.planet}
 ${internalPlanetText}
 
 ───────────────────────────────────────────────────────────
 
+${defBox(LAYER_DEFINITIONS.sign)}
+
 ◈ البرج الداخلي: ${calc.internal.sign}
 ${internalSignText}
 
 ───────────────────────────────────────────────────────────
+
+${defBox(LAYER_DEFINITIONS.house)}
 
 ◈ البيت الداخلي: ${calc.internal.house} - ${calc.internal.houseName}
 ${internalHouseText}
@@ -216,9 +264,9 @@ ${Array.isArray(compounds) ? compounds.join('\n') : ''}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-【 القسم التاسع: الوفق البسيط — المربع العددي 】
+【 القسم التاسع: القطبية وحركة الطاقة — Polarity 】
 
-${wafqStr}
+${defBox(LAYER_DEFINITIONS.polarity)}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -230,42 +278,28 @@ ${remedyText}
 `;
 
   // ═══════════════════════════════════════════════════════════
-  // ⭐ إضافة القسم الطبي
+  // القسم الحادي عشر: الانحياز البنيوي
   // ═══════════════════════════════════════════════════════════
-  try {
-    const medicalSection = buildMedicalSection(root, root);
-    if (medicalSection && medicalSection.length > 10) {
-      fullReport += `
+  fullReport += `
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-【 القسم الحادي عشر: الموسوعة الطبية الكاملة للجذر ${root} 】
+【 القسم الحادي عشر: الانحياز البنيوي — بصمة التفرد 】
 
-${medicalSection}
+${defBox(LAYER_DEFINITIONS.bias)}
 `;
-    }
-  } catch (e: any) {
-    console.warn('⚠️ فشل القسم الطبي:', e?.message);
-  }
 
   // ═══════════════════════════════════════════════════════════
-  // ⭐ إضافة قسم الموسوعة الكبيرة (505KB)
+  // القسم الثاني عشر: مبادئ التكوين والتكامل
   // ═══════════════════════════════════════════════════════════
-  try {
-    const encyclopediaSection = getEncyclopediaRootSection(root);
-    if (encyclopediaSection && encyclopediaSection.length > 50) {
-      fullReport += `
+  fullReport += `
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-【 القسم الثاني عشر: الموسوعة الكاملة — نصوص إضافية من المرجع الأصلي 】
+【 القسم الثاني عشر: مبادئ التكوين والتكامل الشامل 】
 
-${encyclopediaSection}
+${defBox(LAYER_DEFINITIONS.integration)}
 `;
-    }
-  } catch (e: any) {
-    console.warn('⚠️ فشل قسم الموسوعة:', e?.message);
-  }
 
   // ═══════════════════════════════════════════════════════════
   // الخاتمة

@@ -90,38 +90,18 @@ export default cleanGenericText;
 export const stripRootIntro = (text: string): string => {
   if (!text) return '';
   
-  // احذف أول قسم يبدأ بـ "مدخل إلى" حتى أول سطر يبدأ بـ "1." أو "## " أو "التعريف"
   const lines = text.split('\n');
-  const out: string[] = [];
-  let skipping = false;
+  if (lines.length === 0) return text;
   
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    
-    // بداية تخطي
-    if (line.startsWith('مدخل إلى') || line.startsWith('مدخل الى')) {
-      skipping = true;
-      continue;
-    }
-    
-    // نهاية تخطي — عند أول قسم مرقّم أو عنوان
-    if (skipping && (
-      /^\d+\.\s/.test(line) ||
-      /^#{1,3}\s/.test(line) ||
-      line.startsWith('التعريف') ||
-      line.startsWith('الباطن والظاهر') ||
-      line.startsWith('الهوية العامة') ||
-      line.startsWith('【')
-    )) {
-      skipping = false;
-    }
-    
-    if (!skipping) {
-      out.push(lines[i]);
-    }
+  const startIndex = lines.findIndex(l => /^\s*1\s*[.:]/.test(l));
+  
+  if (startIndex < 0) {
+    const firstNonEmpty = lines.findIndex(l => l.trim().length > 0);
+    if (firstNonEmpty < 0) return '';
+    return lines.slice(firstNonEmpty).join('\n').trim();
   }
   
-  return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  return lines.slice(startIndex).join('\n').trim();
 };
 
 /**

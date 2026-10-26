@@ -2,6 +2,7 @@
 // شاشة الإعدادات — إدارة LLM ومفاتيح API + إعادة بناء KB + Demo Mode
 // ================================================================
 
+import { freeTrial } from '../monetization/freeTrial';
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet,
@@ -307,6 +308,16 @@ const saveKey = async (which: 'gemini' | 'openai') => {
         >
           <Text style={{ color: '#d4af37', fontSize: 15, fontWeight: 'bold', writingDirection: 'rtl' }}>📚 المعرفة الخارجية</Text>
           <Text style={{ color: '#666', fontSize: 18 }}>←</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={{ flexDirection: 'row-reverse', padding: 14, marginHorizontal: 10, marginVertical: 6, backgroundColor: '#2c1a1a', borderRadius: 10, borderWidth: 1, borderColor: '#e74c3c', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+          onPress={async () => {
+            await freeTrial.reset();
+            alert('✅ تم إعادة تعيين التجربة المجانية');
+          }}
+        >
+          <Text style={{ color: '#e74c3c', fontSize: 14, fontWeight: 'bold' }}>🔄 إعادة تعيين التجربة (للمطورين)</Text>
         </TouchableOpacity>
 </ScrollView>
   );
