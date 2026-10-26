@@ -39,7 +39,7 @@ export default function BlockRenderer({ block }: Props) {
     case 'quote':        return <QuoteBlock block={block} />;
     case 'bullets':      return <BulletsBlock block={block} />;
     case 'magicSquare':  return <MagicSquareBlock block={block} />;
-    case 'separator':    return <View style={styles.separator} />;
+      return null; // hidden per user request
     default:             return null;
   }
 }

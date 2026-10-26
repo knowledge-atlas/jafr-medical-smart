@@ -53,6 +53,37 @@ export default function TemporalScreen({ route }: any) {
             <Markdown style={mdStyles}>{result.summary}</Markdown>
           </View>
 
+          {result.calendar && result.calendar.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>📅 التقويم الكامل ({result.calendar.length} يوم)</Text>
+              {result.calendar.map((d: any, i: number) => {
+                const score = Number((d.score * 100).toFixed(0));
+                const isPeak = score >= 70;
+                const isLow = score < 40;
+                return (
+                  <View
+                    key={i}
+                    style={[
+                      styles.dayCard,
+                      isPeak && { borderColor: '#2ecc71' },
+                      isLow && { borderColor: '#e74c3c' },
+                    ]}
+                  >
+                    <View style={{ flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text style={styles.dayDate}>{d.date}</Text>
+                      <Text style={[styles.dayScore, isPeak && { color: '#2ecc71' }, isLow && { color: '#e74c3c' }]}>
+                        {score}%
+                      </Text>
+                    </View>
+                    <Text style={styles.dayAdvice}>{d.advice}</Text>
+                    {isPeak && <Text style={styles.dayBadge}>🌟 يوم ذروة</Text>}
+                    {isLow && <Text style={[styles.dayBadge, { color: '#e74c3c' }]}>⚠️ يوم تعبئة</Text>}
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
           {result.peakDays.length > 0 && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>🌟 أيام الذروة</Text>
@@ -101,6 +132,8 @@ const styles = StyleSheet.create({
   dayCardLow: { borderLeftColor: '#e74c3c' },
   dayDate: { color: '#fff', fontSize: 15, fontWeight: 'bold', textAlign: 'right' },
   dayScore: { color: '#d4af37', fontSize: 20, fontWeight: 'bold', position: 'absolute', right: 12, top: 10 },
+  dayBadge: { color: '#d4af37', fontSize: 11, fontWeight: 'bold', marginTop: 6, textAlign: 'right', writingDirection: 'rtl' },
+
   dayAdvice: { color: '#b0b8c0', fontSize: 12, marginTop: 8, lineHeight: 18, textAlign: 'right' },
 });
 

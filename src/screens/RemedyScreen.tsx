@@ -47,6 +47,21 @@ export default function RemedyScreen({ route }: any) {
         <Text style={styles.heroText}>{name}</Text>
       </View>
 
+      <View style={styles.explainBox}>
+        <Text style={styles.explainTitle}>💡 لماذا متتبع الالتزام؟</Text>
+        <Text style={styles.explainText}>
+          التوصيات الرمزية لا تكفي وحدها — تحتاج إلى تحويلها إلى عادات يومية.
+          هذه الأداة تساعدك على:
+        </Text>
+        <Text style={styles.explainLine}>• متابعة التزامك يوماً بيوم</Text>
+        <Text style={styles.explainLine}>• بناء سلسلة إنجاز (Streak) تشجعك على الاستمرار</Text>
+        <Text style={styles.explainLine}>• مراجعة ما التزمت به وما أهملته</Text>
+        <Text style={styles.explainLine}>• رؤية تقدمك بوضوح عبر تقرير الالتزام</Text>
+        <Text style={styles.explainHint}>
+          💫 التوصيات ترشدك، والالتزام يحوّلها إلى واقع.
+        </Text>
+      </View>
+
       <View style={styles.form}>
         <Text style={styles.label}>عنوان التوصية:</Text>
         <TextInput
@@ -103,6 +118,12 @@ const styles = StyleSheet.create({
   hero: { alignItems: 'center', padding: 16, backgroundColor: '#1a3b5d', borderRadius: 12, marginBottom: 16 },
   heroTitle: { color: '#d4af37', fontSize: 20, fontWeight: 'bold', marginBottom: 6 },
   heroText: { color: '#c0c0c0', fontSize: 13 },
+  explainBox: { backgroundColor: '#0f2438', padding: 16, borderRadius: 12, marginBottom: 16, borderWidth: 1, borderColor: '#2c5070' },
+  explainTitle: { color: '#d4af37', fontSize: 15, fontWeight: 'bold', marginBottom: 8, textAlign: 'right', writingDirection: 'rtl' },
+  explainText: { color: '#e8e8e8', fontSize: 13, lineHeight: 22, marginBottom: 8, textAlign: 'right', writingDirection: 'rtl' },
+  explainLine: { color: '#e8e8e8', fontSize: 13, lineHeight: 22, marginVertical: 2, textAlign: 'right', writingDirection: 'rtl' },
+  explainHint: { color: '#d4af37', fontSize: 12, fontStyle: 'italic', marginTop: 8, textAlign: 'right', writingDirection: 'rtl' },
+
   form: { backgroundColor: '#1a3b5d', padding: 16, borderRadius: 12, marginBottom: 16 },
   label: { color: '#d4af37', fontSize: 14, marginBottom: 6 },
   input: { color: '#fff', fontSize: 15, padding: 12, backgroundColor: '#0a1628', borderRadius: 8, marginBottom: 12 },

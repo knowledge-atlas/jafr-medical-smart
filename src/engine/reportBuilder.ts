@@ -5,7 +5,8 @@ import {
 } from './calculator';
 import { analyzeCompounds } from './compoundAnalyzer';
 import { generateSimpleWafq, formatWafqDetailed } from './wafqGenerator';
-import { cleanRootText, cleanGenericText, extractTitle } from './textCleaner';
+import { cleanRootText, cleanGenericText, extractTitle, stripRootIntro } from './textCleaner';
+import { INTRO_PHILOSOPHY, LAYER_DEFINITIONS } from './definitions';
 import { getRootFullText, getResonance, getResonanceBetween, getRemediesForRoot, getEncyclopediaRootSection } from '../data/encyclopedia';
 import { buildMedicalSection } from '../data/medicalLookup';
 
@@ -27,7 +28,7 @@ export const buildReport = (name: string, symptoms: string[] = []) => {
   const root = calc.root;
 
   const rawRootText = getRootFullText(root) || ROOTS_FULL_TEXT[root] || '';
-  const rootText = cleanRootText(rawRootText, root);
+  const rootText = stripRootIntro(cleanRootText(rawRootText, root));
   const rootTitle = extractTitle(rootText) || `الجذر ${root}`;
 
   const internalPlanetKey = normalizePlanetKey(calc.internal.planet);
@@ -86,7 +87,16 @@ export const buildReport = (name: string, symptoms: string[] = []) => {
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       📖 ديباجة النظام — الإطار المفاهيمي
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${INTRO_PHILOSOPHY}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 【 القسم الأول: الملخص التنفيذي 】
+
 
 ╭───────────────────────────────────────────────────────╮
 │  الطبقة الداخلية (الجذر)                              │
@@ -126,6 +136,10 @@ export const buildReport = (name: string, symptoms: string[] = []) => {
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+${LAYER_DEFINITIONS.root}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 【 القسم الثاني: الجذر الحقيقي 】
 
 ${rootText}
@@ -134,20 +148,28 @@ ${rootText}
 
 【 القسم الثالث: الطبقة الداخلية — تفاصيل الجذر 】
 
+${LAYER_DEFINITIONS.element}
+
 ◈ طبع الجذر (الداخلي): ${calc.internal.element}
 ${internalElementText}
 
 ───────────────────────────────────────────────────────────
+
+${LAYER_DEFINITIONS.planet}
 
 ◈ الكوكب الداخلي: ${calc.internal.planet}
 ${internalPlanetText}
 
 ───────────────────────────────────────────────────────────
 
+${LAYER_DEFINITIONS.sign}
+
 ◈ البرج الداخلي: ${calc.internal.sign}
 ${internalSignText}
 
 ───────────────────────────────────────────────────────────
+
+${LAYER_DEFINITIONS.house}
 
 ◈ البيت الداخلي: ${calc.internal.house} - ${calc.internal.houseName}
 ${internalHouseText}
@@ -212,9 +234,9 @@ ${Array.isArray(compounds) ? compounds.join('\n') : ''}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-【 القسم التاسع: الوفق البسيط — المربع العددي 】
+【 القسم التاسع: القطبية وحركة الطاقة — Polarity 】
 
-${wafqStr}
+${LAYER_DEFINITIONS.polarity}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -226,42 +248,28 @@ ${remedyText}
 `;
 
   // ═══════════════════════════════════════════════════════════
-  // ⭐ إضافة القسم الطبي
+  // القسم الحادي عشر: الانحياز البنيوي
   // ═══════════════════════════════════════════════════════════
-  try {
-    const medicalSection = buildMedicalSection(root, root);
-    if (medicalSection && medicalSection.length > 10) {
-      fullReport += `
+  fullReport += `
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-【 القسم الحادي عشر: الموسوعة الطبية الكاملة للجذر ${root} 】
+【 القسم الحادي عشر: الانحياز البنيوي — بصمة التفرد 】
 
-${medicalSection}
+${LAYER_DEFINITIONS.bias}
 `;
-    }
-  } catch (e: any) {
-    console.warn('⚠️ فشل القسم الطبي:', e?.message);
-  }
 
   // ═══════════════════════════════════════════════════════════
-  // ⭐ إضافة قسم الموسوعة الكبيرة (505KB)
+  // القسم الثاني عشر: مبادئ التكوين والتكامل
   // ═══════════════════════════════════════════════════════════
-  try {
-    const encyclopediaSection = getEncyclopediaRootSection(root);
-    if (encyclopediaSection && encyclopediaSection.length > 50) {
-      fullReport += `
+  fullReport += `
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-【 القسم الثاني عشر: الموسوعة الكاملة — نصوص إضافية من المرجع الأصلي 】
+【 القسم الثاني عشر: مبادئ التكوين والتكامل الشامل 】
 
-${encyclopediaSection}
+${LAYER_DEFINITIONS.integration}
 `;
-    }
-  } catch (e: any) {
-    console.warn('⚠️ فشل قسم الموسوعة:', e?.message);
-  }
 
   // ═══════════════════════════════════════════════════════════
   // الخاتمة

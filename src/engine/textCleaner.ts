@@ -81,3 +81,96 @@ export const safeToString = (value: any): string => {
 };
 
 export default cleanGenericText;
+
+
+/**
+ * يحذف "مدخل إلى طبيعة..." من بداية نصوص الجذور
+ * ويستبدلها بتعريف مختصر
+ */
+export const stripRootIntro = (text: string): string => {
+  if (!text) return '';
+  
+  // احذف أول قسم يبدأ بـ "مدخل إلى" حتى أول سطر يبدأ بـ "1." أو "## " أو "التعريف"
+  const lines = text.split('\n');
+  const out: string[] = [];
+  let skipping = false;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    // بداية تخطي
+    if (line.startsWith('مدخل إلى') || line.startsWith('مدخل الى')) {
+      skipping = true;
+      continue;
+    }
+    
+    // نهاية تخطي — عند أول قسم مرقّم أو عنوان
+    if (skipping && (
+      /^\d+\.\s/.test(line) ||
+      /^#{1,3}\s/.test(line) ||
+      line.startsWith('التعريف') ||
+      line.startsWith('الباطن والظاهر') ||
+      line.startsWith('الهوية العامة') ||
+      line.startsWith('【')
+    )) {
+      skipping = false;
+    }
+    
+    if (!skipping) {
+      out.push(lines[i]);
+    }
+  }
+  
+  return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+};
+
+/**
+ * تقسيم النص إلى فئات (صفات إيجابية / سلبية / عمق)
+ */
+export interface TraitBlock {
+  type: 'positive' | 'negative' | 'depth' | 'other';
+  title: string;
+  content: string;
+}
+
+export const parseElementTraits = (text: string): TraitBlock[] => {
+  if (!text) return [];
+  
+  const lines = text.split('\n');
+  const blocks: TraitBlock[] = [];
+  let current: TraitBlock | null = null;
+  
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    
+    // كشف بداية قسم جديد
+    if (/الصفات الإيجابية|الإيجابيات|النقاط الإيجابية|ميزات إيجابية/i.test(trimmed)) {
+      if (current) blocks.push(current);
+      current = { type: 'positive', title: '✅ الصفات الإيجابية', content: '' };
+      continue;
+    }
+    
+    if (/الصفات السلبية|السلبيات|النقاط السلبية|الظل|ميزات سلبية/i.test(trimmed)) {
+      if (current) blocks.push(current);
+      current = { type: 'negative', title: '⚠️ الصفات السلبية / الظل', content: '' };
+      continue;
+    }
+    
+    if (/العمق الداخلي|العمق|الجوهر الداخلي/i.test(trimmed) && /:/.test(trimmed)) {
+      if (current) blocks.push(current);
+      current = { type: 'depth', title: '🔍 العمق الداخلي', content: '' };
+      // احذف عنوان القسم واترك الباقي
+      const rest = trimmed.replace(/^[^:]+:\s*/, '');
+      if (rest) current.content += rest + '\n';
+      continue;
+    }
+    
+    if (current) {
+      current.content += line + '\n';
+    }
+  }
+  
+  if (current) blocks.push(current);
+  return blocks.filter(b => b.content.trim().length > 0);
+};
