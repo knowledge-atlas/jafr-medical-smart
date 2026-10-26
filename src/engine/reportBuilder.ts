@@ -271,7 +271,10 @@ export const buildReport = (name: string, symptoms: string[] = []) => {
 
   const remainder9Text = fmtBaawqi(cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on9] || ''));
   const remainder7Text = fmtBaawqi(cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on7] || ''));
-  const remainder28Text = fmtBaawqi(cleanGenericText(REMAINDERS_FULL_TEXT[calc.remainders.on28] || ''));
+  const remainder28Raw = REMAINDERS_FULL_TEXT[calc.remainders.on28] || '';
+  const remainder28Text = remainder28Raw
+    ? fmtBaawqi(cleanGenericText(remainder28Raw))
+    : `الباقي على 28 (الحرف): ${calc.remainders.on28}\n\nهذا الباقي لم يُوثَّق في قاعدة البيانات الحالية (البواقي الموثقة: 1 إلى 9).\n\nفي النظام الجفري، الباقي على 28 يشير إلى الحرف الرمزي الناتج عن قسمة مجموع الاسم على 28. للحصول على النص الكامل لهذا الباقي، يُنصح بمراجعة المصادر التراثية الموسعة.`;
 
   const resonanceRaw =
     getResonanceBetween(root, root) ||
