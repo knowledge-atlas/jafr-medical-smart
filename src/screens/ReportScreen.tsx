@@ -116,6 +116,19 @@ export default function ReportScreen({ route, navigation }: any) {
   }
 
   const text = getReportText();
+  // RLM واعٍ بـMarkdown: لا يكسر الجداول ولا القوائم
+  const RLM = '\u200F';
+  const rlmText = text.split('\n').map((line: string) => {
+    const t = line.trimStart();
+    if (!t) return line;
+    if (t.startsWith('```')) return line;                                    // code block: لا يلمس
+    if (t.startsWith('|')) return line.replace(/\|(\s+)/g, '|$1' + RLM);    // جدول: RLM بعد |
+    if (t.startsWith('>')) return line.replace(/^(\s*>+\s*)/, '$1' + RLM);   // blockquote
+    if (t.startsWith('#')) return line.replace(/^(#+\s+)/, '$1' + RLM);      // عنوان
+    if (/^[-*+]\s/.test(t)) return line.replace(/^([-*+]\s+)/, '$1' + RLM);  // قائمة نقطية
+    if (/^\d+\.\s/.test(t)) return line.replace(/^(\d+\.\s+)/, '$1' + RLM); // قائمة مرقمة
+    return line.replace(/^(\s*)/, '$1' + RLM);                              // نص عادي
+  }).join('\n');
 
   return (
     <View style={styles.container}>
@@ -182,7 +195,7 @@ export default function ReportScreen({ route, navigation }: any) {
         {/* Markdown Report */}
         {text ? (
           <View style={{ direction: 'rtl' as const }}>
-            <Markdown style={markdownStyles as any} rules={markdownRules as any}>{text}</Markdown>
+            <Markdown style={markdownStyles as any} rules={markdownRules as any}>{rlmText}</Markdown>
           </View>
         ) : (
           <Text style={styles.emptyText}>لا يوجد محتوى للتقرير.</Text>
@@ -304,10 +317,7 @@ const markdownRules = {
   bullet_list_content: (node: any, children: any, parent: any, styles: any) => (
     <View
       key={node.key}
-      style={{
-        flex: 1,
-        flexDirection: 'column',
-      }}
+      style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-end', width: '100%' }}
     >
       {children}
     </View>
@@ -343,39 +353,40 @@ const markdownRules = {
       {children}
     </View>
   ),
-  text: (node: any, children: any, parent: any, styles: any) => (
-    <Text key={node.key} style={styles.text}>
-      {node.content}
-    </Text>
-  ),
-  textgroup: (node: any, children: any, parent: any, styles: any) => (
-    <Text key={node.key} style={styles.textgroup}>
-      {children}
-    </Text>
-  ),
 };
 
 const markdownStyles = {
+  body: {
+    color: '#e8e8e8',
+    fontSize: 15,
+    lineHeight: 30,
+    textAlign: 'right' as const,
+    writingDirection: 'rtl' as const,
+  },
   text: {
     color: '#e8e8e8',
     fontSize: 15,
-    lineHeight: 26,
+    lineHeight: 30,
     textAlign: 'right' as const,
     writingDirection: 'rtl' as const,
+    flexShrink: 1 as const,
   },
   textgroup: {
     color: '#e8e8e8',
     fontSize: 15,
-    lineHeight: 26,
+    lineHeight: 30,
     textAlign: 'right' as const,
     writingDirection: 'rtl' as const,
+    flexDirection: 'row-reverse' as const,
+    flexWrap: 'wrap' as const,
+    flexShrink: 1 as const,
   },
-  body: {
-    color: '#e8e8e8',
-    fontSize: 15,
-    lineHeight: 26,
+  paragraph: {
+    flexDirection: 'row-reverse' as const,
+    flexWrap: 'wrap' as const,
+    width: '100%' as const,
+    marginBottom: 12,
     textAlign: 'right' as const,
-    writingDirection: 'rtl' as const,
   },
   heading1: {
     color: '#d4af37',
@@ -385,6 +396,8 @@ const markdownStyles = {
     marginBottom: 12,
     textAlign: 'right' as const,
     writingDirection: 'rtl' as const,
+    flexDirection: 'row-reverse' as const,
+    width: '100%' as const,
     borderBottomWidth: 2,
     borderBottomColor: '#d4af37',
     paddingBottom: 6,
@@ -397,6 +410,8 @@ const markdownStyles = {
     marginBottom: 10,
     textAlign: 'right' as const,
     writingDirection: 'rtl' as const,
+    flexDirection: 'row-reverse' as const,
+    width: '100%' as const,
   },
   heading3: {
     color: '#f0e0a0',
@@ -406,6 +421,8 @@ const markdownStyles = {
     marginBottom: 8,
     textAlign: 'right' as const,
     writingDirection: 'rtl' as const,
+    flexDirection: 'row-reverse' as const,
+    width: '100%' as const,
   },
   heading4: {
     color: '#f0e0a0',
@@ -415,12 +432,8 @@ const markdownStyles = {
     marginBottom: 6,
     textAlign: 'right' as const,
     writingDirection: 'rtl' as const,
-  },
-  paragraph: {
-    marginBottom: 12,
-    textAlign: 'right' as const,
-    writingDirection: 'rtl' as const,
-    direction: 'rtl' as const,
+    flexDirection: 'row-reverse' as const,
+    width: '100%' as const,
   },
   strong: {
     color: '#d4af37',
@@ -449,87 +462,97 @@ const markdownStyles = {
   bullet_list_content: {
     flex: 1,
     flexDirection: 'column' as const,
-  },
-  list_item: {
-    flexDirection: 'row-reverse' as const,
-    marginBottom: 6,
-    alignItems: 'flex-start' as const,
-    writingDirection: 'rtl' as const,
-  },
-  blockquote: {
-    borderLeftWidth: 0,
-    borderRightWidth: 4,
-    borderRightColor: '#d4af37',
-    paddingLeft: 0,
-    paddingRight: 12,
-    marginVertical: 10,
-    backgroundColor: '#1a3b5d',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    borderRadius: 6,
+    alignItems: 'flex-end' as const,
   },
   code_inline: {
     backgroundColor: '#1a3b5d',
-    color: '#f39c12',
+    color: '#d4af37',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
-    fontFamily: 'monospace',
+    fontFamily: 'monospace' as const,
+    fontSize: 14,
+    textAlign: 'right' as const,
+    writingDirection: 'rtl' as const,
   },
-  fence: {
-    backgroundColor: '#1a3b5d',
+  code_block: {
+    backgroundColor: '#0f2438',
+    borderColor: '#1a3b5d',
+    borderWidth: 1,
     color: '#e8e8e8',
     padding: 12,
     borderRadius: 8,
-    fontFamily: 'monospace',
-    marginVertical: 10,
+    fontFamily: 'monospace' as const,
+    fontSize: 13,
     textAlign: 'left' as const,
+    writingDirection: 'ltr' as const,
+    marginVertical: 8,
+  },
+  fence: {
+    backgroundColor: '#0f2438',
+    borderColor: '#1a3b5d',
+    borderWidth: 1,
+    color: '#e8e8e8',
+    padding: 12,
+    borderRadius: 8,
+    fontFamily: 'monospace' as const,
+    fontSize: 13,
+    textAlign: 'left' as const,
+    writingDirection: 'ltr' as const,
+    marginVertical: 8,
+  },
+  blockquote: {
+    backgroundColor: '#0f2438',
+    borderRightWidth: 4,
+    borderRightColor: '#d4af37',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginVertical: 8,
+    borderRadius: 4,
+    flexDirection: 'row-reverse' as const,
+    width: '100%' as const,
+  },
+  link: {
+    color: '#4da6ff',
+    textDecorationLine: 'underline' as const,
   },
   hr: {
-    backgroundColor: '#2c5070',
+    backgroundColor: '#1a3b5d',
     height: 1,
     marginVertical: 16,
   },
-  table: {
-    borderWidth: 1,
-    borderColor: '#d4af37',
-    borderRadius: 8,
-    marginVertical: 12,
-    overflow: 'hidden',
-    backgroundColor: '#0a1628',
-  },
-  thead: {
-    backgroundColor: '#1a3b5d',
-    flexDirection: 'row-reverse',
-  },
-  tbody: {
-    flexDirection: 'column',
-  },
+
+
   tr: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row-reverse' as const,
     borderBottomWidth: 1,
-    borderBottomColor: '#2c5070',
-    alignItems: 'stretch',
+    borderBottomColor: '#1a3b5d',
   },
   th: {
     flex: 1,
-    color: '#d4af37',
-    fontWeight: 'bold' as const,
-    padding: 10,
-    textAlign: 'right' as const,
-    writingDirection: 'rtl' as const,
-    fontSize: 13,
-    borderLeftWidth: 1,
-    borderLeftColor: '#2c5070',
+    padding: 8,
+    backgroundColor: '#1a3b5d',
+    alignItems: 'flex-end' as const,
   },
   td: {
     flex: 1,
-    color: '#e8e8e8',
-    padding: 10,
-    textAlign: 'right' as const,
+    padding: 8,
+    alignItems: 'flex-end' as const,
+  },
+  table: {
+    borderWidth: 1,
+    borderColor: '#1a3b5d',
+    borderRadius: 8,
+    overflow: 'hidden' as const,
+    marginVertical: 10,
+    width: '100%' as const,
+  },
+  ordered_list_icon: {
+    color: '#d4af37',
+    fontSize: 16,
+    fontWeight: 'bold' as const,
+    marginLeft: 0,
+    marginRight: 10,
     writingDirection: 'rtl' as const,
-    fontSize: 13,
-    borderLeftWidth: 1,
-    borderLeftColor: '#2c5070',
   },
 };
