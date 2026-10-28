@@ -1,7 +1,15 @@
-// Deprecated stub — emptied for Play Store compliance
-export const getMedicalRootFullText = (_n: number): string => '';
-export const getMedicalRemainderFullText = (_n: number): string => '';
-export const buildMedicalSection = (_r: number, _m: number): string => '';
+// ================================================================
+// STUB — المحتوى الطبي محذوف للامتثال (Google Play)
+// وظيفته الوحيدة: السماح لـ realWiring بالترجمة
+// لا يحتوي أي بيانات أدوية أو جرعات
+// ================================================================
+
+export const buildMedicalSection = (_rootNum: number, _remainderNum: number): string => '';
+
+export const getMedicalRootFullText = (_rootNum: number): string => '';
+
+export const getMedicalRemainderFullText = (_remainderNum: number): string => '';
+
 export const getAllMedicalRoots = (): any[] => [];
 export const getAllMedicalRemainders = (): any[] => [];
 export const getAllMedicalTables = (): Record<string, any> => ({});

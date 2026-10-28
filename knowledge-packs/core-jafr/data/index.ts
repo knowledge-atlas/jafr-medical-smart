@@ -19,14 +19,6 @@ export { default as jafrResonance } from './jafr_resonance.json';
 // ── البواقي ────────────────────────────────────────────────
 export { REMAINDERS_FULL_TEXT } from './remainders';
 
-// ── الطب التكاملي ──────────────────────────────────────────
-export {
-  getMedicalRootFullText,
-  getMedicalRemainderFullText,
-  buildMedicalSection,
-  getAllMedicalRoots,
-  getAllMedicalRemainders,
-  getAllMedicalTables,
 
 // ── الأوفاق والترياقات ─────────────────────────────────────
 export { WAFQ_FULL_TEXT } from './wafq';
