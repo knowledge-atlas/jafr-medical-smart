@@ -27,7 +27,7 @@
     },
     "web": {
       "favicon": "./assets/icon.png",
-      "name": "نظام الجفر الطبي الذكي"
+      "name": "الجفر التراثي الذكي"
     },
     "plugins": [
       [

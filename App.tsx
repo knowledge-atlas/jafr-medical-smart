@@ -25,7 +25,6 @@ import BrandScreen from './src/screens/BrandScreen';
 import TemporalScreen from './src/screens/TemporalScreen';
 import RemedyScreen from './src/screens/RemedyScreen';
 import HistoryScreen from './src/screens/HistoryScreen';
-import MedicalScreen from './src/screens/MedicalScreen';
 import SearchScreen from './src/screens/SearchScreen';
 import EntityDetailScreen from './src/screens/EntityDetailScreen';
 import AssistantScreen from './src/screens/AssistantScreen';

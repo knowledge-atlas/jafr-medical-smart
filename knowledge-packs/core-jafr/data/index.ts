@@ -20,8 +20,6 @@ export { default as jafrResonance } from './jafr_resonance.json';
 export { REMAINDERS_FULL_TEXT } from './remainders';
 
 // ── الطب التكاملي ──────────────────────────────────────────
-export { MEDICAL_ROOTS, MEDICAL_REMAINDERS } from './medicalRoots';
-export type { MedicalRootEntry, MedicalRemainderEntry } from './medicalRoots';
 export {
   getMedicalRootFullText,
   getMedicalRemainderFullText,
@@ -29,7 +27,6 @@ export {
   getAllMedicalRoots,
   getAllMedicalRemainders,
   getAllMedicalTables,
-} from './medicalLookup';
 
 // ── الأوفاق والترياقات ─────────────────────────────────────
 export { WAFQ_FULL_TEXT } from './wafq';

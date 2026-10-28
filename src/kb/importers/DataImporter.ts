@@ -11,9 +11,6 @@ import {
 import {
   importResonance, importCompounds, importWafq, importRemedies,
 } from './advancedImporters';
-import {
-  importMedicalRoots, importMedicalRemainders,
-} from './medicalImporters';
 import { importRelations } from './relationsImporter';
 
 export const importAll = async (): Promise<void> => {
@@ -48,9 +45,7 @@ export const importAll = async (): Promise<void> => {
 
   // 3. الطب التكاملي
   console.log('   ⏳ الجذور الطبية...');
-  if (FLAGS.MEDICAL_MODULE) KnowledgeBase.importEntities(importMedicalRoots());
   console.log('   ⏳ البواقي الطبية...');
-  if (FLAGS.MEDICAL_MODULE) KnowledgeBase.importEntities(importMedicalRemainders());
 
   // 4. ⭐ العلاقات (مهم!)
   console.log('   ⏳ العلاقات...');
