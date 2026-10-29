@@ -24,6 +24,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.3",
+    "react-native-enriched-markdown": "^1.1.1",
     "react-native-gesture-handler": "~2.32.0",
     "react-native-markdown-display": "^7.0.2",
     "react-native-safe-area-context": "~5.7.0",
@@ -51,5 +52,8 @@
     "pack:verify": "cd knowledge-packs/core-jafr && sha256sum -c checksums.txt 2>&1 | tail -5"
   },
   "private": true,
-  "description": "نظام الجفر الطبي الذكي — ميزان المرآة الذكي"
+  "description": "نظام الجفر الطبي الذكي — ميزان المرآة الذكي",
+  "allowScripts": {
+    "react-native-enriched-markdown@1.1.1": true
+  }
 }

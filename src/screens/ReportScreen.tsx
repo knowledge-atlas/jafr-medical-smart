@@ -5,7 +5,7 @@ import {
   Alert, ActivityIndicator,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import Markdown from 'react-native-markdown-display';
+import { EnrichedMarkdownText } from 'react-native-enriched-markdown';
 import { reportsStorage, SavedReport } from '../storage/reportsStorage';
 import ElementsRadarChart from '../components/ElementsRadarChart';
 import { computeElementBalance } from '../products/DeepDiveReport';
@@ -195,7 +195,7 @@ export default function ReportScreen({ route, navigation }: any) {
         {/* Markdown Report */}
         {text ? (
           <View style={{ direction: 'rtl' as const }}>
-            <Markdown style={markdownStyles as any} rules={markdownRules as any}>{rlmText}</Markdown>
+            <EnrichedMarkdownText flavor="github" markdown={text} markdownStyle={markdownStyles} />
           </View>
         ) : (
           <Text style={styles.emptyText}>لا يوجد محتوى للتقرير.</Text>
@@ -285,274 +285,18 @@ const styles = StyleSheet.create({
 // ═══════════════════════════════════════════════════════════
 // Custom Rules — لعرض الجداول والقوائم
 // ═══════════════════════════════════════════════════════════
-const markdownRules = {
-  // ═══ Bullet list: force RTL — bullet on right ═══
-  list_item: (node: any, children: any, parent: any, styles: any) => (
-    <View
-      key={node.key}
-      style={{
-        flexDirection: 'row-reverse',
-        alignItems: 'flex-start',
-        marginBottom: 8,
-        width: '100%',
-      }}
-    >
-      {children}
-    </View>
-  ),
-  bullet_list_icon: (node: any, children: any, parent: any, styles: any) => (
-    <Text
-      key={node.key}
-      style={{
-        color: '#d4af37',
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginRight: 10,
-        marginLeft: 0,
-      }}
-    >
-      {node.content || '•'}
-    </Text>
-  ),
-  bullet_list_content: (node: any, children: any, parent: any, styles: any) => (
-    <View
-      key={node.key}
-      style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-end', width: '100%' }}
-    >
-      {children}
-    </View>
-  ),
-  // ═══ Original rules ═══
-  table: (node: any, children: any, parent: any, styles: any) => (
-    <View key={node.key} style={styles.table}>
-      {children}
-    </View>
-  ),
-  thead: (node: any, children: any, parent: any, styles: any) => (
-    <View key={node.key} style={styles.thead}>
-      {children}
-    </View>
-  ),
-  tbody: (node: any, children: any, parent: any, styles: any) => (
-    <View key={node.key} style={styles.tbody}>
-      {children}
-    </View>
-  ),
-  tr: (node: any, children: any, parent: any, styles: any) => (
-    <View key={node.key} style={styles.tr}>
-      {children}
-    </View>
-  ),
-  th: (node: any, children: any, parent: any, styles: any) => (
-    <View key={node.key} style={styles.th}>
-      {children}
-    </View>
-  ),
-  td: (node: any, children: any, parent: any, styles: any) => (
-    <View key={node.key} style={styles.td}>
-      {children}
-    </View>
-  ),
-};
-
-const markdownStyles = {
-  body: {
-    color: '#e8e8e8',
-    fontSize: 15,
-    lineHeight: 30,
-    textAlign: 'right' as const,
-    writingDirection: 'rtl' as const,
-  },
-  text: {
-    color: '#e8e8e8',
-    fontSize: 15,
-    lineHeight: 30,
-    textAlign: 'right' as const,
-    writingDirection: 'rtl' as const,
-    flexShrink: 1 as const,
-  },
-  textgroup: {
-    color: '#e8e8e8',
-    fontSize: 15,
-    lineHeight: 30,
-    textAlign: 'right' as const,
-    writingDirection: 'rtl' as const,
-    flexDirection: 'row-reverse' as const,
-    flexWrap: 'wrap' as const,
-    flexShrink: 1 as const,
-  },
-  paragraph: {
-    flexDirection: 'row-reverse' as const,
-    flexWrap: 'wrap' as const,
-    width: '100%' as const,
-    marginBottom: 12,
-    textAlign: 'right' as const,
-  },
-  heading1: {
-    color: '#d4af37',
-    fontSize: 22,
-    fontWeight: 'bold' as const,
-    marginTop: 16,
-    marginBottom: 12,
-    textAlign: 'right' as const,
-    writingDirection: 'rtl' as const,
-    flexDirection: 'row-reverse' as const,
-    width: '100%' as const,
-    borderBottomWidth: 2,
-    borderBottomColor: '#d4af37',
-    paddingBottom: 6,
-  },
-  heading2: {
-    color: '#d4af37',
-    fontSize: 18,
-    fontWeight: 'bold' as const,
-    marginTop: 18,
-    marginBottom: 10,
-    textAlign: 'right' as const,
-    writingDirection: 'rtl' as const,
-    flexDirection: 'row-reverse' as const,
-    width: '100%' as const,
-  },
-  heading3: {
-    color: '#f0e0a0',
-    fontSize: 16,
-    fontWeight: 'bold' as const,
-    marginTop: 14,
-    marginBottom: 8,
-    textAlign: 'right' as const,
-    writingDirection: 'rtl' as const,
-    flexDirection: 'row-reverse' as const,
-    width: '100%' as const,
-  },
-  heading4: {
-    color: '#f0e0a0',
-    fontSize: 15,
-    fontWeight: 'bold' as const,
-    marginTop: 12,
-    marginBottom: 6,
-    textAlign: 'right' as const,
-    writingDirection: 'rtl' as const,
-    flexDirection: 'row-reverse' as const,
-    width: '100%' as const,
-  },
-  strong: {
-    color: '#d4af37',
-    fontWeight: 'bold' as const,
-  },
-  em: {
-    fontStyle: 'italic' as const,
-    color: '#b0b8c0',
-  },
-  bullet_list: {
-    marginLeft: 0,
-    marginRight: 8,
-  },
-  ordered_list: {
-    marginLeft: 0,
-    marginRight: 8,
-  },
-  bullet_list_icon: {
-    color: '#d4af37',
-    fontSize: 18,
-    fontWeight: 'bold' as const,
-    marginLeft: 0,
-    marginRight: 10,
-    writingDirection: 'rtl' as const,
-  },
-  bullet_list_content: {
-    flex: 1,
-    flexDirection: 'column' as const,
-    alignItems: 'flex-end' as const,
-  },
-  code_inline: {
-    backgroundColor: '#1a3b5d',
-    color: '#d4af37',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    fontFamily: 'monospace' as const,
-    fontSize: 14,
-    textAlign: 'right' as const,
-    writingDirection: 'rtl' as const,
-  },
-  code_block: {
-    backgroundColor: '#0f2438',
-    borderColor: '#1a3b5d',
-    borderWidth: 1,
-    color: '#e8e8e8',
-    padding: 12,
-    borderRadius: 8,
-    fontFamily: 'monospace' as const,
-    fontSize: 13,
-    textAlign: 'left' as const,
-    writingDirection: 'ltr' as const,
-    marginVertical: 8,
-  },
-  fence: {
-    backgroundColor: '#0f2438',
-    borderColor: '#1a3b5d',
-    borderWidth: 1,
-    color: '#e8e8e8',
-    padding: 12,
-    borderRadius: 8,
-    fontFamily: 'monospace' as const,
-    fontSize: 13,
-    textAlign: 'left' as const,
-    writingDirection: 'ltr' as const,
-    marginVertical: 8,
-  },
-  blockquote: {
-    backgroundColor: '#0f2438',
-    borderRightWidth: 4,
-    borderRightColor: '#d4af37',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginVertical: 8,
-    borderRadius: 4,
-    flexDirection: 'row-reverse' as const,
-    width: '100%' as const,
-  },
-  link: {
-    color: '#4da6ff',
-    textDecorationLine: 'underline' as const,
-  },
-  hr: {
-    backgroundColor: '#1a3b5d',
-    height: 1,
-    marginVertical: 16,
-  },
 
 
-  tr: {
-    flexDirection: 'row-reverse' as const,
-    borderBottomWidth: 1,
-    borderBottomColor: '#1a3b5d',
-  },
-  th: {
-    flex: 1,
-    padding: 8,
-    backgroundColor: '#1a3b5d',
-    alignItems: 'flex-end' as const,
-  },
-  td: {
-    flex: 1,
-    padding: 8,
-    alignItems: 'flex-end' as const,
-  },
-  table: {
-    borderWidth: 1,
-    borderColor: '#1a3b5d',
-    borderRadius: 8,
-    overflow: 'hidden' as const,
-    marginVertical: 10,
-    width: '100%' as const,
-  },
-  ordered_list_icon: {
-    color: '#d4af37',
-    fontSize: 16,
-    fontWeight: 'bold' as const,
-    marginLeft: 0,
-    marginRight: 10,
-    writingDirection: 'rtl' as const,
-  },
+const markdownStyles: any = {
+  body: { color: '#e8e8e8', fontSize: 16, lineHeight: 28 },
+  heading1: { color: '#d4af37', fontSize: 24, fontWeight: 'bold', marginTop: 20, marginBottom: 12, borderBottomWidth: 2, borderBottomColor: '#d4af37', paddingBottom: 4 },
+  heading2: { color: '#d4af37', fontSize: 20, fontWeight: 'bold', marginTop: 16, marginBottom: 8 },
+  heading3: { color: '#d4af37', fontSize: 18, fontWeight: 'bold', marginTop: 14, marginBottom: 6 },
+  paragraph: { color: '#e8e8e8', fontSize: 16, lineHeight: 28, marginBottom: 12 },
+  blockquote: { borderRightWidth: 4, borderRightColor: '#d4af37', paddingRight: 12, marginVertical: 8, backgroundColor: 'rgba(212, 175, 55, 0.05)', paddingVertical: 8, borderRadius: 4 },
+  code: { backgroundColor: '#1a3b5d', color: '#d4af37', fontFamily: 'monospace', fontSize: 14, paddingHorizontal: 4, paddingVertical: 2, borderRadius: 4 },
+  codeBlock: { backgroundColor: '#0f2438', color: '#e8e8e8', fontFamily: 'monospace', fontSize: 14, padding: 12, borderRadius: 8, marginVertical: 8 },
+  link: { color: '#64b5f6', textDecorationLine: 'underline' },
+  strong: { fontWeight: 'bold', color: '#ffffff' },
+  em: { fontStyle: 'italic', color: '#ffffff' },
 };

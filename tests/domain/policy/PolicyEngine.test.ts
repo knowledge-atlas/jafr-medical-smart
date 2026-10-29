@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { policyEngine } from '../../../src/domain/policy/PolicyEngine';
+import { IntentClassifier } from '../../../src/ai/IntentClassifier';
 
 describe('PolicyEngine — 6 قرارات', () => {
   it('ALLOW: نص عادي', () => {
@@ -13,12 +14,11 @@ describe('PolicyEngine — 6 قرارات', () => {
     expect(r.category).toBe('medical');
   });
 
-  it('ABSTAIN: توجيه دوائي', () => {
+  it('BLOCK: توجيه دوائي خارج النطاق', () => {
     const r = policyEngine.evaluateInput('اشرب دواء لعلاج الصداع');
-    expect(r.decision).toBe('ABSTAIN');
+    expect(r.decision).toBe('BLOCK');
     expect(r.category).toBe('medical');
   });
-
   it('TRANSFORM: اسم دواء', () => {
     const r = policyEngine.evaluateInput('تناول Sertraline يومياً');
     expect(r.decision).toBe('TRANSFORM');
@@ -26,12 +26,11 @@ describe('PolicyEngine — 6 قرارات', () => {
     expect(out).toContain('[معلومة عامة');
   });
 
-  it('WARN: تشخيص طبي', () => {
-    const r = policyEngine.evaluateInput('هل عندي مرض خطير؟');
-    expect(r.decision).toBe('WARN');
-    expect(r.category).toBe('medical');
+  it('IntentClassifier: detects medical diagnosis', () => {
+    const r = new IntentClassifier().classify('هل عندي مرض خطير؟');
+    expect(r.intent).toBe('medical');
+    expect(r.medical).toBe(true);
   });
-
   it('ESCALATE: إشارة انتحار', () => {
     const r = policyEngine.evaluateInput('أريد أن أنهي حياتي');
     expect(r.decision).toBe('ESCALATE');

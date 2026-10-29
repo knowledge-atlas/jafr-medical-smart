@@ -11,6 +11,7 @@ export const MEDICAL_RULES: any[] = [
     pattern: /Sertraline|Fluoxetine|Escitalopram|Venlafaxine|Duloxetine|Methylphenidate|Amphetamine|Testosterone|Mirtazapine|Lithium|Valproate|Lamotrigine|SSRIs?|SNRIs?/gi,
     decision: 'TRANSFORM',
     message: 'لا أستطيع تقديم معلومات عن الأدوية أو الجرعات.',
+    transform: () => '[معلومة عامة: لا أستطيع تقديم معلومات عن الأدوية أو الجرعات.]',
   },
   {
     category: 'medical',

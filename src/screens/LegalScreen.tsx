@@ -50,7 +50,7 @@ const DOCS = {
 • حذف التطبيق = حذف كل شيء
 
 ## التواصل
-mohammedsaeed95@gmail.com
+mohammedhnomi95@gmail.com
     `,
   },
   terms: {
@@ -83,7 +83,7 @@ mohammedsaeed95@gmail.com
 القرارات التي تتخذها = مسؤوليتك.
 
 ## التواصل
-mohammedsaeed95@gmail.com
+mohammedhnomi95@gmail.com
     `,
   },
   license: {
@@ -112,13 +112,13 @@ mohammedsaeed95@gmail.com
 
 ## الترخيص التجاري
 للحصول على ترخيص تجاري:
-mohammedsaeed95@gmail.com
+mohammedhnomi95@gmail.com
 
 ## المكتبات الخارجية
 React Native (MIT), Expo (MIT), TypeScript (Apache-2.0)
 
 ## التواصل
-mohammedsaeed95@gmail.com
+mohammedhnomi95@gmail.com
     `,
   },
   ai: {
