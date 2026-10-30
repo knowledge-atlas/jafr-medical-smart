@@ -204,11 +204,11 @@ const styles = StyleSheet.create({
   // Subheading
   subheadingWrapper: {
     marginTop: 14, marginBottom: 6,
-    flexDirection: RTL, alignItems: 'center', width: '100%',
+    flexDirection: 'row', alignItems: 'center', width: '100%',
   },
   subheadingAccent: {
     width: 4, height: 22, backgroundColor: '#d4af37',
-    borderRadius: 2, marginLeft: 8,
+    borderRadius: 2, marginStart: 8,
   },
   subheadingText: {
     flex: 1, color: '#d4af37', fontSize: 15, fontWeight: 'bold',
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden', backgroundColor: '#0a1628', width: '100%',
   },
   tableRow: {
-    flexDirection: RTL,     // ← row-reverse ثابت
+    flexDirection: 'row',      // ← row-reverse ثابت
     borderBottomWidth: 1, borderBottomColor: '#2c5070', alignItems: 'stretch',
   },
   tableRowAlternate: { backgroundColor: '#0f2438' },
@@ -263,14 +263,14 @@ const styles = StyleSheet.create({
     textAlign: 'right', writingDirection: 'rtl',
   },
   boxRow: {
-    flexDirection: RTL,     // ← row-reverse
+    flexDirection: 'row',      // ← row-reverse
     paddingVertical: 8, paddingHorizontal: 12,
     borderBottomWidth: 1, borderBottomColor: '#2c5070',
   },
   boxRowAlt: { backgroundColor: '#0f2438' },
   boxKey: {
     color: '#d4af37', fontSize: 13, fontWeight: 'bold',
-    minWidth: 90, textAlign: 'right', writingDirection: 'rtl', marginLeft: 8,
+    minWidth: 90, textAlign: 'right', writingDirection: 'rtl', marginStart: 8,
   },
   boxValue: {
     flex: 1, color: '#e8e8e8', fontSize: 13, lineHeight: 20,
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
 
   // Quote
   quote: {
-    flexDirection: RTL,     // ← row-reverse
+    flexDirection: 'row',      // ← row-reverse
     marginVertical: 10, backgroundColor: '#1a3b5d',
     borderRadius: 8, overflow: 'hidden', width: '100%',
   },
@@ -297,13 +297,13 @@ const styles = StyleSheet.create({
   // Bullets
   bulletsWrapper: { marginVertical: 8 },
   bulletRow: {
-    flexDirection: RTL,     // ← row-reverse
+    flexDirection: 'row',      // ← row-reverse
     alignItems: 'flex-start', marginVertical: 6,
     paddingHorizontal: 4, width: '100%',
   },
   bulletDot: {
     width: 6, height: 6, borderRadius: 3,
-    backgroundColor: '#d4af37', marginTop: 8, marginLeft: 8,
+    backgroundColor: '#d4af37', marginTop: 8, marginStart: 8,
   },
   bulletText: {
     flex: 1, color: '#e8e8e8', fontSize: 14, lineHeight: 24,
