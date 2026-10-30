@@ -123,7 +123,7 @@ function BoxBlock({ block }: { block: Extract<ReportBlock, { type: 'box' }> }) {
     <View style={styles.box}>
       {block.title && (
         <View style={styles.boxHeader}>
-          <View style={{ flexDirection: 'row-reverse', alignItems: 'center', gap: 8, flex: 1 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
             {(block as any).evidenceLevel ? (
               <ProvenanceBadge level={(block as any).evidenceLevel as EvidenceLevel} compact />
             ) : null}

@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   },
   tabsContent: { paddingHorizontal: 8, paddingVertical: 8, gap: 6 },
   tab: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1a3b5d',
     paddingHorizontal: 12,
@@ -392,7 +392,7 @@ const styles = StyleSheet.create({
     borderColor: '#2c5070',
   },
   sectionHeader: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#0f2438',
     paddingHorizontal: 14,
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
   },
   bottomBtn: {
     flex: 1,
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
