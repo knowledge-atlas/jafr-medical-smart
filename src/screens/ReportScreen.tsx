@@ -195,7 +195,7 @@ export default function ReportScreen({ route, navigation }: any) {
         {/* Markdown Report */}
         {text ? (
           <View style={{ direction: 'rtl' as const }}>
-            <EnrichedMarkdownText flavor="github" markdown={text} markdownStyle={markdownStyles} />
+            <EnrichedMarkdownText flavor="github" markdown={text} markdownStyle={markdownStyles}  selectionColor="rgba(212, 175, 55, 0.3)"/>
           </View>
         ) : (
           <Text style={styles.emptyText}>لا يوجد محتوى للتقرير.</Text>
