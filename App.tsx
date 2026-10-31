@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { DirectionProvider } from './src/utils/DirectionContext';
+import { PremiumProvider } from './src/context/PremiumContext';
 import { checkPremiumStatus } from './src/storage/premiumStorage';
 import FreeRootScreen from './src/screens/FreeRootScreen';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -127,7 +128,11 @@ export default function App() {
   const [consented, setConsented] = useState<boolean | null>(null);
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
   const [kbReady, setKbReady] = useState(false);
-  const [isPremium, setIsPremium] = useState(true);
+  const [isPremium, setIsPremium] = useState(false);
+
+  useEffect(() => {
+    checkPremiumStatus().then(setIsPremium);
+  }, []);
 
   useEffect(() => {
     
@@ -208,6 +213,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
+      <PremiumProvider>
       <DirectionProvider>
       <NavigationContainer>
       <Stack.Navigator
@@ -276,6 +282,7 @@ export default function App() {
       </Stack.Navigator>
       </NavigationContainer>
       </DirectionProvider>
+      </PremiumProvider>
     </ErrorBoundary>
   );
 }

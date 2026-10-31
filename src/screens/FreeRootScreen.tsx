@@ -6,26 +6,40 @@ import { useDirection } from '../utils/DirectionContext';
 
 export default function FreeRootScreen({ route, navigation }: any) {
   const { name, analysis } = route.params || { name: 'المستخدم' };
-  const { isRTL, toggleDirection } = useDirection(); // استخدام الزر العالمي
+  const { isRTL, toggleDirection } = useDirection();
   
   const fullText = analysis?.report || analysis?.text || '';
   let finalMarkdown = '';
 
   if (fullText) {
-    const startIdx = fullText.indexOf('1. التعريف') !== -1 ? fullText.indexOf('1. التعريف') : fullText.indexOf('التعريف الجفري');
+    // 1. استخراج الأقسام المطلوبة (بدءاً من الهوية العامة، وتجاهل التعريف والباطن/الظاهر)
+    // نبحث عن بداية القسم 3
+    let startIdx = fullText.indexOf('3. الهوية العامة');
+    if (startIdx === -1) {
+        startIdx = fullText.indexOf('الهوية العامة والمعنى البنيوي');
+    }
+    if (startIdx === -1) {
+         // إذا لم يجد، يرجع للبداية
+         startIdx = fullText.indexOf('1. التعريف') !== -1 ? fullText.indexOf('1. التعريف') : 0;
+    }
+
     let endIdx = fullText.indexOf('9. نقطة الضعف');
     if (endIdx === -1) endIdx = fullText.indexOf('نقطة الانهيار');
     if (endIdx === -1) endIdx = fullText.length;
 
     let rawSection = fullText.substring(startIdx, endIdx);
 
-    rawSection = rawSection.replace(/أما ظاهره الجفري/g, '\n\n### أولاً: الظاهر الجفري\n\nأما ظاهره الجفري');
-    rawSection = rawSection.replace(/وأما باطنه الجفري/g, '\n\n### ثانياً: الباطن الجفري\n\nوأما باطنه الجفري');
-    rawSection = rawSection.replace(/ونقطة ضعفه الجفرية/g, '\n\n### ثالثاً: نقطة الضعف الجفرية\n\nونقطة ضعفه الجفرية');
-    rawSection = rawSection.replace(/ومحرك خلله الجفري/g, '\n\n### رابعاً: محرك الخلل الجفري\n\nومحرك خلله الجفري');
+    // 2. إضافة العناوين الفرعية (أولاً، ثانياً...) لتظهر كعناوين مميزة
+    rawSection = rawSection.replace(/صاحب هذا الجذر يقرأ العالم/g, '\n\n### أولاً: البنية الإدراكية\n\nصاحب هذا الجذر يقرأ العالم');
+    rawSection = rawSection.replace(/نمط تفكيره هو/g, '\n\n### ثانياً: نمط التفكير\n\nنمط تفكيره هو');
+    rawSection = rawSection.replace(/حين يواجه الآخرون/g, '\n\n### ثالثاً: ما يظهر للناس\n\nحين يواجه الآخرون');
+    rawSection = rawSection.replace(/لكن خلف هذا الوجه/g, '\n\n### رابعاً: ما يخفيه في العمق\n\nلكن خلف هذا الوجه');
+    rawSection = rawSection.replace(/أقوى ما في هذا الجذر/g, '\n\n### خامساً: القوة الأساسية\n\nأقوى ما في هذا الجذر');
 
+    // 3. تحويل ترقيم الأقسام (3. ، 4. ...) إلى عناوين Markdown
     rawSection = rawSection.replace(/^(\d+)\.\s*(.*)$/gm, '\n## $1. $2\n');
 
+    // 4. تنظيف الأسطر ودمج الفقرات المقطوعة
     const lines = rawSection.split('\n');
     let formattedLines: string[] = [];
     let currentParagraph = '';
@@ -58,7 +72,7 @@ export default function FreeRootScreen({ route, navigation }: any) {
     }
     if (currentParagraph) formattedLines.push(currentParagraph);
 
-    finalMarkdown = `# الجذر الحقيقي لاسم "${name}"\n\n> أهلاً بك في مساحتك الخاصة. هنا، لا نقدم تنبؤات، بل نقدم فهماً. ابدأ رحلتك نحو وعي أعمق بذاتك.\n\n` + formattedLines.join('\n\n');
+    finalMarkdown = `# الجذر الحقيقي لاسم "${name}"\n\n` + formattedLines.join('\n\n');
   }
 
   return (
