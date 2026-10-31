@@ -5,12 +5,15 @@ import {
   Alert, ActivityIndicator,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { EnrichedMarkdownText } from 'react-native-enriched-markdown';
+import { EnrichedMarkdownText } from '../utils/MarkdownMock';
+import { useDirection } from '../utils/DirectionContext';
+import { Ionicons } from '@expo/vector-icons';
 import { reportsStorage, SavedReport } from '../storage/reportsStorage';
 import ElementsRadarChart from '../components/ElementsRadarChart';
 import { computeElementBalance } from '../products/DeepDiveReport';
 
 export default function ReportScreen({ route, navigation }: any) {
+  const { isRTL, toggleDirection } = useDirection();
   const { report, name, layers, reportId, readOnly } = route.params || {};
   const savedReportId = (report as any)?.__reportId;
 

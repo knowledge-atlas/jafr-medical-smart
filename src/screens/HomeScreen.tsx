@@ -72,7 +72,7 @@ export default function HomeScreen({ navigation }: any) {
     // ═══ تسجيل الاستخدام ═══
     await freeTrial.recordAnalysis();
 
-    navigation.navigate('ProductPicker', {
+    navigation.navigate('FreeRoot', {
       analysis,
       name: name.trim(),
       mode,
@@ -85,7 +85,7 @@ export default function HomeScreen({ navigation }: any) {
       Alert.alert('تنبيه', 'تعذّر إعادة التحليل');
       return;
     }
-    navigation.navigate('ProductPicker', {
+    navigation.navigate('FreeRoot', {
       analysis,
       name: report.name,
       mode: 'personal',
@@ -120,7 +120,7 @@ export default function HomeScreen({ navigation }: any) {
 
       {/* ═══ بطاقة التحليل ═══ */}
       <View style={styles.card}>
-        <Text style={styles.label}>👤 أدخل اسمك (بالعربية):</Text>
+        <Text style={styles.label}>👤 اكتشف خريطة وعيك. أدخل اسمك:</Text>
         <TextInput
           style={styles.input}
           value={name}

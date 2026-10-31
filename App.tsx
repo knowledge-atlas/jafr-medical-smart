@@ -2,6 +2,7 @@ import 'react-native-gesture-handler';
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { DirectionProvider } from './src/utils/DirectionContext';
 import { checkPremiumStatus } from './src/storage/premiumStorage';
 import FreeRootScreen from './src/screens/FreeRootScreen';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -126,10 +127,10 @@ export default function App() {
   const [consented, setConsented] = useState<boolean | null>(null);
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
   const [kbReady, setKbReady] = useState(false);
-  const [isPremium, setIsPremium] = useState(false);
+  const [isPremium, setIsPremium] = useState(true);
 
   useEffect(() => {
-    checkPremiumStatus().then(setIsPremium);
+    
   }, []);
 
   // ═══ 1) فحص حالة الموافقة + بدء التهيئة الخفيفة ═══
@@ -207,6 +208,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
+      <DirectionProvider>
       <NavigationContainer>
       <Stack.Navigator
         screenOptions={({ navigation }) => ({
@@ -231,6 +233,7 @@ export default function App() {
           {(props) => <PremiumGuard isPremium={isPremium} title="التقرير العميق"><ReportScreen {...props} /></PremiumGuard>}
         </Stack.Screen>
         <Stack.Screen name="ReportChat" component={ReportChatScreen} options={{ title: '✨ اسأل عن التقرير' }} />
+        <Stack.Screen name="FreeRoot" component={FreeRootScreen} options={{ title: 'الجذر الحقيقي (مجاني)' }} />
         <Stack.Screen name="ProductPicker" options={{ title: 'اختر التقرير' }}>
           {(props) => <PremiumGuard isPremium={isPremium} title="اختر التقرير"><ProductPickerScreen {...props} /></PremiumGuard>}
         </Stack.Screen>
@@ -272,6 +275,7 @@ export default function App() {
         <Stack.Screen name="ImportExternal" component={ImportExternalScreen} options={{ title: '📥 استيراد ملف' }} />
       </Stack.Navigator>
       </NavigationContainer>
+      </DirectionProvider>
     </ErrorBoundary>
   );
 }

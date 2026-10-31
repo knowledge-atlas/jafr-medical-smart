@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useDirection } from '../utils/DirectionContext';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
   ActivityIndicator, Share, Alert,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { Ionicons } from '@expo/vector-icons';
 import { reflectiveArchetypesEngine } from '../domain/services/ReflectiveArchetypesEngine';
 
 export default function ReflectiveReportScreen({ route, navigation }: any) {
+  const { isRTL, toggleDirection } = useDirection();
   const { name, layers, analysis } = route.params || {};
   const finalLayers = layers ?? analysis?.layers;
   const finalName = name ?? analysis?.name;
