@@ -1,10 +1,13 @@
 import { defaultLLMCaller } from './defaultLLMCaller';
 import { chatMemory } from './ChatMemory';
+import { ethicalGuardrails } from './EthicalGuardrails';
+import { medicalFilter } from '../domain/services/MedicalFilter';
+import { AI_DISCLOSURE } from '../services/AIIntegration';
 
-const BASE_SYSTEM = `أنت "مستشار الجفر الطبي الذكي" — مساعد تحليلي ذكي وودود.
+const BASE_SYSTEM = `أنت "مستشار الجفر التراثي الذكي" — مساعد تحليلي ذكي وودود.
 
 ## هويتك
-- خبير في نظام الجفر الطبي الذكي (علم الحروف، الأعداد، الرموز).
+- خبير في نظام الجفر التراثي الذكي (علم الحروف، الأعداد، الرموز).
 - تتحدث العربية الفصحى بأسلوب هادئ، عميق، ودود.
 - تُجيب كما تُجيب صديق خبير — بحرية، بلا قوالب جامدة.
 
@@ -15,7 +18,8 @@ const BASE_SYSTEM = `أنت "مستشار الجفر الطبي الذكي" — 
 4. **لا تقل "لم أجد"** إلا إن كان السؤال خارج النظام تماماً.
 5. **اذكر مصدرك** عند الاقتباس (البوني، موسيوعة خارجية، إلخ).
 6. **اختم بإيجاز** دون تكرار "هذا تحليل رمزي" إلا عند الضرورة.
-7. **إن سأل المستخدم عن شيء غير جفري** (طبخ، برمجة) → رد بلطف بأن تخصصك الجفر.
+7. **ممنوع**: التشخيص الطبي أو النفسي، ذكر الأدوية أو الجرعات، التنبؤ بالمستقبل أو الأجل، الفتاوى، النصائح المالية. هذا تأمل رمزي للثقافة والترفيه.
+8. **إن سأل المستخدم عن شيء غير جفري** (طبخ، برمجة) → رد بلطف بأن تخصصك الجفر.
 
 ## أسلوبك
 - قصير ثم مفيد — لا حشو.
@@ -68,12 +72,16 @@ ${contextSummary}
       throw new Error('رد فارغ');
     }
 
+    // حواجز أخلاقية + فلتر المحتوى الطبي + إفصاح الذكاء الاصطناعي
+    const guarded = ethicalGuardrails.checkOutput(answer).sanitized ?? answer;
+    const safe = medicalFilter.filter(guarded).text.trim();
+
     // سجّل في الذاكرة
     chatMemory.add('user', question);
-    chatMemory.add('assistant', answer);
+    chatMemory.add('assistant', safe);
     if (activeName) chatMemory.setName(activeName);
 
-    return { answer, usedAI: true, source: 'live-llm' };
+    return { answer: `${safe}\n\n_${AI_DISCLOSURE}_`, usedAI: true, source: 'live-llm' };
   } catch (e: any) {
     console.warn('⚠️ LiveAssistant LLM failed:', e);
 

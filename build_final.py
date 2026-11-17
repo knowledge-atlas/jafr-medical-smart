@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""يبني my-jafr-app-FINAL-READY-FOR-PLAY.zip من المجلد الحالي، ويستبعد الملفات غير اللازمة."""
+"""يبني my-jafr-app-FINAL-OWNER-UNLOCK-READY.zip من المجلد الحالي، ويستبعد الملفات غير اللازمة."""
 import os, sys, zipfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(os.path.dirname(ROOT), "my-jafr-app-FINAL-READY-FOR-PLAY.zip")
+OUT = os.path.join(os.path.dirname(ROOT), "my-jafr-app-FINAL-OWNER-UNLOCK-READY.zip")
 SKIP_DIRS = {"node_modules", "android", "ios", ".expo", "_backup_old", "dist", "build", ".git"}
 SKIP_SUFFIX = (".bak",)
 SKIP_CONTAINS = (".bak-", "prebuild.log")

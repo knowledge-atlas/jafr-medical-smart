@@ -7,19 +7,13 @@ import {
   AIProvider, AI_DISCLOSURE, getAIStatus, setAIEnabled, setAIProvider, saveAIKey, deleteAIKeys, testAIConnection,
 } from '../services/AIIntegration';
 import { clearAllUserData } from '../services/dataManager';
-import Constants from 'expo-constants';
-import { usePremium } from '../context/PremiumContext';
 
 const PROVIDERS: { id: AIProvider; label: string }[] = [
   { id: 'gemini', label: 'Gemini' },
   { id: 'openai', label: 'OpenAI' },
 ];
 
-export default function SettingsScreen(_props: any) {
-  const { setPremium } = usePremium();
-  const [tapCount, setTapCount] = useState(0);
-  const [showSecretInput, setShowSecretInput] = useState(false);
-  const [inputCode, setInputCode] = useState('');
+export default function SettingsScreen({ navigation }: any) {
   const [provider, setProvider] = useState<AIProvider>('gemini');
   const [apiKey, setApiKey] = useState('');
   const [enabled, setEnabled] = useState(false);
@@ -65,7 +59,7 @@ export default function SettingsScreen(_props: any) {
     }
     Alert.alert(
       'تفعيل الذكاء الاصطناعي',
-      'عند التفعيل تُرسَل عناوين المحاور ومستوياتها فقط (دون اسمك) إلى المزود الذي اخترته لتوليد تأمل إضافي. يمكنك الإيقاف في أي وقت. المتابعة؟',
+      'عند التفعيل تُرسَل عناوين المحاور ومستوياتها (دون اسمك) لتوليد تأمل إضافي، وفي المساعد الذكي تُرسَل أسئلتك وأي اسم تكتبه فيها، إلى المزود الذي اخترته وبمفتاحك أنت. يمكنك الإيقاف في أي وقت. المتابعة؟',
       [
         { text: 'إلغاء', style: 'cancel' },
         {
@@ -105,29 +99,6 @@ export default function SettingsScreen(_props: any) {
     ]);
   };
 
-
-  const handleVersionTap = () => {
-    const newCount = tapCount + 1;
-    setTapCount(newCount);
-    if (newCount >= 7) {
-      setShowSecretInput(true);
-      setTapCount(0);
-      Alert.alert('وضع المطور', 'تم تفعيل حقل الرمز السري');
-    }
-  };
-
-  const verifySecretCode = () => {
-    const expectedCode = Constants.expoConfig?.extra?.developerUnlockCode;
-    if (inputCode === expectedCode) {
-      setPremium(true);
-      Alert.alert('نجاح 🎉', 'تم فتح جميع الميزات المدفوعة بنجاح.');
-      setShowSecretInput(false);
-      setInputCode('');
-    } else {
-      Alert.alert('خطأ ❌', 'الرمز السري غير صحيح.');
-    }
-  };
-
   const handleClearData = () => {
     Alert.alert(
       'حذف جميع البيانات',
@@ -159,8 +130,8 @@ export default function SettingsScreen(_props: any) {
           <Text style={styles.cardTitle}>الذكاء الاصطناعي (اختياري)</Text>
         </View>
         <Text style={styles.note}>
-          يعمل التطبيق كاملاً دون إنترنت بمحركه المحلي. تفعيل الذكاء الاصطناعي يضيف تأملاً إضافياً فقط،
-          ولا يُرسَل اسمك ولا أي نص شخصي.
+          يعمل التطبيق كاملاً دون إنترنت بمحركه المحلي. تفعيل الذكاء الاصطناعي يضيف تأملاً إضافياً
+          ويشغّل المساعد الذكي. في التأمل الإضافي لا يُرسَل اسمك؛ أما في المساعد فتُرسَل أسئلتك وأي اسم تكتبه فيها.
         </Text>
 
         <View style={styles.switchRow}>
@@ -232,29 +203,15 @@ export default function SettingsScreen(_props: any) {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity onPress={handleVersionTap} activeOpacity={0.8} style={{ marginTop: 30, paddingBottom: 20 }}>
-        <Text style={{ textAlign: 'center', color: '#667788', fontSize: 12 }}>
-          الإصدار 2.12.1
-        </Text>
+      {/* مدخل خفي للمالك: ضغطة مطوّلة على سطر الإصدار */}
+      <TouchableOpacity
+        onLongPress={() => navigation?.navigate('OwnerUnlock')}
+        delayLongPress={1500}
+        activeOpacity={1}
+        accessibilityLabel="فتح المالك"
+      >
+        <Text style={styles.versionText}>الإصدار 1.0.0</Text>
       </TouchableOpacity>
-
-      {showSecretInput && (
-        <View style={{ padding: 15, backgroundColor: '#0f2438', borderRadius: 10, marginTop: 10, borderWidth: 1, borderColor: '#2c5070' }}>
-          <TextInput
-            placeholder="أدخل الرمز السري هنا..."
-            value={inputCode}
-            onChangeText={setInputCode}
-            style={{ backgroundColor: '#0a192f', color: '#fff', borderBottomWidth: 1, borderColor: '#2c5070', padding: 8, marginBottom: 10, textAlign: 'center' }}
-            placeholderTextColor="#667788"
-          />
-          <TouchableOpacity 
-            onPress={verifySecretCode}
-            style={{ backgroundColor: '#d4af37', padding: 12, borderRadius: 8, alignItems: 'center' }}
-          >
-            <Text style={{ color: '#0a192f', textAlign: 'center', fontWeight: 'bold' }}>تفعيل الميزات المدفوعة</Text>
-          </TouchableOpacity>
-        </View>
-      )}
     </ScrollView>
   );
 }
@@ -284,5 +241,6 @@ const styles = StyleSheet.create({
   disclosure: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#1a3b5d' },
   disclosureText: { color: '#9fb0c3', fontSize: 12, flex: 1, textAlign: 'right', writingDirection: 'rtl' },
   dangerBtn: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 14, backgroundColor: '#2c1a1a', borderRadius: 10, borderWidth: 1, borderColor: '#5a2a2a', minHeight: 48 },
+  versionText: { color: '#4a5a6e', fontSize: 11, textAlign: 'center', paddingVertical: 12 },
   dangerText: { color: '#e74c3c', fontWeight: 'bold', fontSize: 15 },
 });

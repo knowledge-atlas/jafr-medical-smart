@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
-import { llmBridge } from '../ai';
+import { getAIStatus } from '../services/AIIntegration';
 import { askLiveAssistant } from '../ai/LiveAssistant';
 import { chatMemory } from '../ai/ChatMemory';
 import { buildContextSummary } from '../ai/buildContextSummary';
@@ -66,10 +66,9 @@ export default function AssistantScreen() {
 
   useEffect(() => {
     (async () => {
-      const provider = await llmBridge.getProvider();
-      const enabled = provider === 'gemini' || provider === 'openai';
-      setHasLLM(enabled);
-      setStatusMsg(enabled ? `🌐 ${provider}` : '⚠️ لم يُفعَّل AI');
+      const s = await getAIStatus();
+      setHasLLM(s.enabled);
+      setStatusMsg(s.enabled ? `🌐 ${s.provider}` : '⚠️ لم يُفعَّل AI');
     })();
   }, []);
 
@@ -186,7 +185,7 @@ export default function AssistantScreen() {
             {!hasLLM && (
               <View style={styles.warnBox}>
                 <Text style={styles.warnText}>
-                  ⚠️ فعّل مفتاح Gemini أو Groq من الإعدادات لتحادث بحرية
+                  ⚠️ أضف مفتاحك وفعّل الذكاء الاصطناعي من الإعدادات لتحادث بحرية
                 </Text>
               </View>
             )}

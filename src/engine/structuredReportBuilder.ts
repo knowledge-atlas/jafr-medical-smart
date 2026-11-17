@@ -13,6 +13,7 @@ import { cleanRootText, cleanGenericText, extractTitle } from './textCleaner';
 import { getRootFullText, getResonance, getResonanceBetween, getRemediesForRoot, getEncyclopediaRootSection } from '../data/encyclopedia';
 import { getFullRootText, hasFullRoot } from '../data/fullRoots';
 import { buildMedicalSection } from '../data/medicalLookup';
+import { FLAGS } from '../config/featureFlags';
 import { SYSTEM_OVERVIEW, TAB_OVERVIEWS } from '../data/tabOverviews';
 
 import { ROOTS_FULL_TEXT } from '../data/roots';
@@ -427,7 +428,7 @@ export const buildStructuredReport = (
   // ⭐ القسم الطبي
   // ═══════════════════════════════════════════════════════════
   try {
-    const medicalSection = buildMedicalSection(root, root);
+    const medicalSection = FLAGS.MEDICAL_MODULE ? buildMedicalSection(root, root) : '';
     if (medicalSection && medicalSection.length > 10) {
       md.push(`## 🏥 الموسوعة الطبية الكاملة للجذر ${root}`);
       md.push('');

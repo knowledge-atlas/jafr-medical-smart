@@ -12,6 +12,7 @@ export default defineConfig({
       'expo-asset': stub('expo-asset.ts'),
       'expo-file-system': stub('expo-file-system.ts'),
       'expo-secure-store': stub('expo-secure-store.ts'),
+      'expo-crypto': stub('expo-crypto.ts'),
     },
   },
 });

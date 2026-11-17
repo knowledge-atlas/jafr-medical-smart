@@ -11,9 +11,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { reportsStorage, SavedReport } from '../storage/reportsStorage';
 import ElementsRadarChart from '../components/ElementsRadarChart';
 import { computeElementBalance } from '../products/DeepDiveReport';
+import { usePremium } from '../context/PremiumContext';
 
 export default function ReportScreen({ route, navigation }: any) {
   const { isRTL, toggleDirection } = useDirection();
+  const { isPremium } = usePremium();
   const { report, name, layers, reportId, readOnly } = route.params || {};
   const savedReportId = (report as any)?.__reportId;
 
@@ -144,8 +146,9 @@ export default function ReportScreen({ route, navigation }: any) {
         </View>
         <View style={styles.topBarActions}>
           <TouchableOpacity
-            style={[styles.actionBtn, { opacity: 0.6 }]}
+            style={[styles.actionBtn, !isPremium && { opacity: 0.6 }]}
             onPress={() => {
+              if (isPremium) return void copyReport();
               Alert.alert(
                 '💎 النسخة الكاملة',
                 'النسخ متاح في النسخة الكاملة.\n\nالتجربة المجانية تقتصر على عرض 3 تقارير كاملة.',
@@ -156,11 +159,12 @@ export default function ReportScreen({ route, navigation }: any) {
               );
             }}
           >
-            <Text style={styles.actionBtnText}>🔒 نسخ</Text>
+            <Text style={styles.actionBtnText}>{isPremium ? '📋 نسخ' : '🔒 نسخ'}</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.actionBtn, { opacity: 0.6 }]}
+            style={[styles.actionBtn, !isPremium && { opacity: 0.6 }]}
             onPress={() => {
+              if (isPremium) return void shareReport();
               Alert.alert(
                 '💎 النسخة الكاملة',
                 'المشاركة متاحة في النسخة الكاملة.',
@@ -171,7 +175,7 @@ export default function ReportScreen({ route, navigation }: any) {
               );
             }}
           >
-            <Text style={styles.actionBtnText}>🔒 مشاركة</Text>
+            <Text style={styles.actionBtnText}>{isPremium ? '📤 مشاركة' : '🔒 مشاركة'}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionBtn, styles.askBtn]}

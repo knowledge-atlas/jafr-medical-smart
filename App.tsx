@@ -3,8 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { DirectionProvider } from './src/utils/DirectionContext';
-import { PremiumProvider } from './src/context/PremiumContext';
-import { checkPremiumStatus } from './src/storage/premiumStorage';
+import { PremiumProvider, usePremium } from './src/context/PremiumContext';
 import FreeRootScreen from './src/screens/FreeRootScreen';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -18,6 +17,7 @@ import ComingSoonScreen from './src/screens/ComingSoonScreen';
 import AboutScreen from './src/screens/AboutScreen';
 import LegalScreen from './src/screens/LegalScreen';
 import PaywallScreen from './src/screens/PaywallScreen';
+import OwnerUnlockScreen from './src/screens/OwnerUnlockScreen';
 import { importExternalToKB } from './src/kb/importers/externalImporters';
 import { CAIRO_FONTS, applyGlobalFont } from './src/theme/typography';
 
@@ -54,8 +54,9 @@ const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 
-function PremiumGuard({ children, isPremium, title }: any) {
+function PremiumGuard({ children, title }: any) {
   const navigation = useNavigation<any>();
+  const { isPremium } = usePremium();
   if (isPremium) return children;
   return (
     <View style={{ flex: 1, backgroundColor: '#0a192f', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
@@ -118,13 +119,6 @@ export default function App() {
   const [consented, setConsented] = useState<boolean | null>(null);
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
   const [kbReady, setKbReady] = useState(false);
-  const [isPremium, setIsPremium] = useState(false);
-
-  
-
-  useEffect(() => {
-    
-  }, []);
 
   // ═══ 1) فحص حالة الموافقة + بدء التهيئة الخفيفة ═══
   useEffect(() => {
@@ -224,43 +218,43 @@ export default function App() {
           {() => <MainTabs />}
         </Stack.Screen>
         <Stack.Screen name="Report" options={{ title: 'التقرير' }}>
-          {(props) => <PremiumGuard isPremium={isPremium} title="التقرير العميق"><ReportScreen {...props} /></PremiumGuard>}
+          {(props) => <PremiumGuard title="التقرير العميق"><ReportScreen {...props} /></PremiumGuard>}
         </Stack.Screen>
         <Stack.Screen name="Library" options={{ title: 'المكتبة' }}>
-          {(props) => <PremiumGuard isPremium={isPremium} title="المكتبة"><SearchScreen {...props} /></PremiumGuard>}
+          {(props) => <PremiumGuard title="المكتبة"><SearchScreen {...props} /></PremiumGuard>}
         </Stack.Screen>
         <Stack.Screen name="ReportChat" component={ReportChatScreen} options={{ title: '✨ اسأل عن التقرير' }} />
         <Stack.Screen name="FreeRoot" component={FreeRootScreen} options={{ title: 'الجذر الحقيقي (مجاني)' }} />
         <Stack.Screen name="ProductPicker" options={{ title: 'اختر التقرير' }}>
-          {(props) => <PremiumGuard isPremium={isPremium} title="اختر التقرير"><ProductPickerScreen {...props} /></PremiumGuard>}
+          {(props) => <PremiumGuard title="اختر التقرير"><ProductPickerScreen {...props} /></PremiumGuard>}
         </Stack.Screen>
         <Stack.Screen name="Compatibility" options={{ title: 'التوافق' }}>
-          {(props) => <PremiumGuard isPremium={isPremium} title="التوافق"><CompatibilityScreen {...props} /></PremiumGuard>}
+          {(props) => <PremiumGuard title="التوافق"><CompatibilityScreen {...props} /></PremiumGuard>}
         </Stack.Screen>
         <Stack.Screen name="Brand" options={{ title: 'القراءة التجارية' }}>
-          {(props) => <PremiumGuard isPremium={isPremium} title="القراءة التجارية"><BrandScreen {...props} /></PremiumGuard>}
+          {(props) => <PremiumGuard title="القراءة التجارية"><BrandScreen {...props} /></PremiumGuard>}
         </Stack.Screen>
         <Stack.Screen name="Temporal" options={{ title: 'التقويم الزمني' }}>
-          {(props) => <PremiumGuard isPremium={isPremium} title="التقويم الزمني"><TemporalScreen {...props} /></PremiumGuard>}
+          {(props) => <PremiumGuard title="التقويم الزمني"><TemporalScreen {...props} /></PremiumGuard>}
         </Stack.Screen>
         <Stack.Screen name="Remedy" options={{ title: 'متتبع الالتزام' }}>
-          {(props) => <PremiumGuard isPremium={isPremium} title="متتبع الالتزام"><RemedyScreen {...props} /></PremiumGuard>}
+          {(props) => <PremiumGuard title="متتبع الالتزام"><RemedyScreen {...props} /></PremiumGuard>}
         </Stack.Screen>
         <Stack.Screen name="History" component={HistoryScreen} options={{ title: 'السجل' }} />
         <Stack.Screen name="Assistant" component={AssistantScreen} options={{ title: 'المساعد' }} />
         <Stack.Screen name="TraditionalTab" options={{ title: 'التقليدي' }}>
-          {(props) => <PremiumGuard isPremium={isPremium} title="التقرير التقليدي"><TraditionalTabScreen {...props} /></PremiumGuard>}
+          {(props) => <PremiumGuard title="التقرير التقليدي"><TraditionalTabScreen {...props} /></PremiumGuard>}
         </Stack.Screen>
         <Stack.Screen name="Compare" options={{ title: 'المقارنة' }}>
-          {(props) => <PremiumGuard isPremium={isPremium} title="المقارنة"><CompareScreen {...props} /></PremiumGuard>}
+          {(props) => <PremiumGuard title="المقارنة"><CompareScreen {...props} /></PremiumGuard>}
         </Stack.Screen>
         <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'الإعدادات' }} />
         <Stack.Screen name="EntityDetail" component={EntityDetailScreen} options={{ title: 'تفاصيل الكيان' }} />
         <Stack.Screen name="TraditionalReport" options={{ title: '📜 التقرير التقليدي' }}>
-          {(props) => <PremiumGuard isPremium={isPremium} title="التقرير التقليدي الشامل"><TraditionalReportScreen {...props} /></PremiumGuard>}
+          {(props) => <PremiumGuard title="التقرير التقليدي الشامل"><TraditionalReportScreen {...props} /></PremiumGuard>}
         </Stack.Screen>
         <Stack.Screen name="ReflectiveReport" options={{ title: '🧠 الملف النفسي' }}>
-          {(props) => <PremiumGuard isPremium={isPremium} title="الملف النفسي"><ReflectiveReportScreen {...props} /></PremiumGuard>}
+          {(props) => <PremiumGuard title="الملف النفسي"><ReflectiveReportScreen {...props} /></PremiumGuard>}
         </Stack.Screen>
         <Stack.Screen name="ErrorLog" component={ErrorLogScreen} options={{ title: '🔴 سجل الأخطاء' }} />
         <Stack.Screen name="Health" component={HealthScreen} options={{ title: '📊 صحة التطبيق' }} />
@@ -268,6 +262,7 @@ export default function App() {
         <Stack.Screen name="ComingSoon" component={ComingSoonScreen} options={{ title: '🔮 قريباً' }} />
         <Stack.Screen name="About" component={AboutScreen} options={{ title: 'عن التطبيق' }} />
         <Stack.Screen name="Legal" component={LegalScreen} options={{ title: 'وثائق قانونية' }} />
+        <Stack.Screen name="OwnerUnlock" component={OwnerUnlockScreen} options={{ title: 'فتح المالك' }} />
         <Stack.Screen name="Paywall" component={PaywallScreen} options={{ title: 'التجربة المجانية' }} />
         <Stack.Screen name="ImportExternal" component={ImportExternalScreen} options={{ title: '📥 استيراد ملف' }} />
       </Stack.Navigator>

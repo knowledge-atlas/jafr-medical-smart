@@ -1,31 +1,46 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { checkPremiumStatus } from '../storage/premiumStorage';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import { checkPremiumStatus, setPremiumStatus } from '../storage/premiumStorage';
+import { isOwnerUnlocked } from '../services/OwnerUnlockService';
 
-const PremiumContext = createContext({
+interface PremiumValue {
+  /** مفتوح بالشراء (Google Play Billing) أو بفتح المالك */
+  isPremium: boolean;
+  /** مفتوح بالرقم السري للمالك */
+  ownerUnlocked: boolean;
+  setPremium: (val: boolean) => Promise<void>;
+  /** أعد قراءة الحالة من التخزين (بعد فتح/قفل المالك) */
+  refresh: () => Promise<void>;
+}
+
+const PremiumContext = createContext<PremiumValue>({
   isPremium: false,
-  setPremium: (val: boolean) => {},
+  ownerUnlocked: false,
+  setPremium: async () => {},
+  refresh: async () => {},
 });
 
 export const PremiumProvider = ({ children }: any) => {
-  const [isPremium, setIsPremium] = useState(false);
+  const [purchased, setPurchased] = useState(false);
+  const [ownerUnlocked, setOwnerUnlocked] = useState(false);
 
-  useEffect(() => {
-    // نقرأ الحالة من الذاكرة (إذا أدخلت الرقم السري سابقاً، سيتم تذكرها)
-    checkPremiumStatus().then(setIsPremium);
+  const refresh = useCallback(async () => {
+    setPurchased(await checkPremiumStatus());
+    setOwnerUnlocked(await isOwnerUnlocked());
   }, []);
 
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
   const setPremium = async (val: boolean) => {
-    setIsPremium(val);
-    try {
-      await AsyncStorage.setItem('@isPremium', val ? 'true' : 'false');
-    } catch (e) {
-      console.log('Error saving premium status:', e);
-    }
+    await setPremiumStatus(val);
+    setPurchased(val);
   };
 
   return (
-    <PremiumContext.Provider value={{ isPremium, setPremium }}>
+    <PremiumContext.Provider
+      value={{ isPremium: purchased || ownerUnlocked, ownerUnlocked, setPremium, refresh }}
+    >
       {children}
     </PremiumContext.Provider>
   );

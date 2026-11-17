@@ -4,6 +4,7 @@ import { LLMCaller, LLMCallResult } from './LLMCaller';
 const GEMINI_KEY = 'gemini_api_key';
 const OPENAI_KEY = 'openai_api_key';
 const PROVIDER = 'llm_provider';
+const OPT_IN = 'ai_opt_in';
 
 const GEMINI_MODELS = [
   'gemini-2.0-flash',
@@ -36,6 +37,11 @@ export class DefaultLLMCaller implements LLMCaller {
   async generate(systemPrompt: string, userPrompt: string): Promise<LLMCallResult> {
     const provider = ((await SecureStore.getItemAsync(PROVIDER)) ?? 'none') as LLMProvider;
 
+    // لا اتصال بأي مزود دون موافقة صريحة من الإعدادات
+    if (provider !== 'demo' && (await SecureStore.getItemAsync(OPT_IN)) !== 'true') {
+      return { answer: '⚠️ لم يتم تفعيل الذكاء الاصطناعي. افتح الإعدادات وفعّله بعد إضافة مفتاحك.', tokensUsed: 0 };
+    }
+
     if (provider === 'none') {
       return { answer: '⚠️ لم يتم تفعيل الذكاء الاصطناعي. افتح الإعدادات وأضف مفتاحاً.', tokensUsed: 0 };
     }
@@ -64,10 +70,10 @@ export class DefaultLLMCaller implements LLMCaller {
     let lastError = '';
     for (const model of GEMINI_MODELS) {
       try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
         const res = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
           body: JSON.stringify(body),
         });
         if (!res.ok) {

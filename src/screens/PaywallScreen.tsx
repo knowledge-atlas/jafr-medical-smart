@@ -3,6 +3,8 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Alert 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { freeTrial } from '../monetization/freeTrial';
+import { purchasePlan } from '../services/BillingService';
+import { usePremium } from '../context/PremiumContext';
 
 const WAITLIST_KEY = 'premium_waitlist_v1';
 
@@ -24,6 +26,7 @@ export default function PaywallScreen({ navigation }: any) {
   const [selected, setSelected] = useState<'monthly' | 'yearly'>('yearly');
   const [email, setEmail] = useState('');
   const [joined, setJoined] = useState(false);
+  const { isPremium, ownerUnlocked, setPremium } = usePremium();
 
   useEffect(() => {
     (async () => {
@@ -53,15 +56,20 @@ export default function PaywallScreen({ navigation }: any) {
     }
   };
 
-  const tryPurchase = () => {
-    Alert.alert(
-      '🔧 الدفع قيد التفعيل',
-      'خدمة الدفع ستُطلق خلال أيام عبر Google Play.\n\nسجّل بريدك وسنُعلمك فوراً.',
-      [
-        { text: 'حسناً', style: 'cancel' },
-        { text: 'أضف بريدي', onPress: () => {} },
-      ]
-    );
+  const tryPurchase = async () => {
+    const r = await purchasePlan(selected);
+    if (r.status === 'purchased') {
+      await setPremium(true);
+      Alert.alert('✅', 'تم تفعيل النسخة الكاملة.');
+    } else if (r.status === 'unavailable') {
+      Alert.alert(
+        '🔧 الدفع قيد التفعيل',
+        'خدمة الدفع ستُطلق خلال أيام عبر Google Play.\n\nسجّل بريدك وسنُعلمك فوراً.',
+        [{ text: 'حسناً', style: 'cancel' }]
+      );
+    } else if (r.status === 'error') {
+      Alert.alert('خطأ', r.message);
+    }
   };
 
   const selectedPlan = PLANS.find(p => p.id === selected)!;
@@ -82,6 +90,14 @@ export default function PaywallScreen({ navigation }: any) {
             : 'أطلق النسخة الكاملة وافتح كل الميزات'}
         </Text>
       </View>
+
+      {isPremium && (
+        <View style={styles.successBox}>
+          <Text style={styles.successTitle}>
+            {ownerUnlocked ? 'تم فتح جميع الأقفال للمالك' : 'النسخة الكاملة مفعّلة'}
+          </Text>
+        </View>
+      )}
 
       {/* Features */}
       <View style={styles.featureBox}>
@@ -141,14 +157,6 @@ export default function PaywallScreen({ navigation }: any) {
           <Ionicons name="logo-google" size={20} color="#2ecc71" />
           <Text style={styles.paymentText}>Google Play In-App Purchase</Text>
         </View>
-        <View style={styles.paymentRow}>
-          <Ionicons name="card-outline" size={20} color="#3498db" />
-          <Text style={styles.paymentText}>بطاقات ائتمان (Visa/Mastercard)</Text>
-        </View>
-        <View style={styles.paymentRow}>
-          <Ionicons name="cash-outline" size={20} color="#d4af37" />
-          <Text style={styles.paymentText}>STC Pay · مدى · PayPal</Text>
-        </View>
       </View>
 
       {/* CTA or Waitlist */}
@@ -172,7 +180,7 @@ export default function PaywallScreen({ navigation }: any) {
             <Text style={styles.primaryBtnText}> سجّلني في القائمة</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.secondaryBtn} onPress={tryPurchase}>
-            <Text style={styles.secondaryBtnText}>💳 محاولة الدفع الآن</Text>
+            <Text style={styles.secondaryBtnText}>💳 الدفع عبر Google Play Billing</Text>
           </TouchableOpacity>
         </View>
       ) : (
