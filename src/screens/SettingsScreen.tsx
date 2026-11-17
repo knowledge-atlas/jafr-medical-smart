@@ -7,6 +7,8 @@ import {
   AIProvider, AI_DISCLOSURE, getAIStatus, setAIEnabled, setAIProvider, saveAIKey, deleteAIKeys, testAIConnection,
 } from '../services/AIIntegration';
 import { clearAllUserData } from '../services/dataManager';
+import Constants from 'expo-constants';
+import { usePremium } from '../context/PremiumContext';
 
 const PROVIDERS: { id: AIProvider; label: string }[] = [
   { id: 'gemini', label: 'Gemini' },
@@ -14,6 +16,10 @@ const PROVIDERS: { id: AIProvider; label: string }[] = [
 ];
 
 export default function SettingsScreen(_props: any) {
+  const { setPremium } = usePremium();
+  const [tapCount, setTapCount] = useState(0);
+  const [showSecretInput, setShowSecretInput] = useState(false);
+  const [inputCode, setInputCode] = useState('');
   const [provider, setProvider] = useState<AIProvider>('gemini');
   const [apiKey, setApiKey] = useState('');
   const [enabled, setEnabled] = useState(false);
@@ -97,6 +103,29 @@ export default function SettingsScreen(_props: any) {
         },
       },
     ]);
+  };
+
+
+  const handleVersionTap = () => {
+    const newCount = tapCount + 1;
+    setTapCount(newCount);
+    if (newCount >= 7) {
+      setShowSecretInput(true);
+      setTapCount(0);
+      Alert.alert('وضع المطور', 'تم تفعيل حقل الرمز السري');
+    }
+  };
+
+  const verifySecretCode = () => {
+    const expectedCode = Constants.expoConfig?.extra?.developerUnlockCode;
+    if (inputCode === expectedCode) {
+      setPremium(true);
+      Alert.alert('نجاح 🎉', 'تم فتح جميع الميزات المدفوعة بنجاح.');
+      setShowSecretInput(false);
+      setInputCode('');
+    } else {
+      Alert.alert('خطأ ❌', 'الرمز السري غير صحيح.');
+    }
   };
 
   const handleClearData = () => {
@@ -202,6 +231,30 @@ export default function SettingsScreen(_props: any) {
           <Text style={styles.dangerText}>حذف جميع البيانات</Text>
         </TouchableOpacity>
       </View>
+
+      <TouchableOpacity onPress={handleVersionTap} activeOpacity={0.8} style={{ marginTop: 30, paddingBottom: 20 }}>
+        <Text style={{ textAlign: 'center', color: '#667788', fontSize: 12 }}>
+          الإصدار 2.12.1
+        </Text>
+      </TouchableOpacity>
+
+      {showSecretInput && (
+        <View style={{ padding: 15, backgroundColor: '#0f2438', borderRadius: 10, marginTop: 10, borderWidth: 1, borderColor: '#2c5070' }}>
+          <TextInput
+            placeholder="أدخل الرمز السري هنا..."
+            value={inputCode}
+            onChangeText={setInputCode}
+            style={{ backgroundColor: '#0a192f', color: '#fff', borderBottomWidth: 1, borderColor: '#2c5070', padding: 8, marginBottom: 10, textAlign: 'center' }}
+            placeholderTextColor="#667788"
+          />
+          <TouchableOpacity 
+            onPress={verifySecretCode}
+            style={{ backgroundColor: '#d4af37', padding: 12, borderRadius: 8, alignItems: 'center' }}
+          >
+            <Text style={{ color: '#0a192f', textAlign: 'center', fontWeight: 'bold' }}>تفعيل الميزات المدفوعة</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </ScrollView>
   );
 }

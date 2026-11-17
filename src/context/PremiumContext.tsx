@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { checkPremiumStatus } from '../storage/premiumStorage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PremiumContext = createContext({
   isPremium: false,
@@ -16,6 +17,11 @@ export const PremiumProvider = ({ children }: any) => {
 
   const setPremium = async (val: boolean) => {
     setIsPremium(val);
+    try {
+      await AsyncStorage.setItem('@isPremium', val ? 'true' : 'false');
+    } catch (e) {
+      console.log('Error saving premium status:', e);
+    }
   };
 
   return (
