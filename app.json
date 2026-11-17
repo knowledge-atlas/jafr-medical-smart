@@ -14,7 +14,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.ahnomy.heritage",
-      "buildNumber": "3"
+      "buildNumber": "1"
     },
     "android": {
       "package": "com.ahnomy.heritage",
@@ -23,7 +23,13 @@
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#0a1628"
       },
-      "permissions": []
+      "permissions": [],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
+      "allowBackup": false
     },
     "web": {
       "favicon": "./assets/icon.png",
@@ -47,10 +53,11 @@
       },
       "ownerName": "محمد الاهنومي",
       "ownerNameEn": "Mohammed Al-Ahnomy",
-      "brandShort": "الجفر الطبي الذكي",
+      "brandShort": "الجفر التراثي الذكي",
       "ownerEmail": "mohammedhnomi95@gmail.com",
       "brandAr": "الجفر التراثي الذكي",
-      "tagline": "اعرف ملامح طبعك وأنماط من حولك — عبر قراءة رمزية تراثية لاسمك"
+      "tagline": "رحلة تراثية في دلالات الأسماء",
+      "descriptor": "منظومة عربية متكاملة للقراءة الرمزية التراثية"
     },
     "owner": "mohammedhnomi95",
     "splash": {

@@ -487,7 +487,7 @@ export class ReflectiveArchetypesEngine {
     const weakestAxis = sorted[sorted.length - 1]?.title ?? '—';
     const overallBalance = axes.reduce((s, a) => s + a.score, 0) / axes.length;
 
-    const summary = this.buildSummary(name, dominantAxis, weakestAxis, overallBalance);
+    const summary = this.buildSummary(name, dominantAxis, weakestAxis, overallBalance, axes.length);
 
     return {
       name,
@@ -499,7 +499,7 @@ export class ReflectiveArchetypesEngine {
     };
   }
 
-  private buildSummary(name: string, dom: string, weak: string, avg: number): string {
+  private buildSummary(name: string, dom: string, weak: string, avg: number, count: number): string {
     const pct = (avg * 100).toFixed(0);
     return [
       `**${name}** — الملف النفسي المتكامل`,
@@ -508,7 +508,7 @@ export class ReflectiveArchetypesEngine {
       `- **أقوى محور:** ${dom}`,
       `- **أضعف محور:** ${weak}`,
       '',
-      'هذا الملف يدمج 15 محوراً: من الجوهر والمحرك، عبر الظل والانسجام، إلى الترياق الشامل.',
+      `هذا الملف يدمج ${count} محوراً: من الجوهر والمحرك، عبر الظل والانسجام، إلى الترياق الشامل.`,
     ].join('\n');
   }
 

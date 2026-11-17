@@ -147,7 +147,7 @@ cd android
 - الخطوات:
   1. اذهب إلى مستودع GitHub
   2. Settings → Pages → Source: main
-  3. ستُتاح URL: `username.github.io/jafr-medical-smart/PRIVACY_POLICY.md`
+  3. ستُتاح URL: `[USERNAME].github.io/jafr-heritage/PRIVACY_POLICY.md`
 
 ---
 
@@ -254,7 +254,7 @@ cd android
 ## 📞 المساعدة
 
 - **Play Console Support:** support.google.com/googleplay/android-developer
-- **GitHub:** github.com/mohammedsaeedsaeed95-byte/jafr-medical-smart
+- **GitHub:** github.com/[USERNAME]/jafr-heritage
 
 ---
 

@@ -10,6 +10,7 @@ export const PremiumProvider = ({ children }: any) => {
   const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
+    // نقرأ الحالة من الذاكرة (إذا أدخلت الرقم السري سابقاً، سيتم تذكرها)
     checkPremiumStatus().then(setIsPremium);
   }, []);
 

@@ -1,4 +1,4 @@
-name: Build APK
+name: Build AAB + APK
 
 on:
   push:
@@ -11,28 +11,42 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      HAS_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-          
+
+      - name: Install deps
+        run: npm install --legacy-peer-deps
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Tests
+        run: npm test
+
       - name: Setup SDK & NDK
         run: |
           SDK_ROOT=/usr/local/lib/android/sdk
           SDKMGR=$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager
           yes | $SDKMGR --licenses > /dev/null 2>&1 || true
-          yes | $SDKMGR --install "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;27.1.12297006" 2>&1 | tail -5
-          
-      - name: Install deps
-        run: npm install --legacy-peer-deps
+          yes | $SDKMGR --install "platform-tools" "platforms;android-35" "platforms;android-36" "build-tools;35.0.0" "ndk;27.1.12297006" 2>&1 | tail -5
 
       - name: Prebuild
         run: npx expo prebuild -p android --clean
+
+      - name: Set versionCode from run number
+        run: |
+          VC=$(( ${{ github.run_number }} + 1 ))
+          sed -i "s/versionCode [0-9]*/versionCode $VC/" android/app/build.gradle
 
       - name: Build AAB (Play Store)
         working-directory: android
@@ -42,16 +56,20 @@ jobs:
         working-directory: android
         run: ./gradlew assembleRelease --no-daemon
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        if: success()
+      # التوقيع: أضف الأسرار KEYSTORE_BASE64 و KEYSTORE_PASSWORD و KEY_ALIAS و KEY_PASSWORD في GitHub.
+      # Google Play يرفض الحزم الموقّعة بمفتاح debug، لذا هذه الخطوة مطلوبة قبل الرفع.
+      - name: Sign AAB
+        if: env.HAS_KEYSTORE == 'true'
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.keystore
+          jarsigner -keystore release.keystore -storepass "${{ secrets.KEYSTORE_PASSWORD }}" \
+            -keypass "${{ secrets.KEY_PASSWORD }}" \
+            android/app/build/outputs/bundle/release/app-release.aab "${{ secrets.KEY_ALIAS }}"
+          rm -f release.keystore
+
+      - uses: actions/upload-artifact@v4
         with:
-          tag_name: build-v1.0.0-${{ github.run_number }}
-          name: "التطبيق جاهز - Build ${{ github.run_number }}"
-          files: |
+          name: jafr-release
+          path: |
             android/app/build/outputs/apk/release/*.apk
             android/app/build/outputs/bundle/release/*.aab
-          draft: false
-          prerelease: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

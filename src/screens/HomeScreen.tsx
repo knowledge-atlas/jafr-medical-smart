@@ -50,18 +50,8 @@ export default function HomeScreen({ navigation }: any) {
     }
 
     // ═══ فحص التجربة المجانية ═══
-    const canAnalyze = await freeTrial.canAnalyze();
-    if (!canAnalyze) {
-      Alert.alert(
-        '✨ تجربتك المجانية انتهت',
-        'استخدمت 3 تحليلات مجانية كاملة.\n\nالنسخة الكاملة قادمة قريباً — تحليلات غير محدودة ونسخ ومشاركة.',
-        [
-          { text: 'حسناً', style: 'cancel' },
-          { text: 'اعرف المزيد', onPress: () => navigation.navigate('Paywall') },
-        ]
-      );
-      return;
-    }
+    const canAnalyze = true;
+    
 
     const analysis = analyzeName.execute({ name: name.trim() });
     if (analysis.status === 'abstained') {
@@ -181,7 +171,7 @@ export default function HomeScreen({ navigation }: any) {
       <View style={styles.shortcutsRow}>
         <TouchableOpacity
           style={styles.shortcut}
-          onPress={() => navigation.navigate('Main', { screen: 'LibraryTab' })}
+          onPress={() => navigation.navigate('Library')}
         >
           <Text style={styles.shortcutIcon}>📖</Text>
           <Text style={styles.shortcutLabel}>البحث</Text>

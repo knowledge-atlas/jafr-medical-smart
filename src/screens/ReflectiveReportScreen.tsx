@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { reflectiveArchetypesEngine } from '../domain/services/ReflectiveArchetypesEngine';
+import { enhanceProfile } from '../services/AIIntegration';
 
 export default function ReflectiveReportScreen({ route, navigation }: any) {
   const { isRTL, toggleDirection } = useDirection();
@@ -17,6 +18,7 @@ export default function ReflectiveReportScreen({ route, navigation }: any) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openIds, setOpenIds] = useState<Set<string>>(new Set());
+  const [ai, setAi] = useState<{ text: string; disclosure: string } | null>(null);
 
   useEffect(() => {
     try {
@@ -36,6 +38,16 @@ export default function ReflectiveReportScreen({ route, navigation }: any) {
       setLoading(false);
     }
   }, [name]);
+
+  // تأمل إضافي اختياري: غير حاجب للعرض، وأي فشل يُتجاهل والتقرير المحلي يبقى كما هو
+  useEffect(() => {
+    if (!profile) return;
+    let alive = true;
+    enhanceProfile(profile).then((r) => {
+      if (alive && r.aiText && r.disclosure) setAi({ text: r.aiText, disclosure: r.disclosure });
+    });
+    return () => { alive = false; };
+  }, [profile]);
 
   const toggle = (id: string) => {
     setOpenIds((prev) => {
@@ -115,6 +127,13 @@ export default function ReflectiveReportScreen({ route, navigation }: any) {
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+        {ai && (
+          <View style={{ backgroundColor: '#0f2438', borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#d4af37' }}>
+            <Text style={{ color: '#d4af37', fontWeight: 'bold', fontSize: 15, textAlign: 'right', writingDirection: 'rtl', marginBottom: 8 }}>✨ تأمل إضافي</Text>
+            <Text style={{ color: '#e8e8e8', fontSize: 14, lineHeight: 24, textAlign: 'right', writingDirection: 'rtl' }}>{ai.text}</Text>
+            <Text style={{ color: '#9fb0c3', fontSize: 11, marginTop: 10, textAlign: 'right', writingDirection: 'rtl' }}>{ai.disclosure}</Text>
+          </View>
+        )}
         {profile.axes.map((axis: any) => {
           const isOpen = openIds.has(axis.id);
           const pct = (axis.score * 100).toFixed(0);

@@ -1,5 +1,5 @@
 {
-  "name": "jafr-medical-smart",
+  "name": "jafr-heritage",
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
@@ -51,10 +51,12 @@
     "stats": "node tools/stats.mjs",
     "stats:check": "node tools/stats.mjs && cat project-stats.json | head -40",
     "pack:build": "node tools/build-knowledge-pack.mjs",
-    "pack:verify": "cd knowledge-packs/core-jafr && sha256sum -c checksums.txt 2>&1 | tail -5"
+    "pack:verify": "cd knowledge-packs/core-jafr && sha256sum -c checksums.txt 2>&1 | tail -5",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "private": true,
-  "description": "نظام الجفر الطبي الذكي — ميزان المرآة الذكي",
+  "description": "الجفر التراثي الذكي — قراءة رمزية تراثية تأملية",
   "allowScripts": {
     "react-native-enriched-markdown@1.1.1": true
   }

@@ -39,7 +39,7 @@ const PRODUCTS: ProductCard[] = [
   },
   {
     id: 'brand',
-    title: 'التشخيص التجاري',
+    title: 'القراءة التجارية',
     subtitle: 'تحليل اسم المشروع + 3 بدائل مقترحة',
     icon: 'pricetag',
     color: '#e74c3c',

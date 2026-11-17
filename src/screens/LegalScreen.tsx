@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 
 const DOCS = {
   privacy: {
@@ -46,7 +46,7 @@ const DOCS = {
 • فتاوى دينية
 
 ## حذف بياناتك
-• من التطبيق: الإعدادات → حذف التقارير
+• من التطبيق: الإعدادات ← منطقة الخطر ← حذف جميع البيانات
 • حذف التطبيق = حذف كل شيء
 
 ## التواصل
@@ -167,7 +167,8 @@ mohammedhnomi95@gmail.com
 };
 
 export default function LegalScreen({ route, navigation }: any) {
-  const { doc } = route.params || { doc: 'privacy' };
+  const [doc, setDoc] = useState<string>(route?.params?.doc ?? 'privacy');
+  useEffect(() => { if (route?.params?.doc) setDoc(route.params.doc); }, [route?.params?.doc]);
   const [content, setContent] = useState<string>('');
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(true);
@@ -177,7 +178,7 @@ export default function LegalScreen({ route, navigation }: any) {
     setTitle(d.title);
     setContent(d.content);
     setLoading(false);
-    navigation.setOptions({ title: d.title });
+    if (route?.params?.doc) navigation?.setOptions?.({ title: d.title });
   }, [doc]);
 
   if (loading) {
@@ -190,6 +191,13 @@ export default function LegalScreen({ route, navigation }: any) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: 'row-reverse', gap: 8, paddingBottom: 14 }}>
+        {(Object.keys(DOCS) as Array<keyof typeof DOCS>).map((k) => (
+          <TouchableOpacity key={k} onPress={() => setDoc(k)} style={[styles.chip, doc === k && styles.chipActive]}>
+            <Text style={[styles.chipText, doc === k && styles.chipTextActive]}>{DOCS[k].title}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
       <Text style={styles.heading}>{title}</Text>
       <Text style={styles.body}>{content}</Text>
     </ScrollView>
@@ -201,5 +209,9 @@ const styles = StyleSheet.create({
   content: { padding: 16, paddingBottom: 40 },
   center: { flex: 1, backgroundColor: '#0a1628', justifyContent: 'center', alignItems: 'center' },
   heading: { color: '#d4af37', fontSize: 20, fontWeight: 'bold', marginBottom: 20, textAlign: 'right', writingDirection: 'rtl' },
+  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#1a3b5d' },
+  chipActive: { backgroundColor: '#d4af37' },
+  chipText: { color: '#e8e8e8', fontSize: 12, fontWeight: 'bold' },
+  chipTextActive: { color: '#0a1628' },
   body: { color: '#e8e8e8', fontSize: 13, lineHeight: 24, textAlign: 'right', writingDirection: 'rtl' },
 });

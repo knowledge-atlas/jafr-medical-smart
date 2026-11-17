@@ -1,8 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { AI_DISCLOSURE_LONG, getAIStatus } from '../services/AIIntegration';
 
 export default function AboutScreen({ navigation }: any) {
+  const [aiOn, setAiOn] = useState(false);
+  useEffect(() => {
+    const unsub = navigation?.addListener?.('focus', () => { getAIStatus().then((s) => setAiOn(s.enabled)); });
+    getAIStatus().then((s) => setAiOn(s.enabled));
+    return unsub;
+  }, [navigation]);
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Hero */}
@@ -98,12 +105,20 @@ export default function AboutScreen({ navigation }: any) {
         </Text>
       </View>
 
+<View style={{ backgroundColor: '#0f2438', borderRadius: 12, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: '#1a3b5d' }}>
+        <Text style={{ color: '#d4af37', fontWeight: 'bold', fontSize: 16, textAlign: 'right', writingDirection: 'rtl', marginBottom: 8 }}>🤖 الذكاء الاصطناعي: {aiOn ? 'مفعّل' : 'معطّل'}</Text>
+        <Text style={{ color: '#e8e8e8', fontSize: 13, lineHeight: 22, textAlign: 'right', writingDirection: 'rtl' }}>{AI_DISCLOSURE_LONG}</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Legal', { doc: 'ai' })} style={{ marginTop: 10 }}>
+          <Text style={{ color: '#d4af37', textAlign: 'right', writingDirection: 'rtl', fontWeight: 'bold' }}>تفاصيل الإفصاح ←</Text>
+        </TouchableOpacity>
+      </View>
+
 {/* معلومات تقنية */}
       <View style={styles.techBox}>
         <Text style={styles.techTitle}>🔧 معلومات تقنية</Text>
         <View style={styles.techRow}>
           <Text style={styles.techLabel}>الإصدار</Text>
-          <Text style={styles.techValue}>3.1.0</Text>
+          <Text style={styles.techValue}>1.0.0</Text>
         </View>
         <View style={styles.techRow}>
           <Text style={styles.techLabel}>المعرف</Text>
@@ -112,10 +127,6 @@ export default function AboutScreen({ navigation }: any) {
         <View style={styles.techRow}>
           <Text style={styles.techLabel}>المحرك</Text>
           <Text style={styles.techValue}>KnowledgeAtlas Core</Text>
-        </View>
-        <View style={styles.techRow}>
-          <Text style={styles.techLabel}>الاختبارات</Text>
-          <Text style={styles.techValue}>416 حالة</Text>
         </View>
       </View>
     </ScrollView>

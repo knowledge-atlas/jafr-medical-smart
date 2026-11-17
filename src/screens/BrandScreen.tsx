@@ -34,7 +34,7 @@ export default function BrandScreen({ route }: any) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.hero}>
-        <Text style={styles.heroTitle}>🏷️ التشخيص التجاري</Text>
+        <Text style={styles.heroTitle}>🏷️ القراءة التجارية</Text>
         <Text style={styles.heroText}>تحليل الاسم + 3 بدائل مقترحة</Text>
       </View>
 

@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { DirectionProvider } from './src/utils/DirectionContext';
 import { PremiumProvider } from './src/context/PremiumContext';
 import { checkPremiumStatus } from './src/storage/premiumStorage';
@@ -19,6 +19,7 @@ import AboutScreen from './src/screens/AboutScreen';
 import LegalScreen from './src/screens/LegalScreen';
 import PaywallScreen from './src/screens/PaywallScreen';
 import { importExternalToKB } from './src/kb/importers/externalImporters';
+import { CAIRO_FONTS, applyGlobalFont } from './src/theme/typography';
 
 import HomeScreen from './src/screens/HomeScreen';
 import ReportScreen from './src/screens/ReportScreen';
@@ -45,11 +46,16 @@ import ExternalKnowledgeScreen from './src/screens/ExternalKnowledgeScreen';
 import ImportExternalScreen from './src/screens/ImportExternalScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
 
+applyGlobalFont();
+
+const log = (...a: any[]) => { if (__DEV__) console.log(...a); };
+
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 
 function PremiumGuard({ children, isPremium, title }: any) {
+  const navigation = useNavigation<any>();
   if (isPremium) return children;
   return (
     <View style={{ flex: 1, backgroundColor: '#0a192f', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
@@ -58,14 +64,16 @@ function PremiumGuard({ children, isPremium, title }: any) {
       <Text style={{ color: '#e8e8e8', fontSize: 16, textAlign: 'center', lineHeight: 26, marginBottom: 30 }}>
         لقد أتحنا لك "الجذر الحقيقي" مجاناً. للوصول إلى هذا التقرير، يرجى تفعيل العضوية.
       </Text>
-      <TouchableOpacity style={{ backgroundColor: '#d4af37', paddingVertical: 15, paddingHorizontal: 40, borderRadius: 25 }} onPress={() => Alert.alert('الاشتراك', 'سيتم توجيهك لبوابة الدفع.')}>
+      <TouchableOpacity style={{ backgroundColor: '#d4af37', paddingVertical: 15, paddingHorizontal: 40, borderRadius: 25 }} onPress={() => navigation.navigate('Paywall')}>
         <Text style={{ color: '#0a192f', fontWeight: 'bold', fontSize: 18 }}>اشترك الآن</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
-function MainTabs({ isPremium }: any) {
+const TAB_ICON = (name: any) => ({ color, size }: any) => <Ionicons name={name} size={size} color={color} />;
+
+function MainTabs() {
   return (
     <Tab.Navigator
       initialRouteName="HomeTab"
@@ -74,48 +82,29 @@ function MainTabs({ isPremium }: any) {
         headerTintColor: '#ffffff',
         headerTitleStyle: { fontWeight: 'bold' },
         headerTitleAlign: 'center',
+        lazy: true,
+        freezeOnBlur: true,
+        animation: 'fade',
         tabBarStyle: {
           backgroundColor: '#0f2438',
           borderTopColor: '#1a3b5d',
-          height: 62,
+          height: 64,
           paddingBottom: 8,
           paddingTop: 4,
           flexDirection: 'row-reverse',
         },
         tabBarItemStyle: { flexDirection: 'column' },
         tabBarActiveTintColor: '#d4af37',
-        tabBarInactiveTintColor: '#666',
+        tabBarInactiveTintColor: '#7f8ea3',
         tabBarLabelStyle: { fontSize: 10, fontWeight: 'bold' },
       }}
     >
-      <Tab.Screen
-        name="HomeTab"
-        component={HomeScreen}
-        options={{
-          title: 'تحليل',
-          tabBarIcon: ({ color, size }) => <Ionicons name="analytics-outline" size={size} color={color} />,
-        }}
-      />
-      <Tab.Screen
-        name="LibraryTab"
-        component={SearchScreen}
-        options={{
-          title: isPremium ? 'مكتبة' : 'مكتبة 🔒',
-          tabBarIcon: ({ color, size }) => <Ionicons name={isPremium ? "library-outline" : "lock-closed-outline"} size={size} color={color} />,
-        }}
-        listeners={{
-        }}
-      />
-      <Tab.Screen
-        name="ResultsTab"
-        component={HistoryScreen}
-        options={{
-          title: isPremium ? 'نتائجي' : 'نتائجي 🔒',
-          tabBarIcon: ({ color, size }) => <Ionicons name={isPremium ? "albums-outline" : "lock-closed-outline"} size={size} color={color} />,
-        }}
-        listeners={{
-        }}
-      />
+      <Tab.Screen name="HomeTab" component={HomeScreen} options={{ title: 'الرئيسية', tabBarIcon: TAB_ICON('home-outline') }} />
+      <Tab.Screen name="AccountTab" component={PaywallScreen} options={{ title: 'الحساب', tabBarIcon: TAB_ICON('person-circle-outline') }} />
+      <Tab.Screen name="ReflectionsTab" component={HistoryScreen} options={{ title: 'التأملات', tabBarIcon: TAB_ICON('sparkles-outline') }} />
+      <Tab.Screen name="AboutTab" component={AboutScreen} options={{ title: 'حول', tabBarIcon: TAB_ICON('information-circle-outline') }} />
+      <Tab.Screen name="LegalTab" component={LegalScreen} options={{ title: 'القانوني', tabBarIcon: TAB_ICON('document-text-outline') }} />
+      <Tab.Screen name="SettingsTab" component={SettingsScreen} options={{ title: 'الإعدادات', tabBarIcon: TAB_ICON('settings-outline') }} />
     </Tab.Navigator>
   );
 }
@@ -123,6 +112,7 @@ function MainTabs({ isPremium }: any) {
 export default function App() {
   const [fontsLoaded] = useFonts({
     ...Ionicons.font,
+    ...CAIRO_FONTS,
   });
 
   const [consented, setConsented] = useState<boolean | null>(null);
@@ -130,9 +120,7 @@ export default function App() {
   const [kbReady, setKbReady] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
 
-  useEffect(() => {
-    checkPremiumStatus().then(setIsPremium);
-  }, []);
+  
 
   useEffect(() => {
     
@@ -142,13 +130,13 @@ export default function App() {
   useEffect(() => {
     const bootstrap = async () => {
       const t0 = Date.now();
-      console.log('⏱️ START bootstrap');
+      log('⏱️ START bootstrap');
 
       await analytics.trackLaunch();
       const ob = await AsyncStorage.getItem(ONBOARDING_STORAGE_KEY);
       setShowOnboarding(ob !== 'true');
       const stored = await consentStorage.get();
-      console.log(`⏱️ consent check: ${Date.now() - t0}ms`);
+      log(`⏱️ consent check: ${Date.now() - t0}ms`);
       setConsented(stored === 'accepted');
 
       // تحميل KB في الخلفية بعد تأخير بسيط
@@ -156,19 +144,19 @@ export default function App() {
         const tKB = Date.now();
         try {
           const { KnowledgeBase, importAll } = await import('./src/kb');
-          console.log(`⏱️ KB import: ${Date.now() - tKB}ms`);
+          log(`⏱️ KB import: ${Date.now() - tKB}ms`);
           const tInit = Date.now();
           await KnowledgeBase.initialize();
-          console.log(`⏱️ KB init: ${Date.now() - tInit}ms`);
+          log(`⏱️ KB init: ${Date.now() - tInit}ms`);
           const stats = KnowledgeBase.stats();
           if (stats.totalEntities === 0) {
             const tImp = Date.now();
             await importAll();
             importExternalToKB(KnowledgeBase);
-            console.log(`⏱️ KB importAll: ${Date.now() - tImp}ms`);
+            log(`⏱️ KB importAll: ${Date.now() - tImp}ms`);
           }
           setKbReady(true);
-          console.log(`⏱️ TOTAL KB: ${Date.now() - tKB}ms`);
+          log(`⏱️ TOTAL KB: ${Date.now() - tKB}ms`);
         } catch (e) {
           console.warn('⚠️ KB load failed:', e);
           setKbReady(true);
@@ -233,10 +221,13 @@ export default function App() {
         })}
       >
         <Stack.Screen name="Main" options={{ headerShown: false }}>
-          {(props) => <MainTabs {...props} isPremium={isPremium} />}
+          {() => <MainTabs />}
         </Stack.Screen>
         <Stack.Screen name="Report" options={{ title: 'التقرير' }}>
           {(props) => <PremiumGuard isPremium={isPremium} title="التقرير العميق"><ReportScreen {...props} /></PremiumGuard>}
+        </Stack.Screen>
+        <Stack.Screen name="Library" options={{ title: 'المكتبة' }}>
+          {(props) => <PremiumGuard isPremium={isPremium} title="المكتبة"><SearchScreen {...props} /></PremiumGuard>}
         </Stack.Screen>
         <Stack.Screen name="ReportChat" component={ReportChatScreen} options={{ title: '✨ اسأل عن التقرير' }} />
         <Stack.Screen name="FreeRoot" component={FreeRootScreen} options={{ title: 'الجذر الحقيقي (مجاني)' }} />
@@ -246,8 +237,8 @@ export default function App() {
         <Stack.Screen name="Compatibility" options={{ title: 'التوافق' }}>
           {(props) => <PremiumGuard isPremium={isPremium} title="التوافق"><CompatibilityScreen {...props} /></PremiumGuard>}
         </Stack.Screen>
-        <Stack.Screen name="Brand" options={{ title: 'التشخيص التجاري' }}>
-          {(props) => <PremiumGuard isPremium={isPremium} title="التشخيص التجاري"><BrandScreen {...props} /></PremiumGuard>}
+        <Stack.Screen name="Brand" options={{ title: 'القراءة التجارية' }}>
+          {(props) => <PremiumGuard isPremium={isPremium} title="القراءة التجارية"><BrandScreen {...props} /></PremiumGuard>}
         </Stack.Screen>
         <Stack.Screen name="Temporal" options={{ title: 'التقويم الزمني' }}>
           {(props) => <PremiumGuard isPremium={isPremium} title="التقويم الزمني"><TemporalScreen {...props} /></PremiumGuard>}

@@ -2,6 +2,7 @@
 // شاشة السجل — عرض وحذف التقارير المحفوظة
 // ================================================================
 
+import { SkeletonList } from '../components/Skeleton';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert,
@@ -85,8 +86,8 @@ export default function HistoryScreen({ navigation }: any) {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#d4af37" />
+      <View style={{ flex: 1, backgroundColor: '#0a192f' }}>
+        <SkeletonList rows={5} />
       </View>
     );
   }
