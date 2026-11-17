@@ -49,7 +49,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "2ec2fcee-238f-4cdc-8ae5-b6e24a2037d6"
+        "projectId": "632aec41-d298-453c-821f-d757a3b4ebfb"
       },
       "ownerName": "محمد الاهنومي",
       "ownerNameEn": "Mohammed Al-Ahnomy",
@@ -59,7 +59,7 @@
       "tagline": "رحلة تراثية في دلالات الأسماء",
       "descriptor": "منظومة عربية متكاملة للقراءة الرمزية التراثية"
     },
-    "owner": "mohammedhnomi95",
+    "owner": "m.alahnomi",
     "splash": {
       "image": "./assets/icon.png",
       "resizeMode": "contain",
